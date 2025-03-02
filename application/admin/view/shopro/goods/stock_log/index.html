@@ -1,0 +1,51 @@
+{include file="/shopro/common/script" /}
+
+<div id="index" class="stock-log-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">补货记录</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @sort-change="onChangeSort">
+                <el-table-column prop="id" label="ID" min-width="90" sortable="custom"> </el-table-column>
+                <el-table-column label="商品" min-width="400">
+                    <template #default="scope">
+                        <div v-if="scope.row.goods" class="sa-goods-item sa-flex sa-col-top">
+                            <sa-image class="goods-image" :url="scope.row.goods.image" size="48"></sa-image>
+                            <div class="right">
+                                <div class="goods-title sa-table-line-1">{{scope.row.goods.title}}</div>
+                                <div v-if="scope.row.goods_sku_text" class="goods-sku-text">{{scope.row.goods_sku_text}}
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else>{{scope.row.goods_id}}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="before" label="补货前" min-width="106"></el-table-column>
+                <el-table-column prop="stock" label="补货库存" min-width="106"></el-table-column>
+                <el-table-column prop="msg" label="补货备注" min-width="124"></el-table-column>
+                <el-table-column prop="createtime" label="创建时间" width="172"></el-table-column>
+                <el-table-column prop="updatetime" label="更新时间" width="172"></el-table-column>
+                <el-table-column label="操作人" min-width="140" fixed="right">
+                    <template #default="scope">
+                        <sa-user-profile type="oper" :user="scope.row.oper" :id="scope.row.admin_id" />
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

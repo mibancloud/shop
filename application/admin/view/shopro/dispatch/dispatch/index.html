@@ -1,0 +1,180 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .dispatch-index {
+        font-size: 14px;
+        color: var(--sa-font);
+    }
+
+    .dispatch-index .dispatch-item {
+        min-width: 100%;
+        display: inline-block;
+        border-radius: 4px;
+        border: 1px solid var(--sa-space);
+        margin-bottom: 20px;
+    }
+
+    .dispatch-index .template-header {
+        height: 40px;
+        background: var(--t-bg-disabled);
+        border-radius: 4px;
+        padding-left: 20px;
+    }
+
+    .dispatch-index .template-header .name {
+        min-width: 570px;
+    }
+
+    .dispatch-index .template-header .right {
+        flex-shrink: 0;
+        padding-right: 20px;
+    }
+
+    .dispatch-index .template-body .template-item {
+        border-bottom: 1px solid var(--sa-space);
+        padding: 10px 0 10px 16px;
+        font-size: 14px;
+        color: var(--sa-font);
+    }
+
+    .dispatch-index .template-body .template-item:first-of-type {
+        border-bottom: none;
+        box-shadow: 0 2px 6px #8c8c8c1f;
+    }
+
+    .dispatch-index .template-body .template-item .area {
+        min-width: 600px;
+        font-size: 12px;
+    }
+
+    .dispatch-index .template-body .template-item .district {
+        min-width: 88px;
+        padding: 0 18px;
+        text-align: center;
+    }
+</style>
+
+<div id="index" class="dispatch-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-tabs class="sa-tabs" v-model="state.dispatch_type" @tab-change="onChangeTab">
+                <el-tab-pane label="物流快递" name="express"></el-tab-pane>
+                <el-tab-pane label="自动发货" name="autosend"></el-tab-pane>
+            </el-tabs>
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">配送设置</div>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    {if $auth->check('shopro/dispatch/dispatch/add')}
+                    <el-button icon="Plus" type="primary" @click="onAdd">添加</el-button>
+                    {/if}
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-scrollbar v-if="state.dispatch_type=='express'">
+                <div class="dispatch-item" v-for="item in state.data" :key="item">
+                    <div class="template-header sa-flex sa-row-between">
+                        <div class="name sa-flex">
+                            <div class="mr-2">#{{ item.id }}</div>
+                            <div>{{ item.name }}</div>
+                        </div>
+                        <div class="right sa-flex">
+                            <div class="mr-1">最后编辑时间:{{ item.updatetime }}</div>
+                            {if $auth->check('shopro/dispatch/dispatch/edit')}
+                            <el-button type="primary" class="is-link" @click="onEdit(item.id)">编辑</el-button>
+                            {/if}
+                            {if $auth->check('shopro/dispatch/dispatch/add')}
+                            <el-button type="info" link @click="onCopy(item.id)">复制</el-button>
+                            {/if}
+                            <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                                title="确认删除这条记录?" @confirm="onDelete(item.id)">
+                                <template #reference>
+                                    {if $auth->check('shopro/dispatch/dispatch/delete')}
+                                    <el-button type="danger" link> 删除</el-button>
+                                    {/if}
+                                </template>
+                            </el-popconfirm>
+                        </div>
+                    </div>
+                    <div class="template-body">
+                        <template v-for="(inneritem, index) in item.express" :key="index">
+                            <div v-if="index == 0" class="template-item sa-flex sa-row-between">
+                                <div class="area">可配送区域</div>
+                                <div class="sa-flex">
+                                    <div class="district">
+                                        {{ inneritem.type == 'weight' ? '首重(kg)' : '首件' }}
+                                    </div>
+                                    <div class="district">运费(元)</div>
+                                    <div class="district">
+                                        {{ inneritem.type == 'weight' ? '续重(kg)' : '续件' }}
+                                    </div>
+                                    <div class="district">续费(元)</div>
+                                </div>
+                            </div>
+                            <div class="template-item sa-flex sa-row-between">
+                                <div class="area">{{ inneritem.district_text || '-' }}</div>
+                                <div class="sa-flex">
+                                    <div class="district">{{ inneritem.first_num }}</div>
+                                    <div class="district">{{ inneritem.first_price }}</div>
+                                    <div class="district">{{ inneritem.additional_num }}</div>
+                                    <div class="district">{{ inneritem.additional_price }}</div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </el-scrollbar>
+            <el-table v-if="state.dispatch_type=='autosend'" class="sa-table" :data="state.data">
+                <el-table-column prop="id" label="ID" min-width="90">
+                </el-table-column>
+                <el-table-column label="模板名称" min-width="140">
+                    <template #default="scope">
+                        <div class="sa-line-1">
+                            {{scope.row.name}}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="自动发货内容" min-width="400">
+                    <template #default="scope">
+                        <div>
+                            <div v-if="scope.row.autosend?.type=='text'">
+                                {{scope.row.autosend?.content}}</div>
+                            <div v-else>
+                                <template v-for="(item,index) in scope.row.autosend?.content">
+                                    {{item.title}}:{{item.content}}
+                                    <span v-if="index!=scope.row.autosend?.content.length-1" class="sa-m-r-4">;</span>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="updatetime" label="最后编辑时间" min-width="172">
+                </el-table-column>
+                <el-table-column label="操作" min-width="180">
+                    <template #default="scope">
+                        {if $auth->check('shopro/dispatch/dispatch/edit')}
+                        <el-button type="primary" class="is-link" @click="onEdit(scope.row.id)">编辑</el-button>
+                        {/if}
+                        {if $auth->check('shopro/dispatch/dispatch/add')}
+                        <el-button type="info" link @click="onCopy(scope.row.id)">复制</el-button>
+                        {/if}
+                        <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                            title="确认删除这条记录?" @confirm="onDelete(scope.row.id)">
+                            <template #reference>
+                                {if $auth->check('shopro/dispatch/dispatch/delete')}
+                                <el-button type="danger" link> 删除</el-button>
+                                {/if}
+                            </template>
+                        </el-popconfirm>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+</div>

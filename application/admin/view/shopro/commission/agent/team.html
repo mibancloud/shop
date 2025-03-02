@@ -1,0 +1,159 @@
+{include file="/shopro/common/script" /}
+
+<div id="team" class="agent-team" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header sa-flex sa-flex-wrap mt-4">
+            <template v-if="state.data.user?.parent_user">
+                推荐人：
+                <sa-user-profile type="agent" :user="state.data.user?.parent_user" :id="state.data.user?.parent_user_id"
+                    :isHover="false"></sa-user-profile>
+            </template>
+        </el-header>
+        <el-main>
+            <el-table class="sa-table mb-4" :data="[state.data]">
+                <el-table-column prop="user_id" label="ID" min-width="90"></el-table-column>
+                <el-table-column label="当前用户" min-width="150">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row.user" :id="scope.row.user_id" :isHover="false">
+                        </sa-user-profile>
+                    </template>
+                </el-table-column>
+                <el-table-column label="等级" min-width="150">
+                    <template #default="scope">
+                        <div v-if="scope.row.level_info" class="sa-flex">
+                            <sa-image :url="scope.row.level_info.image" size="32"></sa-image>
+                            <span class="ml-2">{{ scope.row.level_info.name }}</span>
+                        </div>
+                        <template v-else>{{ scope.row.level }}</template>
+                    </template>
+                </el-table-column>
+                <el-table-column label="状态" min-width="120" align="center">
+                    <template #default="scope">
+                        <span :style="{ color: statusStyle[scope.row.status]?.color }">
+                            {{ scope.row.status_text }}
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="团队人数/分销商人数" min-width="160" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_user_count_all }}人/ {{ scope.row.child_agent_count_all }}人
+                    </template>
+                </el-table-column>
+                <el-table-column label="一级团队人数/一级分销商人数" min-width="220" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_user_count_1 }}人/ {{ scope.row.child_agent_count_1 }}人
+                    </template>
+                </el-table-column>
+                <el-table-column label="二级团队人数/二级分销商人数" min-width="220" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_user_count_2 }}人/ {{ scope.row.child_agent_count_2 }}人
+                    </template>
+                </el-table-column>
+                <el-table-column label="团队分销总额/团队分销订单" min-width="220" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_order_money_all }}元/ {{ scope.row.child_order_count_all }}单
+                    </template>
+                </el-table-column>
+                <el-table-column label="一级分销总额/一级分销订单" min-width="220" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_order_money_1 }}元/ {{ scope.row.child_order_count_1 }}单
+                    </template>
+                </el-table-column>
+                <el-table-column label="二级分销总额/二级分销订单" min-width="220" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_order_money_2 }}元/ {{ scope.row.child_order_count_2 }}单
+                    </template>
+                </el-table-column>
+                <el-table-column label="自购分销总金额/订单数" min-width="220" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_order_money_0 }}元/ {{ scope.row.child_order_count_0 }}单
+                    </template>
+                </el-table-column>
+                <el-table-column label="累计佣金" min-width="160" align="center">
+                    <template #default="scope"> {{ scope.row.total_income }}元 </template>
+                </el-table-column>
+                <el-table-column label="消费金额" min-width="160" align="center">
+                    <template #default="scope"> {{ scope.row.user?.total_consume || 0 }}元 </template>
+                </el-table-column>
+                <el-table-column label="待入账佣金" min-width="160" align="center">
+                    <template #default="scope"> {{ scope.row.pending_reward }}元 </template>
+                </el-table-column>
+                <el-table-column label="加入时间" min-width="172" align="center">
+                    <template #default="scope"> {{ scope.row.createtime }} </template>
+                </el-table-column>
+            </el-table>
+            <el-table class="sa-table" :data="state.data.agent_team">
+                <el-table-column prop="user_id" label="ID" min-width="90"></el-table-column>
+                <el-table-column label="团队用户" min-width="150">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row.user" :id="scope.row.user_id" :isHover="false">
+                        </sa-user-profile>
+                    </template>
+                </el-table-column>
+                <el-table-column label="等级" min-width="150">
+                    <template #default="scope">
+                        <div v-if="scope.row.level_info" class="sa-flex">
+                            <sa-image :url="scope.row.level_info.image" size="32"></sa-image>
+                            <span class="ml-2">{{ scope.row.level_info.name }}</span>
+                        </div>
+                        <template v-else>{{ scope.row.level }}</template>
+                    </template>
+                </el-table-column>
+                <el-table-column label="状态" min-width="120" align="center">
+                    <template #default="scope">
+                        <span :style="{ color: statusStyle[scope.row.status]?.color }">
+                            {{ scope.row.status_text }}
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="团队人数/分销商人数" min-width="160" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_user_count_all }}人/ {{ scope.row.child_agent_count_all }}人
+                    </template>
+                </el-table-column>
+                <el-table-column label="一级团队人数/一级分销商人数" min-width="220" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_user_count_1 }}人/ {{ scope.row.child_agent_count_1 }}人
+                    </template>
+                </el-table-column>
+                <el-table-column label="二级团队人数/二级分销商人数" min-width="220" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_user_count_2 }}人/ {{ scope.row.child_agent_count_2 }}人
+                    </template>
+                </el-table-column>
+                <el-table-column label="团队分销总额/团队分销订单" min-width="220" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_order_money_all }}元/ {{ scope.row.child_order_count_all }}单
+                    </template>
+                </el-table-column>
+                <el-table-column label="一级分销总额/一级分销订单" min-width="220" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_order_money_1 }}元/ {{ scope.row.child_order_count_1 }}单
+                    </template>
+                </el-table-column>
+                <el-table-column label="二级分销总额/二级分销订单" min-width="220" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_order_money_2 }}元/ {{ scope.row.child_order_count_2 }}单
+                    </template>
+                </el-table-column>
+                <el-table-column label="自购分销总金额/订单数" min-width="220" align="center">
+                    <template #default="scope">
+                        {{ scope.row.child_order_money_0 }}元/ {{ scope.row.child_order_count_0 }}单
+                    </template>
+                </el-table-column>
+                <el-table-column label="累计佣金" min-width="160" align="center">
+                    <template #default="scope"> {{ scope.row.total_income }}元 </template>
+                </el-table-column>
+                <el-table-column label="消费金额" min-width="160" align="center">
+                    <template #default="scope"> {{ scope.row.user?.total_consume || 0 }}元 </template>
+                </el-table-column>
+                <el-table-column label="待入账佣金" min-width="160" align="center">
+                    <template #default="scope"> {{ scope.row.pending_reward }}元 </template>
+                </el-table-column>
+                <el-table-column label="加入时间" min-width="172" align="center">
+                    <template #default="scope"> {{ scope.row.createtime }} </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+    </el-container>
+</div>

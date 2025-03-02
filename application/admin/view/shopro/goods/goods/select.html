@@ -1,0 +1,168 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .goods-select .el-aside {
+        --el-aside-width: 180px;
+        border-right: 1px solid var(--sa-border);
+        padding: 20px;
+    }
+
+    .goods-select .category-select {
+        margin-bottom: 16px;
+    }
+
+    .goods-select .el-tree-node__expand-icon {
+        display: none;
+    }
+
+    .goods-select .el-tree-node__content {
+        height: 32px;
+    }
+
+    .goods-select .el-tree-node__label {
+        width: 100%;
+    }
+
+    .goods-select .custom-tree-node {
+        width: 100%;
+        height: 32px;
+        line-height: 32px;
+        border-radius: 4px;
+    }
+
+    .goods-select .custom-tree-node.is-active {
+        background: var(--t-bg-active);
+        color: var(--el-color-primary);
+    }
+
+    .goods-select .expand-arrow {
+        margin-left: 8px;
+    }
+
+    .goods-select .search-wrap {
+        --el-header-height: auto;
+        padding-top: var(--sa-padding);
+    }
+
+    .goods-select .search-price span {
+        margin-right: 12px;
+    }
+
+    .goods-select .search-price .search-price-min,
+    .goods-select .search-price .search-price-max {
+        width: 88px;
+    }
+
+    .goods-select .search-price .search-price-min {
+        margin-right: 12px;
+    }
+
+    .goods-select .search-keyword {
+        width: 180px;
+    }
+
+    .goods-select .goods-item {}
+
+    .goods-select .goods-item .goods-image {
+        margin-right: 8px;
+    }
+
+    .goods-select .goods-item .goods-title {
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subtitle);
+        margin-bottom: 6px;
+    }
+
+    .goods-select .goods-item .goods-price {
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: 400;
+        color: #ff4d4f;
+    }
+</style>
+
+<div id="select" class="goods-select" v-cloak>
+    <el-container class="panel-block">
+        <el-aside>
+            <el-scrollbar height="100%">
+                <el-select class="category-select" v-model="category.id" placeholder="Select"
+                    @change="getCategoryDetail">
+                    <el-option v-for="item in category.select" :key="item.id" :label="item.name" :value="item.id">
+                    </el-option>
+                </el-select>
+                <el-tree :data="category.detail" empty-text="" :props="{
+                    children: 'children',
+                    label: 'name',
+                  }" :indent="0" :accordion="true">
+                    <template #default="{ node, data }">
+                        <span class="custom-tree-node sa-flex"
+                            :class="data.id == state.filter.data.category_ids ? 'is-active' : ''"
+                            :style="{ 'padding-left': `${node.level * 16}px` }" @click.stop="changeCategoryIds(data)">
+                            <div class="sa-table-line-1">{{ data.name }}</div>
+                            <el-icon v-if="data.children && data.children.length"
+                                :class="['expand-arrow',node.expanded ? 'expand-arrow-up' : 'expand-arrow-down']"
+                                @click.stop="node.expanded = !node.expanded">
+                                <arrow-down />
+                            </el-icon>
+                        </span>
+                    </template>
+                </el-tree>
+            </el-scrollbar>
+        </el-aside>
+        <el-container>
+            <el-header class="search-wrap sa-flex sa-flex-wrap sa-row-between">
+                <div class="sa-flex sa-flex-wrap search-price">
+                    <span>商品价格</span>
+                    <el-input class="search-price-min" v-model="state.filter.data.price.min" placeholder="最低价格">
+                    </el-input>
+                    <span>至</span>
+                    <el-input class="search-price-max" v-model="state.filter.data.price.max" placeholder="最高价格">
+                    </el-input>
+                </div>
+                <el-input class="search-keyword" v-model="state.filter.data.keyword" prefix-icon="Search"
+                    placeholder="请输入搜索内容"></el-input>
+            </el-header>
+            <el-main>
+                <el-table height="100%" class="sa-table" ref="multipleTableRef" :data="state.data" stripe
+                    @select="onSelect" @select-all="onSelectAll">
+                    <el-table-column v-if="state.multiple" type="selection" width="48"></el-table-column>
+                    <el-table-column prop="id" label="ID" min-width="90"></el-table-column>
+                    <el-table-column label="商品信息" min-width="310">
+                        <template #default="scoped">
+                            <div class="goods-item sa-flex sa-col-top">
+                                <sa-image class="goods-image" :url="scoped.row.image" size="40"></sa-image>
+                                <div>
+                                    <div class="goods-title sa-m-b-6 sa-table-line-1">
+                                        {{ scoped.row.title }}
+                                    </div>
+                                    <div class="goods-price">¥{{ scoped.row.price.join('~¥') }}</div>
+                                </div>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="stock" label="库存" min-width="120"></el-table-column>
+                    <el-table-column v-if="!state.multiple" label="操作" width="80">
+                        <template #default="scope">
+                            <template v-if="state.data_type == 'score_shop'">
+                                <span v-if="scope.row.is_score_shop">已参加</span>
+                                <el-button v-if="!scope.row.is_score_shop" type="primary" link
+                                    @click="onSingleSelect(scope.row)">参加</el-button>
+                            </template>
+                            <template v-else>
+                                <el-button type="primary" link @click="onSingleSelect(scope.row)">选择
+                                </el-button>
+                            </template>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </el-main>
+            <el-footer class="sa-flex" :class="state.multiple ? 'sa-row-between' : 'sa-row-right'">
+                <sa-pagination class="is-ellipsis" v-model="pagination" @pagination-change="getData"></sa-pagination>
+                <el-button v-if="state.multiple" type="primary" @click="onConfirm">确 定</el-button>
+            </el-footer>
+        </el-container>
+    </el-container>
+</div>

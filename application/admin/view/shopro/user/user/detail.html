@@ -1,0 +1,378 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .user-detail .title {
+        height: 32px;
+        line-height: 32px;
+        font-size: 16px;
+        color: var(--sa-subtitle);
+        margin-bottom: 8px;
+    }
+
+    .user-detail .bottom {
+        padding: 16px;
+        background: var(--sa-table-header-bg);
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .user-detail .left {
+        height: 12px;
+        line-height: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--sa-subfont);
+        margin-bottom: 8px;
+    }
+
+    .user-detail .right {
+        line-height: 32px;
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--sa-subtitle);
+    }
+
+    .user-detail .info {
+        padding: 16px 16px 0;
+        background: var(--sa-background-assist);
+        border-radius: 4px;
+    }
+
+    .user-detail .info .el-col {
+        margin-bottom: 16px;
+    }
+
+    .user-detail .log .bottom {
+        padding: 0;
+        background: var(--sa-background-assist);
+    }
+
+    .user-detail .el-tabs__nav-wrap::after {
+        height: 0;
+    }
+
+    .user-detail .third-oauth .provider-platform {
+        flex-shrink: 0;
+        width: 32px;
+        height: 32px;
+    }
+
+    .user-detail .third-oauth .provider-item {
+        margin-bottom: 20px;
+    }
+
+    .user-detail .third-oauth .provider-item:last-of-type {
+        margin-bottom: 0;
+    }
+</style>
+
+<div id="detail" class="user-detail" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-row :gutter="24">
+                <el-col class="sa-col-24" :xs="24" :sm="24" :md="6" :lg="6" :xl="6">
+                    <div class="title">基本信息</div>
+                    <div class="bottom">
+                        <div class="sa-flex sa-row-between mb-3">
+                            <div class="sa-flex sa-flex-1">
+                                <sa-image :url="state.detail.avatar" size="64" radius="32"></sa-image>
+                                <div class="ml-4 sa-flex-1">
+                                    <div class="nickname mb-1 sa-table-line-1">
+                                        {{ state.detail.nickname }}
+                                    </div>
+                                    <div class="id">#{{ state.detail.id }}</div>
+                                </div>
+                            </div>
+                            {if $auth->check('shopro/user/user/edit')}
+                            <el-button type="primary" @click="onSelectAvatar">更换头像</el-button>
+                            {/if}
+                        </div>
+                        <div class="info">
+                            <el-row :gutter="24">
+                                <el-col :xs="24" :sm="12" :md="24" :lg="24" :xl="24">
+                                    <div class="left">昵称</div>
+                                    <div class="right">
+                                        <el-input v-model="state.detail.nickname" />
+                                    </div>
+                                </el-col>
+                                <el-col :xs="24" :sm="12" :md="24" :lg="24" :xl="24">
+                                    <div class="left">性别</div>
+                                    <div class="right">
+                                        <el-radio-group v-model="state.detail.gender">
+                                            <el-radio :label="0">女</el-radio>
+                                            <el-radio :label="1">男</el-radio>
+                                        </el-radio-group>
+                                    </div>
+                                </el-col>
+                                <el-col :xs="24" :sm="12" :md="24" :lg="24" :xl="24">
+                                    <div class="left">用户名</div>
+                                    <div class="right">
+                                        <el-input v-model="state.detail.username" placeholder="首位需为字母且不少五位">
+                                            <template #suffix>
+                                                <span v-html="statusStyle('username')"></span>
+                                            </template>
+                                        </el-input>
+                                    </div>
+                                </el-col>
+                                <el-col :xs="24" :sm="12" :md="24" :lg="24" :xl="24">
+                                    <div class="left">密码</div>
+                                    <div class="right">
+                                        <el-input v-model="state.detail.password" placeholder="不修改则留空">
+                                            <template #suffix>
+                                                <span v-html="statusStyle('password')"></span>
+                                            </template>
+                                        </el-input>
+                                    </div>
+                                </el-col>
+                                <el-col :xs="24" :sm="12" :md="24" :lg="24" :xl="24">
+                                    <div class="left">手机号</div>
+                                    <div class="right">
+                                        <el-input v-model="state.detail.mobile" type="number">
+                                            <template #suffix>
+                                                <span v-html="statusStyle('mobile')"></span>
+                                            </template>
+                                        </el-input>
+                                    </div>
+                                </el-col>
+                                <el-col :xs="24" :sm="12" :md="24" :lg="24" :xl="24">
+                                    <div class="left">电子邮箱</div>
+                                    <div class="right">
+                                        <el-input v-model="state.detail.email">
+                                            <template #suffix>
+                                                <span v-html="statusStyle('email')"></span>
+                                            </template>
+                                        </el-input>
+                                    </div>
+                                </el-col>
+                                <el-col :xs="24" :sm="12" :md="24" :lg="24" :xl="24">
+                                    <div class="left">状态</div>
+                                    <div class="right">
+                                        <el-radio-group v-model="state.detail.status">
+                                            <el-radio label="normal">正常</el-radio>
+                                            <el-radio label="disabled">禁用</el-radio>
+                                        </el-radio-group>
+                                    </div>
+                                </el-col>
+                                <el-col :xs="24" :sm="12" :md="24" :lg="24" :xl="24">
+                                    <div class="label"></div>
+                                    <div class="right sa-flex sa-row-right">
+                                        <el-button @click="getDetail">重置</el-button>
+                                        {if $auth->check('shopro/user/user/edit')}
+                                        <el-button type="primary" @click="onSave">保存</el-button>
+                                        {/if}
+                                    </div>
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </div>
+                </el-col>
+                <el-col class="sa-col-24" :xs="24" :sm="24" :md="18" :lg="18" :xl="18">
+                    <el-row :gutter="24">
+                        <el-col class="sa-col-24" :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+                            <div class="title">账户信息</div>
+                            <div class="bottom">
+                                <div class="info">
+                                    <el-row>
+                                        <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                                            <div class="left">推荐人</div>
+                                            <div class="right sa-flex">
+                                                <sa-user-profile type="agent" :user="state.detail.parent_user"
+                                                    :id="state.detail.parent_user_id"></sa-user-profile>
+                                                {if $is_pro}
+                                                <el-button class="ml-2" type="primary" link @click="onChangeParentUser">
+                                                    更换</el-button>
+                                                {/if}
+                                            </div>
+                                        </el-col>
+                                        <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                                            <div class="left">佣金</div>
+                                            <div class="right">{{ state.detail.commission }}</div>
+                                        </el-col>
+                                        <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                                            <div class="left">余额</div>
+                                            <div class="right sa-flex">
+                                                {{ state.detail.money }}
+                                                {if $auth->check('shopro/user/user/recharge')}
+                                                <el-button class="ml-2" type="primary" link
+                                                    @click="onRecharge('money')">充值</el-button>
+                                                {/if}
+                                            </div>
+                                        </el-col>
+                                        <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                                            <div class="left">上次登陆时间</div>
+                                            <div class="right">{{ state.detail.logintime }}</div>
+                                        </el-col>
+                                        <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                                            <div class="left">积分</div>
+                                            <div class="right sa-flex">
+                                                {{ state.detail.score }}
+                                                {if $auth->check('shopro/user/user/recharge')}
+                                                <el-button class="ml-2" type="primary" link
+                                                    @click="onRecharge('score')">充值</el-button>
+                                                {/if}
+                                            </div>
+                                        </el-col>
+                                        <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                                            <div class="left">登录IP</div>
+                                            <div class="right">{{ state.detail.loginip }}</div>
+                                        </el-col>
+                                        <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                                            <div class="left">总计消费</div>
+                                            <div class="right">
+                                                {{ state.detail.total_consume }}
+                                            </div>
+                                        </el-col>
+                                        <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                                            <div class="left">注册时间</div>
+                                            <div class="right">{{ state.detail.createtime }}</div>
+                                        </el-col>
+                                    </el-row>
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col v-if="state.detail.third_oauth?.length>0" class="third-oauth sa-col-24" :xs="24"
+                            :sm="24" :md="12" :lg="12" :xl="12">
+                            <div class="title">第三方账号</div>
+                            <div class="bottom">
+                                <el-row class="info">
+                                    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+                                        <div class="provider-item sa-flex sa-row-between"
+                                            v-for="item in state.detail.third_oauth" :key="item.id">
+                                            <div class="sa-flex">
+                                                <img class="provider-platform"
+                                                    :src="`/assets/addons/shopro/img/user/${item.provider}/${item.platform}.png`" />
+                                                <span class="ml-2">
+                                                    {{ platform[item.provider][item.platform] }}
+                                                </span>
+                                            </div>
+                                            <el-popover popper-class="sa-popper" placement="top-start" trigger="hover">
+                                                <div>
+                                                    <div class="item sa-flex">
+                                                        <div class="left">登录次数：</div>
+                                                        <div class="right">{{ item.login_num }}</div>
+                                                    </div>
+                                                    <div class="item sa-flex">
+                                                        <div class="left">Openid：</div>
+                                                        <div class="right">{{ item.openid }}</div>
+                                                    </div>
+                                                    <div v-if="item.unionid" class="item sa-flex">
+                                                        <div class="left">Unionid：</div>
+                                                        <div class="right">{{ item.unionid }}</div>
+                                                    </div>
+                                                    <div class="item sa-flex">
+                                                        <div class="left">更新时间：</div>
+                                                        <div class="right">{{ item.updatetime }}</div>
+                                                    </div>
+                                                </div>
+                                                <template #reference>
+                                                    <div class="sa-flex">
+                                                        <sa-image :url="item.avatar" size="32"></sa-image>
+                                                        <span class="name ml-2">
+                                                            {{ item.nickname }}
+                                                        </span>
+                                                    </div>
+                                                </template>
+                                            </el-popover>
+                                        </div>
+                                    </el-col>
+                                </el-row>
+                            </div>
+                        </el-col>
+                        <el-col class="log sa-col-24" :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+                            <div class="title sa-flex"> 用户动态 </div>
+                            <div class="bottom">
+                                <el-tabs v-model="log.tabActive" @tab-change="onChangeTab">
+                                    <el-tab-pane label="余额记录" name="money"></el-tab-pane>
+                                    <el-tab-pane label="积分记录" name="score"></el-tab-pane>
+                                    <el-tab-pane label="佣金记录" name="commission"></el-tab-pane>
+                                    <el-tab-pane label="订单记录" name="order"></el-tab-pane>
+                                    <el-tab-pane label="分享记录" name="share"></el-tab-pane>
+                                    <el-tab-pane label="优惠券明细" name="coupon"></el-tab-pane>
+                                </el-tabs>
+                                <el-table
+                                    v-if="log.tabActive=='money' || log.tabActive=='score' || log.tabActive=='commission'"
+                                    height="520" class="sa-table" :data="log.data" stripe>
+                                    <el-table-column prop="createtime" label="交易时间" width="172">
+                                    </el-table-column>
+                                    <el-table-column prop="amount" label="变动余额" min-width="120">
+                                    </el-table-column>
+                                    <el-table-column prop="before" label="变更前" min-width="120">
+                                    </el-table-column>
+                                    <el-table-column prop="after" label="剩余余额" min-width="120">
+                                    </el-table-column>
+                                    <el-table-column label="操作人" min-width="160">
+                                        <template #default="scope">
+                                            <sa-user-profile type="oper" :user="scope.row.oper" :id="scope.row.oper_id">
+                                            </sa-user-profile>
+                                            </sa-user-profile>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column label="备注" min-width="160">
+                                        <template #default="scope">
+                                            {{ scope.row.event_text }}{{ scope.row.memo ? ':' + scope.row.memo : '' }}
+                                        </template>
+                                    </el-table-column>
+                                </el-table>
+                                <el-table v-if="log.tabActive=='order'" height="520" class="sa-table" :data="log.data"
+                                    stripe>
+                                    <el-table-column prop="createtime" label="下单时间" min-width="172"></el-table-column>
+                                    <el-table-column prop="order_sn" label="订单号" min-width="280"></el-table-column>
+                                    <el-table-column prop="platform_text" label="订单来源" min-width="120">
+                                    </el-table-column>
+                                    <el-table-column prop="type_text" label="订单类型" min-width="100"></el-table-column>
+                                    <el-table-column prop="order_amount" label="订单总金额" min-width="140">
+                                    </el-table-column>
+                                    <el-table-column prop="total_discount_fee" label="优惠减免" min-width="140">
+                                    </el-table-column>
+                                    <el-table-column prop="pay_fee" label="实付金额" min-width="140"></el-table-column>
+                                    <el-table-column prop="status_text" label="订单状态" min-width="100"></el-table-column>
+                                </el-table>
+                                <el-table v-if="log.tabActive=='share'" height="520" class="sa-table" :data="log.data"
+                                    stripe>
+                                    <el-table-column prop="createtime" label="分享时间" width="172"></el-table-column>
+                                    <el-table-column label="被分享用户" min-width="180">
+                                        <template #default="scope">
+                                            <sa-user-profile :user="scope.row.user" :id="scope.user_id">
+                                            </sa-user-profile>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column prop="from_text" label="分享类型" min-width="120"></el-table-column>
+                                    <el-table-column label="分享信息" min-width="180" show-overflow-tooltip>
+                                        <template #default="scope">
+                                            <div v-if="scope.row.ext" class="sa-flex">
+                                                <sa-image :url="scope.row.ext.image" size="32"></sa-image>
+                                                <div class="sa-table-line-1 ml-2">{{ scope.row.ext.memo}}</div>
+                                            </div>
+                                            <div v-else>-</div>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column prop="platform_text" label="平台" min-width="130"></el-table-column>
+                                </el-table>
+                                <el-table v-if="log.tabActive=='coupon'" height="520" class="sa-table" :data="log.data"
+                                    stripe>
+                                    <el-table-column label="优惠券名称" min-width="160">
+                                        <template #default="scope">
+                                            <div class="sa-line-1">{{ scope.row.coupon?.name || '-' }}</div>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column label="优惠券面额" min-width="120">
+                                        <template #default="scope">
+                                            <div class="sa-line-1">{{ scope.row.coupon?.amount || '-' }}</div>
+                                        </template>
+                                    </el-table-column>
+                                    <el-table-column prop="status_text" label="优惠券状态" min-width="120"></el-table-column>
+                                    <el-table-column prop="createtime" label="领取时间" width="172"></el-table-column>
+                                    <el-table-column prop="use_time" label="使用时间" width="172"></el-table-column>
+                                </el-table>
+                                <el-footer class="sa-flex sa-row-right">
+                                    <sa-pagination v-model="pagination" @pagination-change="getLog">
+                                    </sa-pagination>
+                                </el-footer>
+                            </div>
+                        </el-col>
+                    </el-row>
+                </el-col>
+            </el-row>
+        </el-main>
+    </el-container>
+</div>

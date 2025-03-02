@@ -1,0 +1,31 @@
+{include file="/shopro/common/script" /}
+
+<div id="select" class="fake-user-select" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-table height="100%" class="sa-table" :data="state.data" stripe>
+                <el-table-column prop="id" label="ID" min-width="90"> </el-table-column>
+                <el-table-column label="用户名" min-width="180">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.username || '-' }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="用户信息" min-width="180">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row" :id="scope.row.id" />
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="操作" min-width="120">
+                    <template #default="scope">
+                        <el-button type="primary" link @click="onSelect(scope.row)">选择</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination class="is-ellipsis" v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+</div>

@@ -1,0 +1,45 @@
+{include file="/shopro/common/script" /}
+
+<div id="addEdit" class="fake-user-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item label="用户头像" prop="avatar">
+                        <sa-uploader v-model="form.model.avatar" fileType="image"></sa-uploader>
+                    </el-form-item>
+                    <el-form-item label="用户名" prop="username">
+                        <el-input class="sa-w-360" v-model="form.model.username" placeholder="请输入用户名"></el-input>
+                    </el-form-item>
+                    <el-form-item label="用户昵称" prop="nickname">
+                        <el-input class="sa-w-360" v-model="form.model.nickname" placeholder="请输入用户昵称"></el-input>
+                    </el-form-item>
+                    <el-form-item label="电子邮箱" prop="email">
+                        <el-input class="sa-w-360" v-model="form.model.email" placeholder="请输入电子邮箱"></el-input>
+                    </el-form-item>
+                    <el-form-item label="手机号" prop="mobile">
+                        <el-input class="sa-w-360" v-model="form.model.mobile" placeholder="请输入手机号"></el-input>
+                    </el-form-item>
+                    <el-form-item label="用户密码">
+                        <el-input class="sa-w-360" v-model="form.model.password" placeholder="不修改请留空"></el-input>
+                    </el-form-item>
+                    <el-form-item label="用户性别">
+                        <el-radio-group v-model="form.model.gender">
+                            <el-radio :label="0">女</el-radio>
+                            <el-radio :label="1">男</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item v-if="state.type == 'edit'" label="创建时间">
+                        {{ form.model.createtime }}
+                    </el-form-item>
+                    <el-form-item v-if="state.type == 'edit'" label="更新时间">
+                        {{ form.model.updatetime }}
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

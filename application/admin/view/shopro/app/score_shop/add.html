@@ -1,0 +1,102 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .score-shop-form .title {
+        line-height: 22px;
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--sa-subtitle);
+    }
+
+    .score-shop-form .sku-table-wrap {
+        width: 100%;
+        overflow: auto;
+
+    }
+
+    .score-shop-form .sku-table-wrap .sku-table {
+        font-size: 12px;
+        font-weight: 500;
+
+    }
+
+    .score-shop-form .sku-table-wrap .sku-table thead {
+        line-height: 40px;
+        background: var(--sa-table-header-bg);
+        color: var(--subtitle);
+    }
+
+    .score-shop-form .sku-table-wrap .sku-table tbody tr {
+        line-height: 48px;
+        color: var(--sa-font);
+
+    }
+
+    .score-shop-form .sku-table-wrap .sku-table tbody tr:nth-of-type(2n) {
+        background: var(--sa-table-striped);
+    }
+
+    .score-shop-form .sku-table-wrap .sku-table th,
+    .score-shop-form .sku-table-wrap .sku-table td {
+        padding: 0 16px;
+        text-align: left;
+    }
+
+    .score-shop-form .sku-table-wrap .sku-item {
+        min-width: 100px;
+        flex-shrink: 0;
+    }
+</style>
+
+<div id="addEdit" class="score-shop-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <div class="title mb-4">商品名称：{{ state.title }}</div>
+                <div class="sku-table-wrap">
+                    <table class="sku-table" rules="none">
+                        <thead>
+                            <tr>
+                                <th class="sku-item" v-for="ss in goods.skus" :key="ss">
+                                    {{ ss.name }}
+                                </th>
+                                <th class="sku-item">是否参与</th>
+                                <th class="sku-item">商品价格</th>
+                                <th class="sku-item">可兑换数量</th>
+                                <th class="sku-item">兑换积分</th>
+                                <th class="sku-item">兑换价格</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(sp, spindex) in goods.sku_prices" :key="sp">
+                                <td class="sku-item" v-for="st in sp.goods_sku_text" :key="st">
+                                    {{ st }}
+                                </td>
+                                <td class="sku-item">
+                                    <el-switch v-model="goods.score_sku_prices[spindex].status" active-value="up"
+                                        inactive-value="down" />
+                                </td>
+                                <td class="sku-item">{{ sp.price }}</td>
+                                <th class="sku-item">
+                                    <el-input v-if="goods.score_sku_prices[spindex].status == 'up'" type="number"
+                                        v-model="goods.score_sku_prices[spindex].stock"></el-input>
+                                </th>
+                                <th class="sku-item">
+                                    <el-input v-if="goods.score_sku_prices[spindex].status == 'up'" type="number"
+                                        v-model="goods.score_sku_prices[spindex].score"></el-input>
+                                </th>
+                                <th class="sku-item">
+                                    <el-input v-if="goods.score_sku_prices[spindex].status == 'up'" type="number"
+                                        v-model="goods.score_sku_prices[spindex].price"></el-input>
+                                </th>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

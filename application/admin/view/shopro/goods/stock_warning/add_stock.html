@@ -1,0 +1,23 @@
+{include file="/shopro/common/script" /}
+
+<div id="addStock" class="stock-warning-add-stock" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item label="商品库存:" prop="stock">
+                        <div class="sa-w-360">
+                            <div class="mr-2">{{ state.stock }}</div>
+                            <el-input v-model="form.model.stock" placeholder="补充库存" type="number">
+                                <template #append>件</template>
+                            </el-input>
+                        </div>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

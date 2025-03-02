@@ -1,0 +1,79 @@
+{include file="/shopro/common/script" /}
+
+<div id="select" class="room-select" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @selection-change="onSelectionChange">
+                <el-table-column type="selection" :selectable="isSelectable" width="48"></el-table-column>
+                <el-table-column label="房间ID" min-width="120" align="center">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.roomid }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="直播类型" min-width="120" align="center">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.type_text }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="直播间标题" min-width="200" align="center">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.name }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="主播昵称" min-width="120" align="center">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.anchor_name }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="状态" min-width="120" align="center">
+                    <template #default="scope">
+                        <div class="sa-table-line-1" :class="
+                    scope.row.status === 101
+                      ? 'sa-color--success'
+                      : scope.row.status === 102
+                      ? 'sa-color--warning'
+                      : scope.row.status === 105
+                      ? 'sa-color--info'
+                      : 'sa-color--danger'
+                  ">{{ scope.row.status_text }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="背景图" min-width="80" align="center">
+                    <template #default="scope">
+                        <div class="sa-flex sa-row-center">
+                            <sa-image :url="scope.row.cover_img" size="30">
+                            </sa-image>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="分享图" min-width="80" align="center">
+                    <template #default="scope">
+                        <div class="sa-flex sa-row-center">
+                            <sa-image :url="scope.row.share_img" size="30"></sa-image>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="封面图" min-width="80" align="center">
+                    <template #default="scope">
+                        <div class="sa-flex sa-row-center">
+                            <sa-image :url="scope.row.feeds_img" size="30"></sa-image>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="开播时间" width="172">
+                    <template #default="scope">
+                        {{Moment(scope.row.start_time * 1000).format('YYYY-MM-DD HH:mm')}}
+                    </template>
+                </el-table-column>
+                <el-table-column label="结束时间" width="172">
+                    <template #default="scope">
+                        {{Moment(scope.row.end_time * 1000).format('YYYY-MM-DD HH:mm')}}
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确 定</el-button>
+        </el-footer>
+    </el-container>
+</div>

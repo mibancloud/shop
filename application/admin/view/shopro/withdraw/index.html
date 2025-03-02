@@ -1,0 +1,146 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .withdraw-index .pay {
+        width: 24px;
+        height: 24px;
+        margin-right: 8px;
+    }
+
+    .handle-popover .tip {
+        margin-bottom: 16px;
+    }
+
+    .question-filled {
+        color: var(--el-color-warning);
+        margin-right: 4px;
+    }
+</style>
+
+<div id="index" class="withdraw-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-tabs class="sa-tabs" v-model="state.filter.data.status" @tab-change="onChangeTab">
+                <el-tab-pane v-for="item in type.data.status" :key="item" :label="item.name" :name="item.type">
+                </el-tab-pane>
+            </el-tabs>
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">提现管理</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @sort-change="onChangeSort">
+                <el-table-column prop="id" label="ID" min-width="90" sortable="custom">
+                </el-table-column>
+                <el-table-column label="申请用户" min-width="158">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row.user" :id="scope.row.user_id"></sa-user-profile>
+                    </template>
+                </el-table-column>
+                <el-table-column label="实际到账/提现金额" min-width="166">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.paid_fee }}/{{ scope.row.amount || '-' }}元
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="费率/手续费" min-width="132">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.charge_rate_format }}/{{ scope.row.charge_fee || '-' }}元
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="提现方式" min-width="130">
+                    <template #default="scope">
+                        <div v-if="scope.row.withdraw_type" class="sa-flex">
+                            <img class="pay" :src="`/assets/addons/shopro/img/${scope.row.withdraw_type}.png`" />
+                            <div>{{scope.row.withdraw_type_text}}</div>
+                        </div>
+                        <div v-else>-</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="打款信息" min-width="240">
+                    <template #default="scope">
+                        <div class="sa-flex-col sa-col-top">
+                            <div v-for="(value, key) in scope.row.withdraw_info" :key="value" class="sa-flex">
+                                <div class="sa-table-line-1"> {{ key }}:{{ value }} </div>
+                                <el-icon class="copy-document" @click="onClipboard(value)">
+                                    <copy-document />
+                                </el-icon>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="申请时间" width="172">
+                    <template #default="scope">
+                        {{ scope.row.createtime || '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="上次操作时间" width="172">
+                    <template #default="scope">
+                        {{ scope.row.updatetime || '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="状态" min-width="80">
+                    <template #default="scope">
+                        <div :class="`${state.statusStyle[scope.row.status]}`">
+                            {{ scope.row.status_text }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="操作" min-width="200">
+                    <template #default="scope">
+                        {if $auth->check('shopro/withdraw/handle')}
+                        <template v-if="scope.row.status == 0">
+                            <el-popover popper-class="handle-popover" v-model:visible="handlePopover.flag[scope.$index]"
+                                :width="244" trigger="click">
+                                <div class="tip sa-flex">
+                                    <el-icon class="question-filled sa-color--warning">
+                                        <question-filled />
+                                    </el-icon>
+                                    <div>您是否同意用户的提现申请？</div>
+                                </div>
+                                <div>
+                                    <el-button @click="handlePopover.flag[scope.$index] = false" size="small">取消
+                                    </el-button>
+                                    <el-button @click="onAgree(scope.row.id, scope.$index, 'agree')" size="small">同意
+                                    </el-button>
+                                    <el-button type="primary" size="small"
+                                        @click="onAgree(scope.row.id, scope.$index, 'agree&withdraw')">同意&打款</el-button>
+                                </div>
+                                <template #reference>
+                                    <el-button type="primary" link>同意</el-button>
+                                </template>
+                            </el-popover>
+                            <el-button type="danger" link @click="onRefuse(scope.row.id)">拒绝</el-button>
+                        </template>
+                        <el-popconfirm v-if="scope.row.status == 1" width="fit-content" confirm-button-text="同意"
+                            cancel-button-text="取消" title="您确定给用户立即打款吗？"
+                            @confirm="onAgree(scope.row.id, scope.$index, 'withdraw')">
+                            <template #reference>
+                                <el-button type="primary" link>立即打款</el-button>
+                            </template>
+                        </el-popconfirm>
+                        {/if}
+                        {if $auth->check('shopro/withdraw/log')}
+                        <el-button type="primary" link @click="onLog(scope.row.id)">日志</el-button>
+                        {/if}
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

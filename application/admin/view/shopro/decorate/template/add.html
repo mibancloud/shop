@@ -1,0 +1,26 @@
+{include file="/shopro/common/script" /}
+
+<div id="addEdit" class="template-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item label="模板名称" prop="name">
+                        <el-input v-model="form.model.name" placeholder="请输入模板名称"></el-input>
+                    </el-form-item>
+                    <el-form-item label="备注">
+                        <el-input type="textarea" v-model="form.model.memo" placeholder="请输入备注"></el-input>
+                    </el-form-item>
+                    <el-form-item v-if="state.template == 'template'" label="发布平台">
+                        <el-checkbox-group v-model="form.model.platform">
+                            <el-checkbox v-for="item in platformList" :label="item.type">{{item.label}}</el-checkbox>
+                        </el-checkbox-group>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

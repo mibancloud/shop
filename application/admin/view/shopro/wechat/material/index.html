@@ -1,0 +1,304 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .voice-content .item {
+        background: var(--sa-background-assist);
+    }
+
+    .item {
+        padding: 12px;
+        line-height: 1;
+        margin-bottom: 24px;
+        box-shadow: 0 1px 6px rgb(89 89 89 / 12%);
+        border-radius: 8px;
+        border: 1px solid var(--sa-space);
+    }
+
+    .item:hover {
+        box-shadow: 0 3px 12px rgb(89 89 89 / 20%);
+        transform: translateY(-4px);
+    }
+
+    .news-content .item {
+        min-height: 144px;
+    }
+
+    .news-content .item .frist-news>div {
+        position: relative;
+    }
+
+    .news-content .item .frist-news .sa-image {
+        width: 100%;
+        height: 144px;
+    }
+
+    .news-content .item .frist-news .title {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 32px;
+        line-height: 32px;
+        padding: 0 12px;
+        background: rgba(38, 38, 38, 0.5);
+        backdrop-filter: blur(1px);
+        font-size: 12px;
+        color: #fff;
+        z-index: 1;
+    }
+
+    .news-content .item .other-news {
+        height: 40px;
+        padding: 0 12px !important;
+        display: flex;
+        align-items: center;
+    }
+
+    .news-content .item .other-news>div {
+        width: 100%;
+    }
+
+    .news-content .item .other-news .title {
+        flex: 1;
+        font-size: 12px;
+        color: var(--sa-subtitle);
+    }
+
+    .news-content .item .other-news .sa-image {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
+    }
+
+    .image-content .sa-image {
+        width: 100%;
+        height: 144px;
+        border-radius: 0;
+        border: 1px solid var(--sa-space);
+    }
+
+    .image-content .name {
+        padding: 10px 12px;
+        font-size: 12px;
+        color: var(--sa-title);
+    }
+
+    .video-content .cover-url {
+        position: relative;
+    }
+
+    .video-content .cover-url .sa-image {
+        width: 64px;
+        height: 48px;
+        border-radius: 0;
+    }
+
+    .video-content .cover-url .mask {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(38, 38, 38, 0.5);
+        color: var(--sa-background-assist);
+        backdrop-filter: blur(1px);
+        border-radius: 2px;
+    }
+
+    .video-content .name {
+        height: 16px;
+        line-height: 16px;
+        font-size: 14px;
+        color: var(--sa-title);
+    }
+
+    .video-content .description {
+        height: 16px;
+        line-height: 16px;
+        font-size: 14px;
+        color: var(--sa-font);
+    }
+
+    .voice-content .item .voice-svg {
+        flex-shrink: 0;
+        width: 64px;
+        height: 48px;
+        background: var(--el-color-primary-light-9);
+        backdrop-filter: blur(2px);
+        border-radius: 2px;
+        color: var(--el-color-primary);
+        font-size: 20px;
+    }
+
+    .voice-content .name {
+        height: 16px;
+        line-height: 16px;
+        font-size: 14px;
+        color: var(--sa-title);
+    }
+
+    .voice-content .description {
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        color: var(--sa-font);
+    }
+
+    .text-content .item-content {
+        font-size: 12px;
+        color: var(--sa-title);
+        line-height: 20px;
+        height: 40px;
+        word-break: break-all;
+    }
+
+    .link-content .title {
+        height: 16px;
+        line-height: 16px;
+        font-size: 14px;
+        color: var(--sa-title);
+    }
+
+    .link-content .description {
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        color: var(--sa-font);
+    }
+
+    .material-index .name {
+        word-break: break-all;
+    }
+</style>
+
+<div id="index" class="material-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-alert class="mt-4 mb-4" type="warning">
+                <template #title>
+                    素材管理中图文消息、图片、视频、音频，需要您在公众号平台进行上传。
+                    <a href="https://mp.weixin.qq.com" target="_blank">微信公众号管理</a>
+                </template>
+            </el-alert>
+            <el-tabs class="sa-tabs" v-model="state.type" @tab-change="onChangeTab">
+                <el-tab-pane label="图文消息" name="news"> </el-tab-pane>
+                <el-tab-pane label="图片" name="image"> </el-tab-pane>
+                <el-tab-pane label="视频" name="video"> </el-tab-pane>
+                <el-tab-pane label="语音" name="voice"> </el-tab-pane>
+                <el-tab-pane label="文本" name="text"> </el-tab-pane>
+                <el-tab-pane label="链接" name="link"> </el-tab-pane>
+            </el-tabs>
+            <div v-if="state.type == 'text' || state.type == 'link'" class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name"></div>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    {if $auth->check('shopro/wechat/material/add')}
+                    <el-button icon="Plus" type="primary" @click="onAdd">添加</el-button>
+                    {/if}
+                </div>
+            </div>
+        </el-header>
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-row :gutter="20">
+                    <el-col v-for="item in state.data" :key="item" :xs="12" :sm="8" :md="6" :lg="4" :xl="4">
+                        <div :class="`${state.type}-content`">
+                            <template v-if="state.type == 'news'">
+                                <div class="item">
+                                    <a v-for="(it, index) in item.content.news_item" :key="it"
+                                        :class="index == 0 ? 'frist-news' : 'other-news'" :href="it.url"
+                                        target="_blank">
+                                        <div class="sa-flex sa-row-between sa-line-1">
+                                            <div class="title sa-line-1">{{ it.title }}</div>
+                                            <sa-image :url="it.thumb_url" fit="cover"></sa-image>
+                                        </div>
+                                    </a>
+                                </div>
+                            </template>
+                            <template v-if="state.type == 'image'">
+                                <div class="item">
+                                    <sa-image :url="item.url" fit="cover"></sa-image>
+                                    <div class="name sa-line-1">{{ item.name }}</div>
+                                </div>
+                            </template>
+                            <template v-if="state.type == 'video'">
+                                <div class="item sa-flex">
+                                    <div class="cover-url">
+                                        <sa-image :url="item.cover_url"></sa-image>
+                                        <div class="mask sa-flex sa-row-center">
+                                            <sa-svg name="sa-play" size="20"></sa-svg>
+                                        </div>
+                                    </div>
+                                    <div class="ml-2">
+                                        <div class="name mb-1 sa-table-line-1">{{ item.name }}</div>
+                                        <div class="description sa-table-line-1">{{ item.description }}</div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template v-if="state.type == 'voice'">
+                                <div class="item sa-flex">
+                                    <div class="voice-svg sa-flex sa-row-center">
+                                        <sa-svg name="sa-play" size="20"></sa-svg>
+                                    </div>
+                                    <div class="ml-2">
+                                        <div class="name mb-1 sa-table-line-1">{{ item.name }}</div>
+                                        <div class="description sa-table-line-1">{{ item.description }}</div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template v-if="state.type == 'text'">
+                                <div class="item">
+                                    <div class="item-content sa-line-2 mb-2" v-html="item.content"></div>
+                                    <div class="sa-flex sa-row-right">
+                                        {if $auth->check('shopro/wechat/material/edit')}
+                                        <el-button type="primary" link @click="onEdit(item.id)">编辑</el-button>
+                                        {/if}
+                                        <el-popconfirm width="fit-content" confirm-button-text="确认"
+                                            cancel-button-text="取消" title="确认删除这条记录?" @confirm="onDelete(item.id)">
+                                            <template #reference>
+                                                {if $auth->check('shopro/wechat/material/delete')}
+                                                <el-button type="danger" link>删除</el-button>
+                                                {/if}
+                                            </template>
+                                        </el-popconfirm>
+                                    </div>
+                                </div>
+                            </template>
+                            <template v-if="state.type == 'link'">
+                                <div class="item">
+                                    <div v-if="item.content" class="sa-flex mb-2">
+                                        <sa-image :url="item.content.image" size="40"></sa-image>
+                                        <div class="ml-2">
+                                            <div class="title mb-1 sa-table-line-1">{{ item.content.title }}</div>
+                                            <div class="description sa-table-line-1">
+                                                {{ item.content.description }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="sa-flex sa-row-right">
+                                        {if $auth->check('shopro/wechat/material/edit')}
+                                        <el-button type="primary" link @click="onEdit(item.id)">编辑</el-button>
+                                        {/if}
+                                        <el-popconfirm width="fit-content" confirm-button-text="确认"
+                                            cancel-button-text="取消" title="确认删除这条记录?" @confirm="onDelete(item.id)">
+                                            <template #reference>
+                                                {if $auth->check('shopro/wechat/material/delete')}
+                                                <el-button type="danger" link>删除</el-button>
+                                                {/if}
+                                            </template>
+                                        </el-popconfirm>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </el-col>
+                </el-row>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+</div>

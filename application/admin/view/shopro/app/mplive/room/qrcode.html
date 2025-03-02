@@ -1,0 +1,64 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .program {
+        width: 360px;
+        height: 260px;
+        background: #f5f5f5;
+        border-radius: 4px;
+        padding: 16px;
+        margin-bottom: 30px;
+    }
+
+    .path {
+        width: 360px;
+        height: 260px;
+        background: #f5f5f5;
+        border-radius: 4px;
+        padding: 16px;
+        margin-bottom: 30px;
+    }
+
+    .title {
+        font-size: 14px;
+        line-height: 20px;
+        color: var(--sa-subtitle);
+        margin-bottom: 8px;
+    }
+
+
+    .desc {
+        color: var(--sa-subfont);
+        font-size: 14px;
+        line-height: 20px;
+        word-break: break-all;
+        word-wrap: break-word;
+        margin-bottom: 24px;
+    }
+
+</style>
+
+<div id="qrcode" class="mplive-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <!-- v-loading="loading" -->
+        <el-main >
+            <div class="sa-flex sa-flex-wrap sa-row-between">
+                <div class="program sa-flex sa-col-top sa-row-between">
+                    <div>
+                        <div class="title">直播间小程序码</div>
+                        <div class="desc ">小程序码不带参数</div>
+                        <el-button type="primary" @click="saveImg">保存图片</el-button>
+                    </div>
+                    <sa-image class="" :url="state.cdnUrl" size="120"></sa-image>
+                </div>
+                <div class="path">
+                    <div class="title">直播间页面路径</div>
+                    <div class="desc ">{{ state.path }}</div>
+                    <el-button type="primary" @click="onClipboard(state.path)">复制链接</el-button>
+                    <div class="desc">链接是直播间原始页面路径，如需加入参数,详见<el-button class="is-link" type="primary"
+                            @click="onJump">使用方法</el-button></div>
+                </div>
+            </div>
+        </el-main>
+    </el-container>
+</div>

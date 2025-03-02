@@ -1,0 +1,159 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .score-shop-index .sa-table-wrap {
+        height: 100%;
+        margin-left: -48px;
+        overflow: hidden;
+    }
+
+    .score-shop-index .sa-table-wrap .sa-expand-table .el-table__header-wrapper {
+        display: none;
+    }
+
+    .score-shop-index .goods-item .sa-image {
+        margin-right: 12px;
+    }
+
+    .score-shop-index .goods-item .goods-title {
+        height: 20px;
+        line-height: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--sa-font);
+    }
+
+    .score-shop-index .goods-item .goods-subtitle {
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subfont);
+        margin-bottom: 6px;
+    }
+
+    .score-shop-index .goods-item .goods-sku {
+        width: fit-content;
+        height: 20px;
+        background: var(--el-color-primary);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        padding: 0 8px;
+        font-size: 12px;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .score-shop-index .sku-text {
+        font-size: 12px;
+        color: var(--sa-font);
+    }
+</style>
+
+<div id="index" class="score-shop-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">积分商城</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                    {if $auth->check('shopro/app/score_shop/add')}
+                    <el-button icon="Plus" type="primary" @click="onAdd">添加</el-button>
+                    {/if}
+                    {if $auth->check('shopro/app/score_shop/recyclebin')}
+                    <el-button type="danger" icon="Delete" plain @click="onRecyclebin">回收站</el-button>
+                    {/if}
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <div class="sa-table-wrap">
+                <el-table height="100%" class="sa-table" :data="state.data" :expand-row-keys="expandRowKeys"
+                    row-key="id" stripe>
+                    <el-table-column type="expand">
+                        <template #default="props">
+                            <el-table class="sa-table sa-expand-table" :data="skuPrices.data" stripe>
+                                <el-table-column width="48"></el-table-column>
+                                <el-table-column min-width="90"></el-table-column>
+                                <el-table-column min-width="440">
+                                    <template #default="scope">
+                                        <div class="sa-flex">
+                                            <sa-image :url="scope.row.image || props.row.image" size="32">
+                                            </sa-image>
+                                            <div class="sku-text ml-2">
+                                                {{ scope.row.goods_sku_text?.join('/') }}
+                                            </div>
+                                        </div>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="score_price" min-width="200"></el-table-column>
+                                <el-table-column prop="sales" min-width="100"></el-table-column>
+                                <el-table-column prop="stock" min-width="100"></el-table-column>
+                                <el-table-column min-width="120"></el-table-column>
+                            </el-table>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="id" label="ID" min-width="90"></el-table-column>
+                    <el-table-column label="商品信息" min-width="440">
+                        <template #default="scope">
+                            <div class="goods-item sa-flex">
+                                <sa-image :url="scope.row.image" size="64"></sa-image>
+                                <div>
+                                    <div class="goods-title sa-table-line-1">{{scope.row.title}}</div>
+                                    <div class="goods-subtitle sa-table-line-1">{{scope.row.subtitle}}</div>
+                                    <div v-if="scope.row.is_sku" class="goods-sku"
+                                        @click.stop="expandRow(scope.row.id)">
+                                        多规格
+                                        <el-icon :class="[
+                                            'expand-arrow ml-1',
+                                            expandRowKeys.includes(scope.row.id) ? 'expand-arrow-up' : 'expand-arrow-down',
+                                        ]">
+                                            <arrow-down />
+                                        </el-icon>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="积分现金" min-width="200">
+                        <template #default="scope">
+                            <div v-if="scope.row.score_price" class="sa-flex">
+                                {{ scope.row.score_price.score }}积分
+                                <div v-if="Number(scope.row.score_price.price)">+￥{{ scope.row.score_price.price }}
+                                </div>
+                            </div>
+                            <div v-else>-</div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="score_sales" label="销量" min-width="100"></el-table-column>
+                    <el-table-column prop="score_stock" label="库存" min-width="100"></el-table-column>
+                    <el-table-column label="操作" min-width="120" fixed="right">
+                        <template #default="scope">
+                            {if $auth->check('shopro/app/score_shop/edit')}
+                            <el-button type="primary" link @click="onEdit(scope.row)">编辑</el-button>
+                            {/if}
+                            <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                                title="确认删除这条记录?" @confirm="onDelete(scope.row.id)">
+                                <template #reference>
+                                    {if $auth->check('shopro/app/score_shop/delete')}
+                                    <el-button type="danger" link>删除</el-button>
+                                    {/if}
+                                </template>
+                            </el-popconfirm>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

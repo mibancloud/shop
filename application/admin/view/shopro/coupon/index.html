@@ -1,0 +1,209 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .coupon-index .card {
+        height: 80px;
+        background: var(--sa-background-assist);
+        border: 1px solid var(--sa-space);
+        box-shadow: 0px 2px 6px rgba(140, 140, 140, 0.12);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+
+    .coupon-index .card .num {
+        font-weight: 400;
+        font-size: 24px;
+        line-height: 26px;
+        color: var(--sa-subfont);
+    }
+
+    .coupon-index .card .oper {
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 14px;
+        color: #FAAD14;
+        cursor: pointer;
+    }
+
+    .coupon-index .card .name {
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 14px;
+        color: var(--sa-font);
+    }
+
+    .coupon-index .card .tip {
+        font-size: 14px;
+        color: var(--sa-subfont);
+    }
+
+    .coupon-index .sa-title {
+        padding-top: 0;
+    }
+</style>
+
+<div id="index" class="coupon-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-row class="mt-4" :gutter="20">
+                <el-col v-for="(value,key) in state.dashboard" :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
+                    <div class="card">
+                        <div class="sa-flex sa-row-between mb-1">
+                            <div class="num">{{value.num}}</div>
+                        </div>
+                        <div class="sa-flex sa-row-between">
+                            <div class="name">{{value.name}}</div>
+                            <el-popover popper-class="sa-popper" trigger="hover">
+                                {{value.tip}}
+                                <template #reference>
+                                    <el-icon class="tip">
+                                        <warning />
+                                    </el-icon>
+                                </template>
+                            </el-popover>
+                        </div>
+                    </div>
+                </el-col>
+            </el-row>
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">优惠券</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                    {if $auth->check('shopro/coupon/add')}
+                    <el-button icon="Plus" type="primary" @click="onAdd">添加</el-button>
+                    {/if}
+                    {if $auth->check('shopro/coupon/recyclebin')}
+                    <el-button type="danger" icon="Delete" plain @click="onRecyclebin">回收站</el-button>
+                    {/if}
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @sort-change="onChangeSort">
+                <el-table-column prop="id" label="ID" min-width="90" sortable="custom"> </el-table-column>
+                <el-table-column label="优惠券名称" min-width="172">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.name }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="类型" min-width="74">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.type_text }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="可用范围" min-width="116">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.use_scope_text }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="优惠内容" min-width="214">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.amount_text }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="领取状态" min-width="80">
+                    <template #default="scope">
+                        <el-popover popper-class="sa-popper" placement="bottom" title="优惠券有效期" trigger="hover">
+                            <div v-if="scope.row.use_time_type == 'days'">
+                                领取{{ scope.row.start_days }}天后生效，有效期{{ scope.row.days }}天
+                            </div>
+                            <div v-if="scope.row.use_time_type == 'range'">
+                                <div>开始时间：{{ scope.row.use_start_time }}</div>
+                                <div>结束时间：{{ scope.row.use_end_time }}</div>
+                            </div>
+                            <template #reference>
+                                <div class="sa-table-line-1 get-time-text" :class="
+                              scope.row.get_time_status == 'ing'
+                                ? 'sa-color--success'
+                                : scope.row.get_time_status == 'ended'
+                                ? 'sa-color--danger'
+                                : 'sa-color--info'
+                            ">
+                                    {{ scope.row.get_time_text }}
+                                </div>
+                            </template>
+                        </el-popover>
+                    </template>
+                </el-table-column>
+                <el-table-column label="已领取" min-width="96">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.get_num }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="已使用" min-width="96">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.use_num }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="剩余" min-width="96">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.stock }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="状态" min-width="130">
+                    <template #default="scope">
+                        {if $auth->check('shopro/coupon/edit')}
+                        <el-dropdown trigger="click" @command="onCommand">
+                            <el-button link>
+                                <el-tag type="info">
+                                    {{ scope.row.status_text }}
+                                    <el-icon>
+                                        <arrow-down />
+                                    </el-icon>
+                                </el-tag>
+                            </el-button>
+                            <template #dropdown>
+                                <el-dropdown-menu>
+                                    <el-dropdown-item :command="{
+                                        id: scope.row.id,
+                                        type: 'normal',
+                                    }">公开发放</el-dropdown-item>
+                                    <el-dropdown-item :command="{
+                                        id: scope.row.id,
+                                        type: 'hidden',
+                                    }">后台发放</el-dropdown-item>
+                                    <el-dropdown-item :command="{
+                                        id: scope.row.id,
+                                        type: 'disabled',
+                                    }">禁止使用</el-dropdown-item>
+                                </el-dropdown-menu>
+                            </template>
+                        </el-dropdown>
+                        {/if}
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" min-width="260" fixed="right">
+                    <template #default="scope">
+                        {if $auth->check('shopro/coupon/send')}
+                        <el-button type="primary" link @click="onSend(scope.row.id)">手动发放</el-button>
+                        {/if}
+                        {if $auth->check('shopro/user/coupon/index')}
+                        <el-button type="primary" link @click="onCoupon(scope.row.id)">领取记录</el-button>
+                        {/if}
+                        {if $auth->check('shopro/coupon/edit')}
+                        <el-button type="primary" link @click="onEdit(scope.row.id)">编辑</el-button>
+                        {/if}
+                        <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                            title="确认删除这条记录?" @confirm="onDelete(scope.row.id)">
+                            <template #reference>
+                                {if $auth->check('shopro/coupon/delete')}
+                                <el-button type="danger" link>删除</el-button>
+                                {/if}
+                            </template>
+                        </el-popconfirm>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

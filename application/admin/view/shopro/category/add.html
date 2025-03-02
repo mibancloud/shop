@@ -1,0 +1,264 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .category-form .style-item {
+        margin-right: 24px;
+        cursor: pointer;
+    }
+
+    .category-form .style-item:last-of-type {
+        margin-right: 0;
+    }
+
+    .category-form .style-item .top {
+        width: 78px;
+        height: 124px;
+        border-radius: 4px;
+        position: relative;
+        margin-bottom: 8px;
+    }
+
+    .category-form .style-item .top.is-active {
+        border: 1px solid var(--el-color-primary);
+    }
+
+    .category-form .style-item .top img {
+        width: 100%;
+        height: 100%;
+        border-radius: 4px;
+    }
+
+    .category-form .style-item .top .el-icon {
+        font-size: 14px;
+        color: var(--el-color-primary);
+        position: absolute;
+        top: -7px;
+        right: -7px;
+        display: none;
+    }
+
+    .category-form .style-item .top.is-active .el-icon {
+        display: block;
+    }
+
+    .category-form .style-item .style-title {
+        font-size: 12px;
+        line-height: 14px;
+        color: var(--sa-font);
+    }
+
+    .category-form .title {
+        width: 100%;
+        height: 40px;
+        background: var(--sa-table-header-bg);
+        padding: 0 16px;
+        color: var(--sa-subtitle);
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .category-form .template-wrap {
+        overflow: auto;
+    }
+
+    .category-form .template-wrap .template-header {
+        width: 100%;
+        background: var(--sa-table-header-bg);
+    }
+
+    .category-form .template-wrap .template-item {
+        flex-shrink: 0;
+        height: 56px;
+        padding: 0 16px;
+        font-weight: 500;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+    }
+
+    .category-form .template-header .template-item {
+        height: 40px;
+        background: var(--sa-table-header-bg);
+    }
+
+    .category-form .template-wrap .el-tree {
+        flex: 1;
+    }
+
+    .category-form .template-wrap .el-tree-node__expand-icon {
+        display: none;
+    }
+
+    .category-form .template-wrap .el-tree-node__content {
+        height: unset;
+    }
+
+    .category-form .template-item.id {
+        width: 90px;
+    }
+
+    .category-form .template-item.input {
+        width: 380px;
+    }
+
+    .category-form .template-item.image {
+        width: 80px;
+    }
+
+    .category-form .template-item.description {
+        width: 240px;
+    }
+
+    .category-form .template-item.weigh {
+        width: 120px;
+    }
+
+    .category-form .template-item.oper {
+        width: 104px;
+    }
+
+    .category-form .append-title {
+        margin-left: 12px;
+    }
+
+    .style-popover img {
+        width: 220px;
+        height: 350px;
+    }
+</style>
+
+<div id="addEdit" class="category-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item label="分类类型">
+                        <el-radio-group v-model="state.level" :disabled="state.type=='edit'" @change="onChangeLevel">
+                            <el-radio :label="1">一级分类</el-radio>
+                            <el-radio :label="2">二级分类</el-radio>
+                            <el-radio :label="3">三级分类</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="分类样式">
+                        <div class="style-item" v-for="(item, index) in state.styleList[state.level]" :key="index"
+                            @click="form.model.style = item.type">
+                            <div class="top" :class="form.model.style == item.type ? 'is-active' : ''">
+                                <img :src="`/assets/addons/shopro/img/category/${item.type}.png`" />
+                                <el-icon>
+                                    <circle-check-filled />
+                                </el-icon>
+                            </div>
+                            <div class="sa-flex sa-row-center">
+                                <div class="style-title">样式{{ item.name }}</div>
+                                <el-popover popper-class="style-popover sa-popper" placement="right" trigger="hover">
+                                    <img :src="`/assets/addons/shopro/img/category/${item.type}.png`" />
+                                    <template #reference>
+                                        <el-icon class="warning">
+                                            <warning />
+                                        </el-icon>
+                                    </template>
+                                </el-popover>
+                            </div>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="分类名称" prop="name">
+                        <el-input class="sa-w-360" v-model="form.model.name" placeholder="请输入分类名称"></el-input>
+                    </el-form-item>
+                    <el-form-item label="描述" prop="description">
+                        <el-input class="sa-w-360" v-model="form.model.description" placeholder="请输入描述"></el-input>
+                    </el-form-item>
+                    <el-form-item label="分类权重">
+                        <el-input class="sa-w-360" v-model="form.model.weigh" type="number" :min="0"
+                            placeholder="请输入分类权重"></el-input>
+                    </el-form-item>
+                    <div class="title sa-flex sa-row-between">
+                        <div>分类数据</div>
+                        <el-button v-if="state.level" type="primary" link @click="onAdd">+ 插入一级分类</el-button>
+                    </div>
+                    <div class="template-wrap">
+                        <div class="template-header sa-flex">
+                            <div v-if="state.type == 'edit'" class="template-item id"> ID </div>
+                            <div class="template-item input">分类名称</div>
+                            <div class="template-item image sa-flex sa-row-center"> 分类图片 </div>
+                            <div class="template-item description">描述</div>
+                            <div class="template-item weigh">
+                                <el-popover placement="bottom" title="" width="120" trigger="hover">
+                                    <template #reference> 排序 </template>
+                                    <div class="popover-container">
+                                        权重以倒序排列，默认值为0，相同权重则以ID优先
+                                    </div>
+                                </el-popover>
+                            </div>
+                            <div class="template-item oper">操作</div>
+                        </div>
+                        <div class="sa-flex">
+                            <el-tree :data="state.treeData" node-key="id" default-expand-all
+                                :expand-on-click-node="false" :props="defaultProps" :indent="0">
+                                <template #default="{ node, data }">
+                                    <div v-if="!(data.deleted && data.deleted == 1)" class="sa-flex">
+                                        <div v-if="state.type == 'edit'" class="template-item id">
+                                            <span
+                                                v-if="(data.id + '').indexOf('add') == -1 && (data.id + '').substring(0, 3) !== 'new'">{{
+                                                data.id }}</span>
+                                        </div>
+                                        <div class="template-item input sa-flex"
+                                            :style="{'padding-left':`${node.level*16}px`}">
+                                            <div class="expanded-icon sa-flex">
+                                                <div v-if="data.children && data.children.length > 0">
+                                                    <el-icon v-if="node.expanded"
+                                                        @click="node.expanded = !node.expanded">
+                                                        <semi-select />
+                                                    </el-icon>
+                                                    <el-icon v-if="!node.expanded"
+                                                        @click="node.expanded = !node.expanded">
+                                                        <plus />
+                                                    </el-icon>
+                                                </div>
+                                            </div>
+                                            <div style="margin-left: 16px">
+                                                <el-input v-model="data.name" placeholder="请输入分类名称" />
+                                            </div>
+                                            <el-button v-if="node.level == 1 && state.level != 1" class="append-title"
+                                                type="primary" link @click="onAppend(data)">
+                                                + 插入二级分类
+                                            </el-button>
+                                            <el-button v-if="node.level == 2 && state.level == 3" class="append-title"
+                                                type="primary" link @click="onAppend(data)">
+                                                + 插入三级分类
+                                            </el-button>
+                                        </div>
+                                        <div class="template-item image sa-flex sa-row-center">
+                                            <el-popover popper-class="sa-popper" trigger="hover"
+                                                content="建议尺寸：缩略图150X150">
+                                                <template #reference>
+                                                    <sa-uploader v-model="data.image" size="32">
+                                                    </sa-uploader>
+                                                </template>
+                                            </el-popover>
+                                        </div>
+                                        <div class="template-item description">
+                                            <el-input v-model="data.description" placeholder="请输入分类描述" />
+                                        </div>
+                                        <div class="template-item weigh">
+                                            <el-input v-model="data.weigh" type="number" :min="0" placeholder="请输入排序" />
+                                        </div>
+                                        <div class="template-item oper">
+                                            <el-button :type="data.status == 'normal'?'info':'success'" link
+                                                @click="data.status == 'normal'?data.status = 'hidden':data.status = 'normal'">
+                                                {{data.status == 'normal'?'隐藏':'显示'}}
+                                            </el-button>
+                                            <el-button type="danger" link @click="onRemove(node, data)">删除</el-button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </el-tree>
+                        </div>
+                    </div>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

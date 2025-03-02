@@ -1,0 +1,1011 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .order-detail .tip {
+        margin-bottom: 16px;
+    }
+
+    .order-detail .order-content,
+    .order-detail .order-content {
+        border-radius: 8px;
+        padding: var(--sa-padding) var(--sa-padding) 0;
+        background: var(--sa-table-header-bg);
+        margin-bottom: 16px;
+    }
+
+    .order-detail .order-content .el-col,
+    .order-detail .order-content .el-col {
+        margin-bottom: 20px;
+    }
+
+    .order-detail .order-left .name {
+        line-height: 24px;
+        font-size: 18px;
+        color: var(--sa-title);
+        font-weight: 900;
+        margin-bottom: 4px;
+    }
+
+    .order-detail .order-left .name .refresh-left {
+        color: var(--el-color-primary);
+        cursor: pointer;
+        margin-right: 4px;
+    }
+
+    .order-detail .order-left .desc {
+        line-height: 16px;
+        font-size: 12px;
+        color: var(--sa-subfont);
+        margin-bottom: 16px;
+    }
+
+    .order-detail .order-left .tools {
+        height: 32px;
+        margin-bottom: 4px;
+    }
+
+    .order-detail .order-left .memo {
+        height: 24px;
+        line-height: 24px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-font);
+        margin-right: 12px;
+    }
+
+    .order-detail .order-left .memo-input {
+        width: 120px;
+        margin-right: 12px;
+    }
+
+    .order-detail .order-center .el-step__head .el-step__line {
+        top: 15px;
+    }
+
+    .order-detail .order-center .el-step__head .el-step__icon {
+        width: 32px;
+        height: 32px;
+        color: var(--sa-background-assist);
+        background: var(--sa-place);
+        border: 2px solid var(--sa-table-header-bg);
+    }
+
+    .order-detail .order-center .el-step__head.is-finish .el-step__icon {
+        color: var(--sa-background-assist);
+        background: var(--el-color-primary);
+    }
+
+    .order-detail .order-center .el-step__title {
+        color: var(--sa-subfont);
+        font-size: 14px;
+        font-weight: 400;
+    }
+
+    .order-detail .order-center .el-step__title.is-finish {
+        color: var(--sa-subtitle);
+    }
+
+    .order-detail .order-center .el-step__description {
+        padding: 0;
+        color: var(--sa-subfont);
+    }
+
+    .order-detail .order-center .el-step__description.is-finish .step-status {
+        color: var(--el-color-primary);
+    }
+
+    .order-detail .order-center .step-status {
+        color: var(--sa-font);
+        font-size: 14px;
+    }
+
+    .order-detail .order-center .status-steps-mobile {
+        margin-top: 32px;
+        display: none;
+
+        @media only screen and (max-width: 768px) {
+            display: flex;
+        }
+    }
+
+    .order-detail .order-center .status-steps-mobile .el-step__head {
+        width: fit-content;
+    }
+
+    .order-detail .order-center .status-steps-mobile .el-step__head .el-step__line {
+        left: 15px;
+    }
+
+    .order-detail .order-center .status-steps-pc {
+        display: flex;
+        margin-top: 32px;
+
+        @media only screen and (max-width: 768px) {
+            display: none;
+        }
+    }
+
+    .order-detail .order-center .status-steps-pc .step-status {
+        position: absolute;
+        top: -12px;
+        right: -30px;
+        width: 60px;
+    }
+
+    .order-detail .order-item {
+        line-height: 24px;
+        margin-bottom: 4px;
+        display: flex;
+        font-size: 12px;
+    }
+
+    .order-detail .order-item:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .order-detail .order-item.order-item-discount {
+        align-items: flex-start;
+    }
+
+    .order-detail .order-item .left {
+        flex-shrink: 0;
+        color: var(--sa-subfont);
+    }
+
+    .order-detail .order-item .right {
+        color: var(--sa-subtitle);
+    }
+
+    .order-detail .order-item .el-icon {
+        color: var(--el-color-primary);
+        margin-left: 4px;
+        cursor: pointer;
+    }
+
+    .order-detail .title {
+        height: 24px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--sa-title);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .order-detail .title .el-button {
+        margin-left: 8px;
+    }
+
+    .order-detail .invoice-status {
+        font-size: 12px;
+        color: var(--sa-font);
+        margin-left: 8px;
+    }
+
+    .order-detail .refresh {
+        padding: 5px;
+        background-color: transparent;
+    }
+
+    .order-detail .warning {
+        color: #faad14;
+        margin-left: 4px;
+    }
+
+    .order-detail .log-content {
+        line-height: 18px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subtitle);
+    }
+
+    .order-detail .change-date {
+        line-height: 14px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subtitle);
+    }
+
+    .order-detail .el-timeline {
+        margin-left: 140px;
+
+        @media only screen and (max-width: 768px) {
+            margin-left: 0;
+        }
+    }
+
+    .order-detail .el-timeline-item__timestamp {
+        position: absolute;
+        top: 2px;
+        left: -140px;
+        margin-top: 0;
+    }
+
+    .order-detail .el-timeline-item-first::after {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 4px;
+        width: 2px;
+        height: calc(50% - 16px);
+        background: var(--el-color-primary);
+    }
+
+    .order-detail .el-timeline-item-first .el-timeline-item__tail {
+        top: 8px;
+        bottom: 8px;
+    }
+
+    .order-detail .goods-content {
+        margin-bottom: 16px;
+    }
+
+    .order-detail .goods-content .sa-table {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .order-detail .goods-content .discount-items {
+        color: var(--el-color-primary);
+    }
+
+    .order-detail .pay-content .sa-table {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .order-detail .pay-content .pay-status-unpaid {
+        color: #999;
+    }
+
+    .order-detail .pay-content .pay-status-paid {
+        color: #52c41a;
+    }
+
+    .order-detail .pay-content .pay-status-refund {
+        color: #ff4d4f;
+    }
+
+    .order-detail .el-tabs__nav-wrap::after {
+        height: 0;
+    }
+
+    .goods-item .goods-image {
+        margin-right: 8px;
+    }
+
+    .goods-item .goods-title {
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        color: var(--sa-font);
+        margin-bottom: 4px;
+    }
+
+    .goods-item .sku {
+        width: fit-content;
+        height: 18px;
+        line-height: 18px;
+        padding: 0 8px;
+        font-size: 12px;
+        color: var(--sa-subfont);
+        background: var(--sa-space);
+        border-radius: 10px;
+    }
+
+    .goods-item .goods-id {
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        color: var(--sa-font);
+    }
+
+    .goods-item .goods-sku-text {
+        margin-right: 8px;
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        color: var(--sa-subfont);
+    }
+
+    .status.el-button {
+        width: fit-content;
+        height: 26px;
+        padding: 0 12px;
+        font-size: 12px;
+        font-weight: 400;
+        border-radius: 13px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+    }
+
+    .status.status-primary {
+        color: var(--el-color-primary);
+        /* background: var(--sa-background-hex-active); */
+    }
+
+    .status.status-success {
+        color: #52c41a;
+        /* background: rgba(82, 196, 26, 0.16); */
+    }
+
+    .status.status-warning {
+        color: #faad14;
+        /* background: rgba(250, 173, 20, 0.16); */
+    }
+
+    .status.status-danger {
+        color: #ff4d4f;
+        /* background: rgba(255, 77, 79, 0.16); */
+    }
+
+    .status.status-info {
+        color: #999999;
+        /* background: rgba(153, 153, 153, 0.16); */
+    }
+
+    .promo-type {
+        width: fit-content;
+        height: 20px;
+        padding: 0 8px;
+        background: rgba(250, 173, 20, 0.16);
+        border-radius: 10px;
+        font-weight: 400;
+        font-size: 12px;
+        color: #faad14;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .remark {
+        height: 32px;
+        line-height: 32px;
+        padding: 0 12px;
+        background: var(--sa-table-striped);
+        border-radius: 4px;
+      }
+</style>
+
+<div id="detail" class="order-detail" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <div class="tip">
+                    <div>温馨提示</div>
+                    <div>1、如果无法发货，请及时与买家联系并说明情况后主动退款；</div>
+                    <div>2、买家申请售后，须征得买家同意后发货，否则买家有权拒收货物；</div>
+                    <div>3、订单全部退款将会退回商品库存，并且减少实际销量，订单商品上的主动退款不会退回库存和销量
+                    </div>
+                </div>
+                <div class="order-content">
+                    <el-row :gutter="10">
+                        <el-col class="order-left" :xs="24" :sm="12" :md="6" :lg="6" :xl="6">
+                            <div class="name sa-flex">
+                                <el-icon class="refresh-left" @click="getDetail">
+                                    <refresh-left />
+                                </el-icon>
+                                {{ state.detail.status_text }}
+                            </div>
+                            <div class="desc">
+                                {{ state.detail.status_desc }}
+                            </div>
+                            <div class="tools">
+                                {if $auth->check('shopro/order/order/dispatch')}
+                                <el-button v-if="state.detail.btns?.includes('send')" type="primary"
+                                    @click="onDispatch">
+                                    立即发货</el-button>
+                                {/if}
+                                {if $auth->check('shopro/order/order/fullRefund')}
+                                <el-button v-if="state.detail.btns?.includes('refund')" @click="onFullRefund">全部退款
+                                </el-button>
+                                {/if}
+                            </div>
+                            <div class="memo sa-flex">
+                                <template v-if="memo.flag">
+                                    <el-input class="memo-input" v-model="memo.form.memo" size="small"></el-input>
+                                    <el-button type="primary" link size="small" @click="onConfirmMemo">确定
+                                    </el-button>
+                                    <el-button type="primary" link size="small" @click="memo.flag = false">取消
+                                    </el-button>
+                                </template>
+                                <template v-if="!memo.flag">
+                                    <div v-if="state.detail.memo" class="memo">
+                                        {{ state.detail.memo }}
+                                    </div>
+                                    {if $auth->check('shopro/order/order/editMemo')}
+                                    <el-button type="primary" link size="small"
+                                        @click="onChangeMemoEdit(state.detail.memo)">{{ state.detail.memo ?
+                                        '修改' : '添加' }}备注</el-button>
+                                    {/if}
+                                </template>
+                            </div>
+                        </el-col>
+                        <el-col class="order-center" :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+                            <el-steps class="status-steps-mobile" direction="vertical" :active="state.stepActive"
+                                :align-center="true" :space="80">
+                                <el-step title="买家下单">
+                                    <template #description>
+                                        <div>{{ state.detail.create_time }}</div>
+                                        <div class="step-status">待付款</div>
+                                    </template>
+                                </el-step>
+                                <el-step
+                                    :title="state.detail.status == 'pending' && state.detail.pay_mode=='offline'?'货到付款':'买家付款'">
+                                    <template #description>
+                                        <div>{{ state.detail.status == 'pending' &&
+                                            state.detail.pay_mode=='offline'?state.detail.ext?.pending_date:state.detail.paid_time
+                                            }}</div>
+                                        <div class="step-status">待发货</div>
+                                    </template>
+                                </el-step>
+                                <el-step title="商家发货">
+                                    <template #description>
+                                        <div>{{ state.detail.ext?.send_date }}</div>
+                                        <div class="step-status">待收货</div>
+                                    </template>
+                                </el-step>
+                                <el-step title="买家收货">
+                                    <template #description>
+                                        <div>{{ state.detail.ext?.confirm_date }}</div>
+                                        <div class="step-status">待评价</div>
+                                    </template>
+                                </el-step>
+                                <el-step title="完成交易" :description="state.detail.ext?.completed_date"></el-step>
+                            </el-steps>
+                            <el-steps class="status-steps-pc" direction="horizontal" :active="state.stepActive"
+                                :align-center="true">
+                                <el-step title="买家下单">
+                                    <template #description>
+                                        <div>{{ state.detail.createtime }}</div>
+                                        <div class="step-status">待付款</div>
+                                    </template>
+                                </el-step>
+                                <el-step
+                                    :title="state.detail.status == 'pending' && state.detail.pay_mode=='offline'?'货到付款':'买家付款'">
+                                    <template #description>
+                                        <div>{{ state.detail.status == 'pending' &&
+                                            state.detail.pay_mode=='offline'?state.detail.ext?.pending_date:state.detail.paid_time
+                                            }}</div>
+                                        <div class="step-status">待发货</div>
+                                    </template>
+                                </el-step>
+                                <el-step title="商家发货">
+                                    <template #description>
+                                        <div>{{ state.detail.ext?.send_date }}</div>
+                                        <div class="step-status">待收货</div>
+                                    </template>
+                                </el-step>
+                                <el-step title="买家收货">
+                                    <template #description>
+                                        <div>{{ state.detail.ext?.confirm_date }}</div>
+                                        <div class="step-status">待评价</div>
+                                    </template>
+                                </el-step>
+                                <el-step title="完成交易" :description="state.detail.ext?.completed_date"></el-step>
+                            </el-steps>
+                        </el-col>
+                        <el-col class="order-right" :xs="12" :sm="12" :md="6" :lg="6" :xl="6">
+                            <div class="order-item">
+                                <div class="left">商品总价：</div>
+                                <div class="right">¥{{ state.detail.goods_amount }}</div>
+                            </div>
+                            <div class="order-item">
+                                <div class="left">运费价格：</div>
+                                <div class="right"> ¥{{ state.detail.dispatch_amount }} </div>
+                            </div>
+                            <div v-if="
+                              state.detail.ext &&
+                              (state.detail.ext.promo_infos ||
+                              state.detail.coupon_id)
+                            " class="order-item order-item-discount">
+                                <div class="left">活动优惠：</div>
+                                <div class="right">
+                                    <div v-if="Number(state.detail.ext.promo_discounts.full_reduce) > 0"
+                                        class="sa-flex">
+                                        <div class="left">满减</div>
+                                        <div class="right ml-2">
+                                            -¥{{ state.detail.ext.promo_discounts.full_reduce }}
+                                        </div>
+                                    </div>
+                                    <div v-if="Number(state.detail.ext.promo_discounts.full_discount) > 0"
+                                        class="sa-flex">
+                                        <div class="left">满折</div>
+                                        <div class="right ml-2">
+                                            -¥{{ state.detail.ext.promo_discounts.full_discount }}
+                                        </div>
+                                    </div>
+                                    <div v-if="Number(state.detail.ext.promo_discounts.full_gift) > 0"
+                                        class="sa-flex">
+                                        <div class="left">满赠</div>
+                                        <div class="right ml-2"></div>
+                                    </div>
+                                    <div v-if="Number(state.detail.ext.promo_discounts.free_shipping) > 0"
+                                        class="sa-flex">
+                                        <div class="left">满包邮</div>
+                                        <div class="right ml-2">
+                                            -¥{{ state.detail.ext.promo_discounts.free_shipping }}
+                                        </div>
+                                    </div>
+                                    <div v-if="state.detail.coupon_id" class="order-item">
+                                        <div class="left">优惠券</div>
+                                        <div class="right ml-2">
+                                            -¥{{ state.detail.coupon_discount_fee }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="order-item">
+                                <div class="left">
+                                    {{['paid', 'completed'].includes(state.detail.status)?'实付金额':'应付金额'}}：
+                                </div>
+                                <div class="right fee-right sa-flex">
+                                    ¥{{ state.detail.pay_fee }}
+                                    <s v-if="state.detail.pay_fee != state.detail.original_pay_fee"
+                                        class="sa-color--info ml-1">
+                                        {{ state.detail.original_pay_fee }}
+                                    </s>
+                                    {if $auth->check('shopro/order/order/changeFee')}
+                                    <el-button v-if="state.detail.btns?.includes('change_fee')" class="ml-1"
+                                        type="primary" size="small" link @click="onChangeFee(state.detail)">改价
+                                    </el-button>
+                                    {/if}
+                                </div>
+                            </div>
+                        </el-col>
+                    </el-row>
+                    <div class="remark order-item">
+                        <div class="left">买家留言：</div>
+                        <div class="right">
+                          {{ state.detail.remark || '暂无留言' }}
+                        </div>
+                      </div>
+                </div>
+                <el-tabs v-model="orderTab" @tab-change="onChangeTabOrder">
+                    <el-tab-pane label="订单信息" name="1">
+                        <el-row class="order-content" :gutter="10">
+                            <el-col :xs="24" :sm="12" :md="12" :lg="6" :xl="6">
+                                <div class="title">交易信息</div>
+                                <div class="order-item">
+                                    <div class="left">订单编号：</div>
+                                    <div class="right">
+                                        {{ state.detail.order_sn }}
+                                        <el-icon class="copy-document" @click="onClipboard(state.detail.order_sn)">
+                                            <copy-document />
+                                        </el-icon>
+                                    </div>
+                                </div>
+                                <div class="order-item">
+                                    <div class="left">订单来源：</div>
+                                    <div class="right">
+                                        {{ state.detail.platform_text }}
+                                    </div>
+                                </div>
+                                <div v-if="state.detail.paid_time" class="order-item">
+                                    <div class="left">付款时间：</div>
+                                    <div class="right">{{ state.detail.paid_time }}</div>
+                                </div>
+                            </el-col>
+                            <el-col v-if="state.detail.user" :xs="24" :sm="12" :md="12" :lg="6" :xl="6">
+                                <div class="title">买家信息</div>
+                                <div class="order-item">
+                                    <div class="left">用户昵称：</div>
+                                    <div class="right sa-flex">
+                                        <sa-user-profile :user="state.detail.user" :id="state.detail.user_id"
+                                            :isavatar="false"></sa-user-profile>
+                                    </div>
+                                </div>
+                            </el-col>
+                            <el-col v-if="state.detail.address" :xs="24" :sm="12" :md="12" :lg="6" :xl="6">
+                                <div class="title sa-flex">
+                                    收货信息
+                                    <template v-if="!address.flag">
+                                        {if $auth->check('shopro/order/order/editConsignee')}
+                                        <el-button v-if="state.detail.btns?.includes('edit_consignee')" type="primary"
+                                            link size="small" @click="onChangeAddressEdit(true)">
+                                            修改</el-button>
+                                        {/if}
+                                        <el-button type="success" link size="small" @click="
+                                        onClipboard(
+                                          `收货昵称：${state.detail.address.consignee};联系方式：${state.detail.address.mobile};
+                                        收货地址：${state.detail.address.province_name}${state.detail.address.city_name}${state.detail.address.district_name}${state.detail.address.address}`,
+                                        )
+                                      ">复制</el-button>
+                                    </template>
+                                    <template v-if="address.flag">
+                                        <el-button type="danger" link size="small" @click="address.flag = false">
+                                            取消
+                                        </el-button>
+                                        <el-button type="primary" link size="small" @click="onConfirmAddress">确定
+                                        </el-button>
+                                    </template>
+                                </div>
+                                <div class="order-item">
+                                    <div class="left">收货昵称：</div>
+                                    <div class="right">
+                                        <span v-if="!address.flag">
+                                            {{ state.detail.address.consignee }}
+                                        </span>
+                                        <el-input v-if="address.flag" v-model="address.form.consignee" size="small">
+                                        </el-input>
+                                    </div>
+                                </div>
+                                <div class="order-item">
+                                    <div class="left">联系方式：</div>
+                                    <div class="right">
+                                        <span v-if="!address.flag">
+                                            {{ state.detail.address.mobile }}
+                                        </span>
+                                        <el-input v-if="address.flag" v-model="address.form.mobile" size="small">
+                                        </el-input>
+                                    </div>
+                                </div>
+                                <div class="order-item">
+                                    <div class="left">收货地址：</div>
+                                    <div class="right">
+                                        <div v-if="!address.flag">
+                                            {{ state.detail.address.province_name }}&nbsp;
+                                            {{ state.detail.address.city_name }}&nbsp;
+                                            {{ state.detail.address.district_name }}
+                                        </div>
+                                        <el-cascader v-if="address.flag" ref="addressRef" v-model="address.form.pcd"
+                                            :options="area.select" :props="{ label: 'name', value: 'id' }" size="small">
+                                        </el-cascader>
+                                        <div v-if="!address.flag">
+                                            {{ state.detail.address.address }}
+                                        </div>
+                                        <el-input v-if="address.flag" v-model="address.form.address" size="small">
+                                        </el-input>
+                                    </div>
+                                </div>
+                            </el-col>
+                            <el-col v-if="state.detail.invoice_status == 1" :xs="24" :sm="12" :md="12" :lg="6" :xl="6">
+                                <div class="title sa-flex">
+                                    发票信息
+                                    <span v-if="state.detail.invoice.status != 'waiting'" class="invoice-status">{{
+                                        state.detail.invoice.status_text }}</span>
+                                    {if $auth->check('shopro/order/invoice/confirm')}
+                                    <el-button v-if="state.detail.invoice.status == 'waiting'" type="primary" link
+                                        size="small" @click="onInvoice(state.detail.invoice)">确认开具</el-button>
+                                    {/if}
+                                </div>
+                                <div class="order-item">
+                                    <div class="left">发票类型：</div>
+                                    <div class="right">
+                                        {{ state.detail.invoice.type_text }}
+                                    </div>
+                                </div>
+                                <div class="order-item">
+                                    <div class="left">抬头名称：</div>
+                                    <div class="right">
+                                        {{ state.detail.invoice.name }}
+                                    </div>
+                                </div>
+                                <div v-if="state.detail.invoice.type === 'company'" class="order-item">
+                                    <div class="left">税号：</div>
+                                    <div class="right">
+                                        {{ state.detail.invoice.tax_no }}
+                                    </div>
+                                </div>
+                                <div class="order-item">
+                                    <div class="left">手机号：</div>
+                                    <div class="right">
+                                        {{ state.detail.invoice.mobile }}
+                                    </div>
+                                </div>
+                                <div class="order-item">
+                                    <div class="left">金额：</div>
+                                    <div class="right"> ￥{{ state.detail.invoice.amount }} </div>
+                                </div>
+                                <div v-if="state.detail.invoice.status === 'finish'" class="order-item">
+                                    <div class="left">实际开票金额：</div>
+                                    <div class="right"> ￥{{ state.detail.invoice.invoice_amount }} </div>
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </el-tab-pane>
+                    <el-tab-pane :label="`包裹${index + 1}`" v-for="(item, index) in state.detail.express" :key="item"
+                        :name="`${index + 2}`">
+                        <el-row class="order-content" :gutter="10">
+                            <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                                <div class="title sa-flex">
+                                    物流信息
+                                    <!-- 运单信息 -->
+                                    {if $auth->check('shopro/order/order/dispatch')}
+                                    <template v-if="!express.isEdit">
+                                        <el-button type="primary" link size="small" @click="onChangeExpressEdit(item)">
+                                            修改运单
+                                        </el-button>
+                                        <el-popconfirm width="fit-content" confirm-button-text="确认"
+                                            cancel-button-text="取消" title="您确定要取消运单吗？"
+                                            @confirm="onCancelExpress(item.id)">
+                                            <template #reference>
+                                                <el-button type="danger" link size="small">
+                                                    取消运单
+                                                </el-button>
+                                            </template>
+                                        </el-popconfirm>
+                                    </template>
+                                    <!-- 修改运单信息 -->
+                                    <template v-else>
+                                        <el-button type="danger" link size="small" @click="express.isEdit = false">
+                                            取消
+                                        </el-button>
+                                        <el-button type="primary" link size="small" @click="onConfirmExpress(item.id)">
+                                            确认</el-button>
+                                    </template>
+                                    {/if}
+                                </div>
+                                <div class="order-item">
+                                    <div class="left">快递公司：</div>
+                                    <div class="right">
+                                        <div v-if="!express.isEdit">
+                                            {{ item.express_name }}
+                                        </div>
+                                        <el-select v-if="express.isEdit" v-model="express.form.model.code" size="small"
+                                            placeholder="请选择快递公司" @change="onChangeExpressCode" filterable remote
+                                            reserve-keyword :remote-method="remoteMethod"
+                                            :loading="deliverCompany.loading" autocomplete="none">
+                                            <el-option v-for="dc in deliverCompany.select" :key="dc" :label="dc.name"
+                                                :value="dc.code" :ref="`express-${dc.code}`" :data-name="dc.name">{{
+                                                dc.name
+                                                }}&nbsp;({{ dc.code }})</el-option>
+                                            <sa-pagination class="is-ellipsis" v-model="deliverCompany.pagination"
+                                                @pagination-change="getExpressSelect">
+                                            </sa-pagination>
+                                        </el-select>
+                                    </div>
+                                </div>
+                                <div class="order-item">
+                                    <div class="left">快递单号：</div>
+                                    <div class="right">
+                                        <div v-if="!express.isEdit">
+                                            {{ item.express_no }}
+                                        </div>
+                                        <el-input v-if="express.isEdit" size="small" v-model="express.form.model.no">
+                                        </el-input>
+                                    </div>
+                                </div>
+                                <div class="goods-item sa-flex" v-for="goods in item.items" :key="goods">
+                                    <sa-image class="goods-image" :url="goods.goods_image" size="40"></sa-image>
+                                    <div>
+                                        <div class="goods-title sa-table-line-1">
+                                            {{ goods.goods_title }}
+                                        </div>
+                                        <div class="sa-flex goods-sku-text">
+                                            <div v-if="goods.goods_sku_text">
+                                                {{ goods.goods_sku_text }}
+                                            </div>
+                                            <div>x {{ goods.goods_num }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </el-col>
+                            <el-col :xs="24" :sm="16" :md="16" :lg="16" :xl="16">
+                                <div class="title sa-flex sa-row-between">
+                                    <template class="sa-flex">
+                                        物流状态
+                                        {if $auth->check('shopro/order/order/updateExpress')}
+                                        <el-button type="primary" link size="small"
+                                            @click="onUpdateExpress(item.id, 'subscribe')">重新订阅</el-button>
+                                        <el-popover placement="top" :width="300" trigger="hover"
+                                            content="如果长时间物流状态没有更新，可以尝试刷新一下。如果没有物流信息，可以尝试重新订阅一下！">
+                                            <template #reference>
+                                                <el-icon class="warning">
+                                                    <warning />
+                                                </el-icon>
+                                            </template>
+                                        </el-popover>
+                                        {/if}
+                                    </template>
+                                    {if $auth->check('shopro/order/order/updateExpress')}
+                                    <el-button class="refresh" size="small" icon="RefreshRight"
+                                        @click="onUpdateExpress(item.id, 'search')">
+                                    </el-button>
+                                    {/if}
+                                </div>
+                                <el-timeline>
+                                    <el-timeline-item :class="index == 0 ? 'el-timeline-item-first' : ''"
+                                        v-for="(log, index) in item.logs" :key="index" :timestamp="log.change_date"
+                                        :color="index == 0 ? 'var(--el-color-primary)' : ''">
+                                        <div class="log-content">
+                                            {{ log.content }}
+                                        </div>
+                                        <div class="change-date sa-m-t-8">{{ log.change_date }}</div>
+                                    </el-timeline-item>
+                                </el-timeline>
+                            </el-col>
+                        </el-row>
+                    </el-tab-pane>
+                </el-tabs>
+                <div class="goods-content">
+                    <el-tabs>
+                        <el-tab-pane label="商品信息">
+                            <el-table class="sa-table" :data="state.detail.items" stripe>
+                                <el-table-column label="商品信息" min-width="250">
+                                    <template #default="scope">
+                                        <div class="goods-item sa-flex sa-col-top">
+                                            <sa-image class="goods-image" :url="scope.row.goods_image" size="40">
+                                            </sa-image>
+                                            <div>
+                                                <div class="goods-title sa-table-line-1">
+                                                    {{ scope.row.goods_title }}
+                                                </div>
+                                                <div v-if="scope.row.goods_sku_text" class="sku">#{{
+                                                    scope.row.goods_sku_text }}</div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="goods_price" label="单价(元)" min-width="100">
+                                </el-table-column>
+                                <el-table-column prop="goods_num" label="数量(件)" min-width="80"></el-table-column>
+                                <el-table-column prop="discount_fee" label="优惠(元)" min-width="90"></el-table-column>
+                                <el-table-column prop="pay_fee" label="支付金额" min-width="120"></el-table-column>
+                                <el-table-column label="订单类型" min-width="100">
+                                    <template #default>{{ state.detail.type_text }}</template>
+                                </el-table-column>
+                                <el-table-column prop="dispatch_type_text" label="配送方式" width="100">
+                                </el-table-column>
+                                <el-table-column label="发货状态" min-width="120">
+                                    <template #default="scope">
+                                        <div class="status" :class="`status-${dispatchStyle(scope.row).class}`">
+                                            {{scope.row.dispatch_status_text}}</div>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column label="退款状态" min-width="120">
+                                    <template #default="scope">
+                                        <el-button v-if="scope.row.btns?.includes('refund')" class="status"
+                                            :type="refundStyle(scope.row).class" plain @click="onRefund(scope.row)">
+                                            {{refundStyle(scope.row).text}}
+                                            <el-icon>
+                                                <arrow-right />
+                                            </el-icon>
+                                        </el-button>
+                                        <div v-else class="status" :class="`status-${refundStyle(scope.row).class}`">
+                                            {{refundStyle(scope.row).text}}</div>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column label="售后状态" min-width="120">
+                                    <template #default="scope">
+                                        <el-button v-if="scope.row.btns?.includes('aftersale_info')" class="status"
+                                            :type="aftersaleStyle(scope.row).class" plain
+                                            @click="onAftersale(scope.row)">
+                                            {{scope.row.aftersale_status_text}}
+                                            <el-icon>
+                                                <arrow-right />
+                                            </el-icon>
+                                        </el-button>
+                                        <div v-else class="status" :class="`status-${aftersaleStyle(scope.row).class}`">
+                                            {{scope.row.aftersale_status_text}}</div>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column label="商品评价" min-width="120">
+                                    <template #default="scope">
+                                        <div v-if="scope.row.comment_status==0" class="status status-warning">
+                                            {{scope.row.comment_status_text}}
+                                        </div>
+                                        <el-button v-if="scope.row.comment_status==1" class="status" type="success"
+                                            plain @click="onComment(scope.row)">
+                                            查看评价
+                                            <el-icon>
+                                                <arrow-right />
+                                            </el-icon>
+                                        </el-button>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column width="100" label="配送信息">
+                                    <template #default="scope">
+                                        <div v-if="state.detail.dispatch_status!=0">
+                                            <el-popover trigger="hover" width="220">
+                                                <div
+                                                    v-if="scope.row.dispatch_type=='autosend' || scope.row.dispatch_type=='custom'">
+                                                    <span>发货内容：</span>
+                                                    <template v-if="scope.row.ext?.dispatch_content_type=='text'">
+                                                        {{scope.row.ext?.dispatch_content}}
+                                                    </template>
+                                                    <template v-if="scope.row.ext?.dispatch_content_type=='params'"
+                                                        v-for="item in scope.row.ext?.dispatch_content">
+                                                        {{item.title}}-{{item.content}}
+                                                    </template>
+                                                </div>
+                                                <template v-if="scope.row.dispatch_type!='express'" #reference>
+                                                    <el-button type="primary" link>查看详情</el-button>
+                                                </template>
+                                            </el-popover>
+                                            <div v-if="scope.row.dispatch_type=='express'">-</div>
+                                        </div>
+                                        <div v-else>-</div>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </el-tab-pane>
+                        <el-tab-pane v-if="state.detail.activity_orders?.length > 0" label="优惠信息">
+                            <el-table class="sa-table" :data="state.detail.activity_orders" stripe>
+                                <el-table-column prop="id" label="ID" width="90"></el-table-column>
+                                <el-table-column label="活动标题" min-width="120">
+                                    <template #default="scope">
+                                        <div class="sa-table-line-1">
+                                            {{ scope.row.activity_title }}
+                                        </div>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column label="活动类型" min-width="120">
+                                    <template #default="scope">
+                                        <div class="promo-type">
+                                            {{ scope.row.activity_type_text }}
+                                        </div>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column label="优惠信息" min-width="120">
+                                    <template #default="scope">
+                                        <div class="sa-table-line-1">
+                                            {{ scope.row.discount_text }}
+                                        </div>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="discount_fee" label="优惠金额(元)" min-width="120">
+                                </el-table-column>
+                                <el-table-column prop="goods_amount" label="参与商品金额(元)" min-width="140">
+                                </el-table-column>
+                                <el-table-column label="参与商品" min-width="120">
+                                    <template #default="scope">
+                                        <el-popover placement="top-start" :width="300" trigger="hover">
+                                            <div class="goods-item sa-flex" v-for="goods in scope.row.items"
+                                                :key="goods">
+                                                <sa-image class="goods-image" :url="goods.goods_image" size="40">
+                                                </sa-image>
+                                                <div>
+                                                    <div class="goods-title sa-table-line-1">
+                                                        {{ goods.goods_title }}
+                                                    </div>
+                                                    <div class="goods-id">#{{ goods.goods_id }}</div>
+                                                </div>
+                                            </div>
+                                            <template #reference>
+                                                <span class="discount-items">
+                                                    {{ scope.row.items?.length }}
+                                                </span>
+                                            </template>
+                                        </el-popover>
+                                        件商品
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="createtime" label="参与时间" width="172"></el-table-column>
+                            </el-table>
+                        </el-tab-pane>
+                    </el-tabs>
+                </div>
+                <div class="pay-content">
+                    <el-tabs>
+                        <el-tab-pane label="支付信息">
+                            <el-table class="sa-table" :data="state.detail.pays" stripe>
+                                <el-table-column prop="pay_sn" label="支付单号" min-width="250"></el-table-column>
+                                <el-table-column prop="pay_type_text" label="支付方式" min-width="80">
+                                </el-table-column>
+                                <el-table-column prop="pay_fee" label="支付金额" min-width="120">
+                                </el-table-column>
+                                <el-table-column prop="transaction_id" label="交易单号" min-width="280">
+                                    <template #default="scope">
+                                        <span>{{ scope.row.transaction_id || '-' }}</span>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column label="支付状态" min-width="120">
+                                    <template #default="scope">
+                                        <span :class="`pay-status-${scope.row.status}`">{{scope.row.status_text}}</span>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="refund_fee" label="已退款金额" min-width="120">
+                                </el-table-column>
+                                <el-table-column prop="createtime" label="交易时间" width="172">
+                                </el-table-column>
+                            </el-table>
+                        </el-tab-pane>
+                    </el-tabs>
+                </div>
+            </el-scrollbar>
+        </el-main>
+    </el-container>
+</div>

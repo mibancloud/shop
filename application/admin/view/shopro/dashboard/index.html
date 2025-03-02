@@ -1,0 +1,382 @@
+{include file="/shopro/common/script" /}
+
+<script src="__CDN__/assets/addons/shopro/libs/echarts.min.js?v={$site.version|htmlentities}"></script>
+
+<style>
+    .dashboard-index .panel-block {
+        /* background: #f1f4f6; */
+    }
+
+    .dashboard-index .dashboard-index-main {
+        --el-main-padding: 0;
+    }
+
+    .dashboard-index .el-scrollbar__wrap {
+        overflow-x: hidden;
+    }
+
+    .dashboard-index .el-scrollbar__bar.is-horizontal {
+        display: none;
+    }
+
+    .dashboard-index #userTotal,
+    .dashboard-index #agentTotal,
+    .dashboard-index #shareTotal {
+        width: 100%;
+        height: 66px;
+    }
+
+    .dashboard-index .card {
+        line-height: 1;
+        background: var(--sa-background-assist);
+        border-radius: 8px;
+        border: 1px solid var(--sa-space);
+        box-shadow: 0 2px 6px rgb(140 140 140 / 12%);
+        padding: 12px;
+        font-size: 12px;
+        color: var(--sa-font);
+        margin-bottom: 20px;
+    }
+
+    .dashboard-index .card:hover {
+        transition: all .2s;
+    }
+
+    @media screen and (min-width: 1200px) {
+        .dashboard-index .scale-card:hover {
+            transform: scale(1.05);
+        }
+    }
+
+    .dashboard-index .card .card-title .left {
+        font-size: 14px;
+        color: var(--sa-subtitle);
+    }
+
+    .dashboard-index .card .card-title .left .num {
+        font-size: 16px;
+    }
+
+    .dashboard-index .card .card-footer {
+        margin-top: 12px;
+    }
+
+    .dashboard-index .card .card-footer .left {
+        margin-right: 8px;
+    }
+
+    .dashboard-index .card .card-footer .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+
+    .dashboard-index .bar-card {
+        min-height: 358px;
+    }
+
+    .dashboard-index #chartContent {
+        width: 100%;
+        height: 296px;
+    }
+
+    .dashboard-index .tab-item {
+        height: 32px;
+        line-height: 32px;
+        margin-right: 20px;
+        font-size: 14px;
+        color: var(--sa-subfont);
+        cursor: pointer;
+    }
+
+    .dashboard-index .tab-item:last-of-type {
+        margin-right: 0;
+    }
+
+    .dashboard-index .tab-item.is-active {
+        color: var(--sa-subtitle);
+        font-weight: bold;
+    }
+
+    @media only screen and (max-width: 768px) {
+        .dashboard-index .date-time .el-date-editor {
+            --el-date-editor-datetimerange-width: 320px;
+        }
+    }
+
+    .dashboard-index .chart-card {
+        height: 106px;
+        color: var(--sa-subfont);
+    }
+
+    .dashboard-index .chart-card .card-icon {
+        width: 24px;
+        height: 24px;
+    }
+
+    .dashboard-index .chart-card .num {
+        font-size: 24px;
+        color: var(--sa-subtitle);
+    }
+
+    .dashboard-index .chart-card .warning {
+        color: var(--el-color-warning);
+    }
+
+    .dashboard-index .goods-card,
+    .dashboard-index .hot-search-card {
+        height: 326px;
+    }
+
+    .dashboard-index .goods-card .header,
+    .dashboard-index .hot-search-card .header {
+        line-height: 16px;
+        font-size: 14px;
+        color: var(--sa-subtitle);
+        margin-bottom: 16px;
+    }
+
+    .dashboard-index .top {
+        width: 18px;
+        height: 20px;
+    }
+
+    .dashboard-index #rankingContent {
+        width: 192px;
+        height: 192px;
+    }
+</style>
+
+<div id="index" class="dashboard-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-main class="dashboard-index-main">
+            <el-scrollbar height="100%">
+                {if $auth->check('shopro/dashboard/total')}
+                <el-row :gutter="20">
+                    <!-- -- commission code start -- -->
+                    <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+                        <div class="scale-card card ">
+                            <div class="card-title sa-flex sa-row-between">
+                                <div class="left">{{state.total.user.title}} <span
+                                        class="num">{{state.total.user.data.total}}</span> </div>
+                                <div>{{state.total.user.tip}} <span>{{state.total.user.data.today}}</span> </div>
+                            </div>
+                            <div id="userTotal"></div>
+                            <div class="card-footer sa-flex">
+                                <span class="left sa-flex">
+                                    <span class="dot" :style="{ background: state.total.user.color }"></span>
+                                    <span>{{ state.total.user.footer }}</span>
+                                </span>
+                                <span>{{ state.total.user.data.week }}</span>
+                            </div>
+                        </div>
+                    </el-col>
+                    <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+                        <div class="scale-card card ">
+                            <div class="card-title sa-flex sa-row-between">
+                                <div class="left">{{state.total.agent.title}} <span
+                                        class="num">{{state.total.agent.data.total}}</span> </div>
+                                <div>{{state.total.agent.tip}} <span>{{state.total.agent.data.today}}</span> </div>
+                            </div>
+                            <div id="agentTotal"></div>
+                            <div class="card-footer sa-flex">
+                                <span class="left sa-flex">
+                                    <span class="dot" :style="{ background: state.total.agent.color }"></span>
+                                    <span>{{ state.total.agent.footer }}</span>
+                                </span>
+                                <span>{{ state.total.agent.data.week }}</span>
+                            </div>
+                        </div>
+                    </el-col>
+                    <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+                        <div class="scale-card card ">
+                            <div class="card-title sa-flex sa-row-between">
+                                <div class="left">{{state.total.share.title}} <span
+                                        class="num">{{state.total.share.data.total}}</span> </div>
+                                <div>{{state.total.share.tip}} <span>{{state.total.share.data.today}}</span> </div>
+                            </div>
+                            <div id="shareTotal"></div>
+                            <div class="card-footer sa-flex">
+                                <span class="left sa-flex">
+                                    <span class="dot" :style="{ background: state.total.share.color }"></span>
+                                    <span>{{ state.total.share.footer }}</span>
+                                </span>
+                                <span>{{ state.total.share.data.week }}</span>
+                            </div>
+                        </div>
+                    </el-col>
+                    <!-- -- commission code end -- -->
+                    <!-- <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+                        <div class="scale-card card ">
+                            <div class="card-title sa-flex sa-row-between">
+                                <div class="left">{{state.total.user.title}} <span
+                                        class="num">{{state.total.user.data.total}}</span> </div>
+                                <div>{{state.total.user.tip}} <span>{{state.total.user.data.today}}</span> </div>
+                            </div>
+                            <div id="userTotal"></div>
+                            <div class="card-footer sa-flex">
+                                <span class="left sa-flex">
+                                    <span class="dot" :style="{ background: state.total.user.color }"></span>
+                                    <span>{{ state.total.user.footer }}</span>
+                                </span>
+                                <span>{{ state.total.user.data.week }}</span>
+                            </div>
+                        </div>
+                    </el-col>
+                    <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+                        <div class="scale-card card ">
+                            <div class="card-title sa-flex sa-row-between">
+                                <div class="left">{{state.total.share.title}} <span
+                                        class="num">{{state.total.share.data.total}}</span> </div>
+                                <div>{{state.total.share.tip}} <span>{{state.total.share.data.today}}</span> </div>
+                            </div>
+                            <div id="shareTotal"></div>
+                            <div class="card-footer sa-flex">
+                                <span class="left sa-flex">
+                                    <span class="dot" :style="{ background: state.total.share.color }"></span>
+                                    <span>{{ state.total.share.footer }}</span>
+                                </span>
+                                <span>{{ state.total.share.data.week }}</span>
+                            </div>
+                        </div>
+                    </el-col> -->
+                </el-row>
+                {/if}
+                {if $auth->check('shopro/dashboard/chart')}
+                <el-row :gutter="20">
+                    <el-col :xs="24" :sm="24" :md="24" :lg="16" :xl="16">
+                        <div class="bar-card card">
+                            <div class="sa-flex sa-row-between sa-flex-wrap">
+                                <div class="sa-flex">
+                                    <div class="tab-item" :class="chart.tabActive == key ? 'is-active' : ''"
+                                        v-for="(value, key) in chart.tabsData" :key="key"
+                                        @click="onChangeTabActive(key)">
+                                        {{ value }}
+                                    </div>
+                                </div>
+                                <div class="date-time">
+                                    <el-date-picker v-model="chart.dateTime" type="datetimerange"
+                                        value-format="YYYY-MM-DD HH:mm:ss" format="YYYY-MM-DD HH:mm:ss"
+                                        :default-time="[new Date(2000, 1, 1, 0, 0, 0), new Date(2000, 2, 1, 23, 59, 59)]"
+                                        range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
+                                        :shortcuts="chart.shortcuts" @change="onChangeDateTime" :editable="false">
+                                    </el-date-picker>
+                                </div>
+                            </div>
+                            <div id="chartContent"></div>
+                        </div>
+                    </el-col>
+                    <el-col :xs="24" :sm="24" :md="24" :lg="8" :xl="8">
+                        <el-row :gutter="20">
+                            <el-col :xs="12" :sm="8" :md="12" :lg="12" :xl="12" v-for="(value, key) in statistics"
+                                :key="key">
+                                <div class="chart-card scale-card card">
+                                    <div class="sa-flex sa-row-between mb-2">
+                                        <img class="card-icon"
+                                            :src="`/assets/addons/shopro/img/dashboard/${key}.png`" />
+                                        <div class="sa-flex" @click="onOpen(value.status)">
+                                            <el-button type="info" link size="small">详情
+                                                <el-icon class="ml-1">
+                                                    <arrow-right />
+                                                </el-icon>
+                                            </el-button>
+                                        </div>
+                                    </div>
+                                    <div class="num mb-1">{{ value.num }}</div>
+                                    <div class="sa-flex sa-row-between">
+                                        <span>{{ value.text }}</span>
+                                        <el-popover popper-class="sa-popper" placement="top" trigger="hover"
+                                            :content="value.tip">
+                                            <template #reference>
+                                                <el-icon class="warning">
+                                                    <Warning />
+                                                </el-icon>
+                                            </template>
+                                        </el-popover>
+                                    </div>
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </el-col>
+                </el-row>
+                {/if}
+                {if $auth->check('shopro/dashboard/ranking')}
+                <el-row :gutter="20">
+                    <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+                        <div class="goods-card card">
+                            <div class="header">
+                                <span>销量榜</span>
+                            </div>
+                            <el-table class="sa-table" :data="ranking.goods" stripe>
+                                <el-table-column label="排名" width="60" align="center">
+                                    <template #default="scope">
+                                        <img class="top"
+                                            :src="`/assets/addons/shopro/img/dashboard/top${scope.$index + 1}.png`" />
+                                    </template>
+                                </el-table-column>
+                                <el-table-column label="名称" min-width="200">
+                                    <template #default="scope">
+                                        <div class="sa-flex">
+                                            <sa-image :url="scope.row.image" size="20"></sa-image>
+                                            <div class="ml-2 sa-table-line-1">
+                                                {{ scope.row.title || '-' }}
+                                            </div>
+                                        </div>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column label="销量" width="100">
+                                    <template #default="scope">
+                                        <div class="sa-table-line-1">
+                                            {{ scope.row.real_sales || '-' }}
+                                        </div>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                    </el-col>
+                    <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+                        <div class="hot-search-card card">
+                            <div class="header">
+                                <span>热搜榜</span>
+                            </div>
+                            <el-row :gutter="16">
+                                <el-col :xs="24" :sm="24" :md="16" :lg="16" :xl="16">
+                                    <el-table class="sa-table" :data="ranking.hot_search" stripe>
+                                        <el-table-column label="排名" width="60" align="center">
+                                            <template #default="scope">
+                                                <img class="top"
+                                                    :src="`/assets/addons/shopro/img/dashboard/top${scope.$index + 1}.png`" />
+                                            </template>
+                                        </el-table-column>
+                                        <el-table-column label="名称" min-width="200">
+                                            <template #default="scope">
+                                                <div class="sa-table-line-1">
+                                                    {{ scope.row.keyword || '-' }}
+                                                </div>
+                                            </template>
+                                        </el-table-column>
+                                        <el-table-column label="搜索量(次)" width="100">
+                                            <template #default="scope">
+                                                <div class="sa-table-line-1">
+                                                    {{ scope.row.num }}
+                                                </div>
+                                            </template>
+                                        </el-table-column>
+                                    </el-table>
+                                </el-col>
+                                <el-col :xs="24" :sm="24" :md="8" :lg="8" :xl="8">
+                                    <div class="sa-flex sa-row-center">
+                                        <div id="rankingContent"></div>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </el-col>
+                </el-row>
+                {/if}
+            </el-scrollbar>
+        </el-main>
+    </el-container>
+</div>

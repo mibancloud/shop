@@ -1,0 +1,57 @@
+{include file="/shopro/common/script" /}
+
+<div id="addEdit" class="material-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <template v-if="form.model.type == 'text'">
+                        <el-form-item label="内容" prop="content">
+                            <el-input v-model="form.model.content" placeholder="请输入内容" type="textarea"></el-input>
+                        </el-form-item>
+                        <el-form-item label="超链接">
+                            <el-popover v-model:visible="linkPopover.flag" placement="bottom" trigger="click"
+                                :width="300">
+                                <el-form ref="linkFormRef" :model="linkPopover.form.model"
+                                    :rules="linkPopover.form.rules" label-width="80px">
+                                    <el-form-item label="文本内容" prop="text">
+                                        <el-input v-model="linkPopover.form.model.text" placeholder="请输入文本内容" />
+                                    </el-form-item>
+                                    <el-form-item label="链接地址" prop="href">
+                                        <el-input v-model="linkPopover.form.model.href" placeholder="请输入链接地址" />
+                                    </el-form-item>
+                                </el-form>
+                                <div class="sa-flex sa-row-right">
+                                    <el-button type="info" link @click="onCancelLinkPopover">取消</el-button>
+                                    <el-button type="primary" link @click="onConfirmLinkPopover">确定
+                                    </el-button>
+                                </div>
+                                <template #reference>
+                                    <el-button type="primary" link>插入超链接</el-button>
+                                </template>
+                            </el-popover>
+                        </el-form-item>
+                    </template>
+                    <template v-if="form.model.type == 'link' && form.model.content">
+                        <el-form-item label="标题" prop="content.title">
+                            <el-input v-model="form.model.content.title" placeholder="请输入标题"></el-input>
+                        </el-form-item>
+                        <el-form-item label="描述" prop="content.description">
+                            <el-input v-model="form.model.content.description" placeholder="请输入描述" type="textarea">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="图片" prop="content.image">
+                            <sa-uploader v-model="form.model.content.image"></sa-uploader>
+                        </el-form-item>
+                        <el-form-item label="链接地址" prop="content.url">
+                            <el-input v-model="form.model.content.url" placeholder="请输入链接地址"></el-input>
+                        </el-form-item>
+                    </template>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

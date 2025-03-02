@@ -1,0 +1,1263 @@
+<!-- DIY编辑器 -->
+<div class="right"  :style="{ visibility: selectedIndex != -1 ? 'visible' : 'hidden'} " v-cloak>
+    <!-- 标题栏 -->
+    <el-card v-if="selectedIndex === 'page'" class="diypanel" :body-style="{ padding: '10px' }">
+        <div slot="header">
+          <span>{{ mobilediydata.page.name }}</span>
+        </div>
+        <div class="content-box">
+            <div class="group-item">
+                <div class="left">页面名称 </div>
+                <div class="right">
+                    <el-input placeholder="请输入页面名称" type="text" v-model="mobilediydata.page.params.name" size="small" clearable></el-input>
+                    <el-tooltip content="仅用于后台查找" placement="top" effect="light">
+                        <i class="fa fa-info-circle"></i>
+                    </el-tooltip>
+                </div>
+            </div>
+            <div class="group-item top20">
+                <div class="left">页面标题 </div>
+                <div class="right">
+                    <el-input placeholder="请输入页面标题" type="text" v-model="mobilediydata.page.params.title" size="small" clearable></el-input>
+                    <el-tooltip content="可作为小程序分享标题" placement="top" effect="light">
+                        <i class="fa fa-info-circle"></i>
+                    </el-tooltip>
+                    
+                </div>
+            </div>
+            <div class="group-item top20">
+                <div class="left">是否显示 </div>
+                <div class="right">
+                    <el-radio-group v-model="mobilediydata.page.style.showNav" size="small">
+                        <el-radio-button  :label="false">显示</el-radio-button>
+                        <el-radio-button  :label="true">隐藏</el-radio-button>
+                        </el-radio-group>
+                        <el-tooltip content="隐藏后前端将不显示顶部,仅支持H5" placement="top" effect="light">
+                            <i class="fa fa-info-circle"></i>
+                        </el-tooltip>
+                </div>
+            </div>
+            
+            <div class="group-item top20" v-if="!mobilediydata.page.style.showNav">
+                <div class="left">标题颜色 </div>
+                <div class="right">
+                    <el-radio-group v-model="mobilediydata.page.style.titleTextColor" size="small">
+                        <el-radio-button  label="black">黑色</el-radio-button>
+                        <el-radio-button  label="white">白色</el-radio-button>
+                    </el-radio-group>
+                </div>
+            </div>
+            
+            <div class="group-item top20" v-if="!mobilediydata.page.style.showNav">
+                <div class="left">背景 </div>
+                <div class="right">
+                    <el-color-picker v-model="mobilediydata.page.style.titleBackgroundColor" size="small"></el-color-picker>
+                    <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(mobilediydata.page.style, 'titleBackgroundColor', '#3F74F9')">重置</el-button>
+                </div>
+            </div>
+        </div>
+    </el-card>
+    
+    <template v-if="mobilediydata.items.length && curItem">
+        <!--编辑器: 主副标题-->
+        <el-card v-if="curItem.type == 'thetitle'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">线条样式 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.params.lineStyle" size="small">
+                            <el-radio-button  label="lineStyle1">样式1</el-radio-button>
+                            <el-radio-button  label="lineStyle2">样式2</el-radio-button>
+                            <el-radio-button  label="lineStyle3">样式3</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20" v-if="curItem.params.lineStyle != 'lineStyle1'">
+                    <div class="left">左右边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.params.marginLeft"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">线条颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.params.lineColor" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.params, 'lineColor', '#000000')">重置</el-button>
+                    </div>
+                </div>
+                
+                <div class="group-item item-inner top20">
+                    <div class="right-receive">
+                        <el-divider content-position="left">主标题设置</el-divider>
+                        <div class="receive-box">
+                            <div class="receive-box-left">内容 </div>
+                            <div class="receive-box-right">
+                                <el-input placeholder="请输入内容" type="text" v-model="curItem.params.zhutitle" size="small" clearable></el-input>
+                            </div>
+                        </div>
+                        <div class="receive-box">
+                            <div class="receive-box-left">颜色 </div>
+                            <div class="receive-box-right">
+                                <el-color-picker v-model="curItem.params.zhutitlecolor" size="small"></el-color-picker>
+                                <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.params, 'zhutitlecolor', '#666666')">重置</el-button>
+                            </div>
+                        </div>
+                        <div class="receive-box">
+                            <div class="receive-box-left">大小 </div>
+                            <div class="receive-box-right">
+                                <el-slider class="width100" v-model="curItem.params.zhutitlesize" :min="5" :max="40"></el-slider>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="group-item item-inner top20">
+                    <div class="right-receive">
+                        <el-divider content-position="left">副标题设置</el-divider>
+                        <div class="receive-box">
+                            <div class="receive-box-left">内容 </div>
+                            <div class="receive-box-right">
+                                <el-input placeholder="请输入内容" type="text" v-model="curItem.params.futitle" size="small" clearable></el-input>
+                            </div>
+                        </div>
+                        <div class="receive-box">
+                            <div class="receive-box-left">颜色 </div>
+                            <div class="receive-box-right">
+                                <el-color-picker v-model="curItem.params.futitlecolor" size="small"></el-color-picker>
+                                <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.params, 'futitlecolor', '#666666')">重置</el-button>
+                            </div>
+                        </div>
+                        <div class="receive-box">
+                            <div class="receive-box-left">大小 </div>
+                            <div class="receive-box-right">
+                                <el-slider class="width100" v-model="curItem.params.futitlesize" :min="5" :max="40"></el-slider>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </el-card> 
+
+        <!--编辑器: 轮播-->
+        <el-card v-if="curItem.type == 'banner'" class="diypanel" :body-style="{padding: '10px'}">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">模式 </div>
+                    <div class="right">
+                        <el-radio v-model="curItem.params.type" label="2d">2D</el-radio>
+                        <el-radio v-model="curItem.params.type" label="card">卡片<el-tooltip content="卡片效果仅在前端展示" placement="top" effect="light">
+                            <i class="fa fa-info-circle"></i>
+                        </el-tooltip></el-radio>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">切换时间 </div>
+                    <div class="right">
+                        <el-input-number v-model="curItem.params.interval" controls-position="right" :min="1000" :max="10000" size="small"></el-input-number>
+                    </div>
+                </div>
+                <el-alert class="top20" title="轮播最佳图片尺寸750*360" type="success"></el-alert>
+                <draggable :list="curItem.data" :options="{ animation: 120, filter: 'input', preventOnFilter: false }">
+                    <div class="group-item top10 item-inner" v-for="(banner, index) in curItem.data">
+                        <div class="left">
+                            <img class="images" :src="banner.imgUrl">
+                        </div>
+                        <div class="right-receive">
+                            <el-input class="b-l-6" placeholder="请选择图片或输入图片地址" type="text" v-model="banner.imgUrl" size="small">
+                                <template slot="prepend">图片</template>
+                                <el-button slot="append" icon="el-icon-paperclip" @click="onEditorSelectImage(banner, 'imgUrl')"></el-button>
+                            </el-input>
+                            <el-input class="b-l-6" placeholder="请选择链接或输入链接地址" type="text" v-model="banner.link?banner.link.title:banner.link" size="small" disabled>
+                                <template slot="prepend">链接</template>
+                                <el-button slot="append" icon="el-icon-paperclip" @click.stop="onEditorSelecturl(banner)"></el-button>
+                            </el-input>
+                        </div>
+                        <i class="item-delete el-icon-close" @click="onEditorDeleleData(index, selectedIndex)"></i>
+                    </div>
+                </draggable>
+                <div class="top10">
+                    <el-button class="width100" icon="el-icon-circle-plus-outline" @click.stop="onEditorAddData">添加一个</el-button>
+                </div>
+            </div>
+        </el-card>
+        
+        <!--编辑器: 单图组-->
+        <el-card v-if="curItem.type == 'images'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop" ></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">左右边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingLeft"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">边框半径 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.borderradius" :min="0" :max="25"></el-slider>
+                    </div>
+                </div>
+                
+                <el-alert class="top20" title="最佳图片尺寸750*360" type="success"></el-alert>
+                <draggable :list="curItem.data" :options="{ animation: 120, filter: 'input', preventOnFilter: false }">
+                    <div class="group-item top10 item-inner" v-for="(images, index) in curItem.data">
+                        <div class="left">
+                            <img class="images" :src="images.imgUrl">
+                        </div>
+                        <div class="right-receive">
+                            <el-input class="b-l-6" placeholder="请选择图片或输入图片地址" type="text" v-model="images.imgUrl" size="small">
+                                <template slot="prepend">图片</template>
+                                <el-button slot="append" icon="el-icon-paperclip" @click="onEditorSelectImage(images, 'imgUrl')"></el-button>
+                            </el-input>
+                            <el-input class="b-l-6" placeholder="请选择链接或输入链接地址" type="text" v-model="images.link?images.link.title:images.link" size="small" disabled>
+                                <template slot="prepend">链接</template>
+                                <el-button slot="append" icon="el-icon-paperclip" @click.stop="onEditorSelecturl(images)"></el-button>
+                            </el-input>
+                            <i class="item-delete el-icon-close" @click="onEditorDeleleData(index, selectedIndex)"></i>
+                        </div>
+                    </div>
+                </draggable>
+                <div class="top10">
+                    <el-button class="width100" icon="el-icon-circle-plus-outline" @click.stop="onEditorAddData">添加一个</el-button>
+                </div>
+            </div>
+        </el-card> 
+        
+        <!--编辑器: 导航组-->
+        <el-card v-if="curItem.type == 'navBar'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">边框半径 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.borderradius" :min="0" :max="25"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">每行数量 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.style.rowsNum" size="small">
+                            <el-radio-button  label="3">3个</el-radio-button>
+                            <el-radio-button  label="4">4个</el-radio-button>
+                            <el-radio-button  label="5">5个</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                
+                <el-alert class="top20" title="最佳图片尺寸100*100" type="success"></el-alert>
+                <draggable :list="curItem.data" :options="{ animation: 120, filter: 'input', preventOnFilter: false }">
+                    <div class="group-item top10 item-inner" v-for="(navBar, index) in curItem.data">
+                        <div class="left">
+                            <img class="images" :src="navBar.imgUrl">
+                        </div>
+                        <div class="right-receive">
+                            <div class="receive-box">
+                                <div class="receive-box-left">颜色 </div>
+                                <div class="receive-box-right">
+                                    <el-color-picker v-model="navBar.color" size="small"></el-color-picker>
+                                    <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(navBar, 'color', '#666666')">重置</el-button>
+                                </div>
+                            </div>
+                            <div class="receive-box">
+                                <div class="receive-box-left">内容 </div>
+                                <div class="receive-box-right">
+                                    <el-input placeholder="请输入内容" type="text" v-model="navBar.text" size="small" clearable></el-input>
+                                </div>
+                            </div>
+                            <el-input class="b-l-6" placeholder="请选择图片或输入图片地址" type="text" v-model="navBar.imgUrl" size="small">
+                                <template slot="prepend">图片</template>
+                                <el-button slot="append" icon="el-icon-paperclip" @click="onEditorSelectImage(navBar, 'imgUrl')"></el-button>
+                            </el-input>
+                            <el-input class="b-l-6" placeholder="请选择链接或输入链接地址" type="text" v-model="navBar.link?navBar.link.title:navBar.link" size="small" disabled>
+                                <template slot="prepend">链接</template>
+                                <el-button slot="append" icon="el-icon-paperclip" @click.stop="onEditorSelecturl(navBar)"></el-button>
+                            </el-input>
+                            <i class="item-delete el-icon-close" @click="onEditorDeleleData(index, selectedIndex)"></i>
+                        </div>
+                    </div>
+                </draggable>
+                <div class="top10">
+                    <el-button class="width100" icon="el-icon-circle-plus-outline" @click.stop="onEditorAddData">添加一个</el-button>
+                </div>
+            </div>
+        </el-card> 
+
+        <!--编辑器: 文字按钮-->
+        <el-card v-if="curItem.type == 'textbutton'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop"></el-slider>
+                    </div>
+                </div>
+                <draggable :list="curItem.data" :options="{ animation: 120, filter: 'input', preventOnFilter: false }">
+                    <div class="group-item top10 item-inner" v-for="(tItem, index) in curItem.data">
+                        <div class="right-receive">
+                            <div class="receive-box">
+                                <div class="receive-box-left">颜色 </div>
+                                <div class="receive-box-right">
+                                    <el-color-picker v-model="tItem.color" size="small"></el-color-picker>
+                                    <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(tItem, 'color', '#666666')">重置</el-button>
+                                </div>
+                            </div>
+                            <div class="receive-box">
+                                <div class="receive-box-left">内容 </div>
+                                <div class="receive-box-right">
+                                    <el-input placeholder="请输入内容" type="text" v-model="tItem.text" size="small" clearable></el-input>
+                                </div>
+                            </div>
+                            
+                            <div class="receive-box">
+                                <div class="receive-box-left">链接 </div>
+                                <div class="receive-box-right">
+                                    <el-input placeholder="请选择链接或输入链接地址" type="text" v-model="tItem.link?tItem.link.title:tItem.link" size="small" clearable disabled>
+                                        <el-button slot="append" icon="el-icon-paperclip" @click.stop="onEditorSelecturl(tItem)"></el-button>
+                                    </el-input>
+                                </div>
+                            </div>
+                            <i class="item-delete el-icon-close" @click="onEditorDeleleData(index, selectedIndex)"></i>
+                        </div>
+                    </div>
+                </draggable>
+                <div class="top10">
+                    <el-button class="width100" icon="el-icon-circle-plus-outline" @click.stop="onEditorAddData">添加一个</el-button>
+                </div>
+            </div>
+        </el-card> 
+
+        <!--编辑器: 辅助空白-->
+        <el-card v-if="curItem.type == 'blank'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">组件高度 </div>
+                    <div class="right">
+                        <el-input-number v-model="curItem.style.height" controls-position="right" :min="0" :max="10000" size="small"></el-input-number>
+                    </div>
+                </div>
+            </div>
+        </el-card>
+
+        <!--编辑器: 辅助线-->
+        <el-card v-if="curItem.type == 'guide'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">线条样式 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.style.lineStyle" size="small">
+                            <el-radio-button  label="solid">实线</el-radio-button>
+                            <el-radio-button  label="dashed">虚线</el-radio-button>
+                            <el-radio-button  label="dotted">点状</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">线条颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.lineColor" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'lineColor', '#000000')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">线条高度 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.lineHeight" :min="1" :max="50"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop" :min="0" :max="50"></el-slider>
+                    </div>
+                </div>
+            </div>
+        </el-card> 
+
+        <!--编辑器: 广播组-->
+        <el-card v-if="curItem.type == 'notice'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop" ></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">文字颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.textColor" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'textColor', '#000000')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">公告图标 </div>
+                    <div class="right">
+                        <img class="images" :src="curItem.params.icon" @click="onEditorSelectImage(curItem.params, 'icon')" style="height: 30px;">
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">公告内容 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入内容" type="textarea" v-model="curItem.params.text" size="small" clearable></el-input>
+                    </div>
+                </div>
+            </div>
+        </el-card>
+
+        <!--编辑器: 图片橱窗-->
+        <el-card v-if="curItem.type == 'window'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop" ></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">左右边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingLeft"  :min="0" :max="10"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">边框半径 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.borderradius" :min="0" :max="50"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">布局 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.style.layout" size="small">
+                            <el-radio-button  label="2">两列</el-radio-button>
+                            <el-radio-button  label="3">三列</el-radio-button>
+                            <el-radio-button  label="4">四列</el-radio-button>
+                            <el-radio-button  label="-1">橱窗</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                <el-alert class="top20" title="橱窗样式最大仅支持4张图片" type="success"></el-alert>
+                <draggable :list="curItem.data" :options="{ animation: 120, filter: 'input', preventOnFilter: false }">
+                    <div class="group-item top20 item-inner" v-for="(images, index) in curItem.data">
+                        <div class="left">
+                            <img class="images" :src="images.imgUrl">
+                        </div>
+                        <div class="right-receive">
+                            <el-input class="b-l-6" placeholder="请选择图片或输入图片地址" type="text" v-model="images.imgUrl" size="small">
+                                <template slot="prepend">图片</template>
+                                <el-button slot="append" icon="el-icon-paperclip" @click="onEditorSelectImage(images, 'imgUrl')"></el-button>
+                            </el-input>
+                            <el-input class="b-l-6" placeholder="请选择链接或输入链接地址" type="text" v-model="images.link?images.link.title:images.link" size="small" disabled>
+                                <template slot="prepend">链接</template>
+                                <el-button slot="append" icon="el-icon-paperclip" @click.stop="onEditorSelecturl(images)"></el-button>
+                            </el-input>
+                            <i class="item-delete el-icon-close" @click="onEditorDeleleData(index, selectedIndex)"></i>
+                        </div>
+                    </div>
+                </draggable>
+                <div class="top10">
+                    <el-button class="width100" icon="el-icon-circle-plus-outline" @click.stop="onEditorAddData">添加一个</el-button>
+                </div>
+            </div>
+        </el-card>
+
+        <!--编辑器: 悬浮框-->
+        <el-card v-if="curItem.type == 'service'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">底部边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.bottom" ></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">右边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.right" ></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">透明度 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.opacity" ></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">图标 </div>
+                    <div class="right">
+                        <img class="images" :src="curItem.params.image" @click="onEditorSelectImage(curItem.params, 'image')" style="height: 30px;">
+                    </div>
+                </div>
+                
+                <div class="group-item top20">
+                    <div class="left">事件类型 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.params.type" size="small">
+                            <el-radio-button  label="service">小程序客服</el-radio-button>
+                            <el-radio-button  label="link">链接</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                <div class="group-item top20" v-if="curItem.params.type === 'link'">
+                    <div class="left">链接地址 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入链接地址" type="text" v-model="curItem.params.link?curItem.params.link.title:curItem.params.link" size="small" disabled></el-input>
+                        <el-button class="m-l-10" size="mini" icon="el-icon-paperclip" @click.stop="onEditorSelecturl(curItem.params)"></el-button>
+                    </div>
+                </div>
+            </div>
+        </el-card> 
+
+        <!--编辑器: 信息卡片-->
+        <el-card v-if="curItem.type == 'informationcard'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">边框半径 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.borderradius" ></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">图片 </div>
+                    <div class="right">
+                        <img class="images" :src="curItem.params.image" @click="onEditorSelectImage(curItem.params, 'image')" style="height: 30px;">
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">按钮内容 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入按钮内容" type="text" v-model="curItem.params.btntxt" size="small" clearable></el-input>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">标题内容 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入标题内容" type="text" v-model="curItem.params.title" size="small" clearable></el-input>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">信息内容 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入信息内容" type="textarea" v-model="curItem.params.content" size="small" clearable></el-input>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">链接地址 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入链接地址" type="text" v-model="curItem.params.link?curItem.params.link.title:curItem.params.link" size="small" disabled></el-input>
+                        <el-button class="m-l-10" size="mini" icon="el-icon-paperclip" @click.stop="onEditorSelecturl(curItem.params)"></el-button>
+                    </div>
+                </div>
+            </div>
+        </el-card> 
+        
+        <!--编辑器: 视频组-->
+        <el-card v-if="curItem.type == 'video'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">视频高度 </div>
+                    <div class="right">
+                        <el-input-number v-model="curItem.style.height" controls-position="right" :min="0" :max="500" size="small"></el-input-number>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">图片 </div>
+                    <div class="right">
+                        <img class="images" :src="curItem.params.poster" @click="onEditorSelectImage(curItem.params, 'poster')" style="height: 30px;">
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">播放地址 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入播放地址" type="text" v-model="curItem.params.videoUrl" size="small" clearable></el-input>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">自动播放 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.params.autoplay" size="small">
+                            <el-radio-button  label="0">自动</el-radio-button>
+                            <el-radio-button  label="1">手动</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                
+                <el-alert class="top20" title="APP端video原生渲染会将悬停或音效组件覆盖，避免同时使用" type="success"></el-alert>
+            </div>
+        </el-card> 
+
+        <!--编辑器: webview-->
+        <el-card v-if="curItem.type == 'webview'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <el-alert class="top20" title="vue中的webview只能独立存在，其他组件加上无效" type="success"></el-alert>
+            <div class="content-box top20">
+                <div class="group-item">
+                    <div class="left">链接 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入链接" type="textarea" v-model="curItem.params.url" size="small" clearable></el-input>
+                    </div>
+                </div>
+            </div>
+        </el-card> 
+        
+        <!--编辑器: 广告组-->
+        <el-card v-if="curItem.type == 'ad'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">类型 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.params.type" size="small">
+                            <el-radio-button  label="banner">Banner广告</el-radio-button>
+                            <el-radio-button  label="custom">原生横幅</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">广告id </div>
+                    <div class="right">
+                        <el-input placeholder="请输入AdId" type="text" v-model="curItem.params.adid" size="small" clearable></el-input>
+                    </div>
+                </div>
+                
+                <el-alert class="top20"
+                    title="说明"
+                    type="success">
+                    <div>
+                        <p>1. 仅微信小程序</p>
+                        <p>2. 小程序需开通流量主</p>
+                        <p>3. 原生广告公众平台后需要自定义</p>
+                        <p>4. Banner广告仅支持ad</p>
+                        <p>5. 原生横幅支持ad-custom</p>
+                    </div>
+              </el-alert>
+            </div>
+        </el-card> 
+        <!--编辑器: 文本组-->
+        <el-card v-if="curItem.type == 'text'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">左右边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingLeft"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">字体颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.textColor" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'textColor', '#000000')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">字体大小 </div>
+                    <div class="right">
+                        <el-input-number controls-position="right" v-model="curItem.style.fontsize" :min="10" :max="50" size="small"></el-input-number>
+                    </div>
+                </div>
+                <div class="content-box top20">
+                    <div class="group-item">
+                        <div class="left">文本内容 </div>
+                        <div class="right">
+                            <el-input placeholder="请输入链接" type="textarea" v-model="curItem.style.text" size="small" clearable></el-input>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </el-card> 
+        <!--编辑器: 文本组-->
+        <el-card v-if="curItem.type == 'titlebar'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">左右边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingLeft"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">字体颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.params.textColor" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.params, 'textColor', '#0441f5')">重置</el-button>
+                    </div>
+                </div>
+                
+                <div class="content-box top20">
+                    <div class="group-item">
+                        <div class="left">明文 </div>
+                        <div class="right">
+                            <el-input placeholder="请输入标题" v-model="curItem.params.title1" size="small" clearable></el-input>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-box top20">
+                    <div class="group-item">
+                        <div class="left">暗文 </div>
+                        <div class="right">
+                            <el-input placeholder="请输入标题" v-model="curItem.params.title2" size="small" clearable></el-input>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-box top20">
+                    <div class="group-item">
+                        <div class="left">右侧文字 </div>
+                        <div class="right">
+                            <el-input placeholder="右侧文字" v-model="curItem.params.title3" size="small" clearable></el-input>
+                        </div>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">链接地址 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入链接地址" type="text" v-model="curItem.params.link?curItem.params.link.title:curItem.params.link" size="small" disabled></el-input>
+                        <el-button class="m-l-10" size="mini" icon="el-icon-paperclip" @click.stop="onEditorSelecturl(curItem.params)"></el-button>
+                    </div>
+                </div>
+                
+            </div>
+        </el-card> 
+
+        <!--编辑器: 富文本-->
+        <el-card v-if="curItem.type == 'richText'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item" >
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#f0f0f0')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">左右边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingLeft"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">内上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.params.paddingTop"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">内左右边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.params.paddingLeft"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">卡片半径 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.params.borderradius"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">卡片颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.params.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.params, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">富文本 </div>
+                    <div class="right">
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorRichtext(curItem.params)">打开富文本编辑</el-button>
+                    </div>
+                </div>
+                
+            </div>
+        </el-card> 
+        <!--编辑器: 背景音乐-->
+        <el-card v-if="curItem.type == 'bgm'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item">
+                    <div class="left">底部边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.bottom" ></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">右边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.right" ></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">透明度 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.opacity" ></el-slider>
+                    </div>
+                </div>
+                
+                <div class="group-item top20">
+                    <div class="left">播放图标 </div>
+                    <div class="right">
+                        <img class="images" :src="curItem.params.playImgUrl" @click="onEditorSelectImage(curItem.params, 'playImgUrl')" style="height: 30px;">
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">暂停图标 </div>
+                    <div class="right">
+                        <img class="images" :src="curItem.params.stopImgUrl" @click="onEditorSelectImage(curItem.params, 'stopImgUrl')" style="height: 30px;">
+                    </div>
+                </div>
+                
+                
+                <div class="group-item top20">
+                    <div class="left">音频地址 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入音频地址" type="text" v-model="curItem.params.musicUrl" size="small"></el-input>
+                        <el-button class="m-l-10" size="mini" icon="el-icon-paperclip" @click.stop="onEditorSelectImage(curItem.params, 'musicUrl','mp3/')"></el-button>
+                    </div>
+                </div>
+            </div>
+        </el-card> 
+        
+        <!--编辑器: 按钮组-->
+        <el-card v-if="curItem.type == 'button'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item" >
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#f0f0f0')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">左右边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingLeft"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">按钮内容 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入按钮内容" type="text" v-model="curItem.params.text" size="small" clearable></el-input>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">图标 </div>
+                    <div class="right">
+                        <img class="images" :src="curItem.params.imgUrl" @click="onEditorSelectImage(curItem.params, 'imgUrl')" style="height: 30px;margin-right: 30px;">
+                        <el-radio-group v-model="curItem.params.showimg" size="small">
+                            <el-radio-button  :label="true">显示</el-radio-button>
+                            <el-radio-button  :label="false">隐藏</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">主题 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.params.type" size="small">
+                            <el-radio-button  label="default">默认</el-radio-button>
+                            <el-radio-button  label="primary">主要</el-radio-button>
+                            <el-radio-button  label="success">成功</el-radio-button>
+                            <el-radio-button  label="warning">警告</el-radio-button>
+                            <el-radio-button  label="danger">危险</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                
+                <div class="group-item top20">
+                    <div class="left">大小 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.params.size" size="small">
+                            <el-radio-button  label="default">默认</el-radio-button>
+                            <el-radio-button  label="medium">中等</el-radio-button>
+                            <el-radio-button  label="mini">迷你</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">是否镂空 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.params.plain" size="small">
+                            <el-radio-button  :label="false">不镂空</el-radio-button>
+                            <el-radio-button  :label="true">镂空</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">是否圆角 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.params.round" size="small">
+                            <el-radio-button  label="square">直角</el-radio-button>
+                            <el-radio-button  label="circle">圆角</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">是否禁用 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.params.disabled" size="small">
+                            <el-radio-button  :label="false">正常</el-radio-button>
+                            <el-radio-button  :label="true">禁用</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                
+                <div class="group-item top20">
+                    <div class="left">链接地址 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入链接地址" type="text" v-model="curItem.params.link?curItem.params.link.title:curItem.params.link" size="small" disabled></el-input>
+                        <el-button class="m-l-10" size="mini" icon="el-icon-paperclip" @click.stop="onEditorSelecturl(curItem.params)"></el-button>
+                    </div>
+                </div>
+            </div>
+        </el-card> 
+        <!--编辑器: 地图组-->
+        <el-card v-if="curItem.type == 'diymap'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item" >
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">左右边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingLeft"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">地图高度 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.params.height" :min="60" :max="500"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">经度 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入经度" type="number" v-model="curItem.params.latitude" size="small" clearable :min="-180" :max="180"></el-input>
+                        <el-tooltip content="浮点数，范围 -180 ~ 180" placement="top" effect="light">
+                            <i class="fa fa-info-circle"></i>
+                        </el-tooltip>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">纬度 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入经度" type="number" v-model="curItem.params.longitude" size="small" clearable :min="-90" :max="90"></el-input>
+                        <el-tooltip content="浮点数，范围 -90 ~ 90" placement="top" effect="light">
+                            <i class="fa fa-info-circle"></i>
+                        </el-tooltip>
+                    </div>
+                </div>
+                
+                <el-alert class="top20"
+                    title="注意"
+                    :closable="false"
+                    type="success">
+                    <div>
+                        <p>1. 并不是填入经纬度在前端就能显示，需要申请对应平台key；</p>
+                        <p>2. uni端manifest.json中勾选对应平台地图，申请对应key；</p>
+                        <p>3. h5与小程序默认腾讯地图，app可选百度与高德；</p>
+                        <p>4. 地图组件用于展示地图，而定位API只是获取坐标，请勿混淆两者；</p>
+                        <p>5. 各个使用时注意权限，具体查看uni官方文档，本插件不做详解；</p>
+                        <p>6. 点击地图将会调用openLocation打开地图</p>
+                        <el-link href="https://uniapp.dcloud.io/component/map.html" target="_blank" type="primary">uniApp官方文档</el-link>
+                    </div>
+              </el-alert>
+                
+            </div>
+        </el-card> 
+        
+        <!--编辑器: 时间线-->
+        <el-card v-if="curItem.type == 'timeline'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item" >
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">左右边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingLeft"></el-slider>
+                    </div>
+                </div>
+                <el-alert class="top20" title="时间线使用了uView1.x库，若您的项目中已有uView1.x，请将components/u-time-line与u-time-line-item删除即可" type="success"></el-alert>
+                <draggable :list="curItem.data" :options="{ animation: 120, filter: 'input', preventOnFilter: false }">
+                    <div class="group-item top10 item-inner" v-for="(tItem, index) in curItem.data">
+                        <div class="right-receive">
+                            <div class="receive-box">
+                                <div class="receive-box-left">节点颜色 </div>
+                                <div class="receive-box-right">
+                                    <el-color-picker v-model="tItem.color" size="small"></el-color-picker>
+                                    <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(tItem, 'color', '#0FAFFF')">重置</el-button>
+                                </div>
+                            </div>
+                            <div class="receive-box">
+                                <div class="receive-box-left">选择日期 </div>
+                                <div class="receive-box-right">
+                                    <el-date-picker
+                                        size="small"
+                                        v-model="tItem.time"
+                                        type="date"
+                                        value-format="yyyy-MM-dd"
+                                        placeholder="选择日期">
+                                    </el-date-picker>
+                                </div>
+                            </div>
+                            <div class="receive-box">
+                                <div class="receive-box-left">时间显示 </div>
+                                <div class="receive-box-right">
+                                    <el-radio-group v-model="tItem.hide" size="small">
+                                        <el-radio-button  :label="true">显示</el-radio-button>
+                                        <el-radio-button  :label="false">隐藏</el-radio-button>
+                                    </el-radio-group>
+                                </div>
+                            </div>
+                            
+                            <div class="receive-box">
+                                <div class="receive-box-left">内容 </div>
+                                <div class="receive-box-right">
+                                    <el-input placeholder="请输入内容" type="textarea" v-model="tItem.content" size="small" clearable></el-input>
+                                </div>
+                            </div>
+                            
+                            <i class="item-delete el-icon-close" @click="onEditorDeleleData(index, selectedIndex)"></i>
+                        </div>
+                    </div>
+                </draggable>
+                <div class="top10">
+                    <el-button class="width100" icon="el-icon-circle-plus-outline" @click.stop="onEditorAddData">添加一个</el-button>
+                </div>
+            </div>
+        </el-card> 
+        <!--编辑器: 警告提示-->
+        <el-card v-if="curItem.type == 'AlertTips'" class="diypanel" :body-style="{ padding: '10px' }">
+            <div slot="header"><label>{{ curItem.name }}</label></div>
+            <div class="content-box">
+                <div class="group-item" >
+                    <div class="left">背景颜色 </div>
+                    <div class="right">
+                        <el-color-picker v-model="curItem.style.background" size="small"></el-color-picker>
+                        <el-button class="m-l-10" size="mini" @click.stop="onEditorResetColor(curItem.style, 'background', '#ffffff')">重置</el-button>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">上下边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingTop"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20" >
+                    <div class="left">左右边距 </div>
+                    <div class="right">
+                        <el-slider class="width100" v-model="curItem.style.paddingLeft"></el-slider>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">主题 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.params.type" size="small">
+                            <el-radio-button  label="success">绿</el-radio-button>
+                            <el-radio-button  label="warning">橙</el-radio-button>
+                            <el-radio-button  label="info">灰</el-radio-button>
+                            <el-radio-button  label="error">红</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">左侧图标 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.params.showicon" size="small">
+                            <el-radio-button  :label="true">显示</el-radio-button>
+                            <el-radio-button  :label="false">隐藏</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">关闭按钮 </div>
+                    <div class="right">
+                        <el-radio-group v-model="curItem.params.closable" size="small">
+                            <el-radio-button  :label="true">显示</el-radio-button>
+                            <el-radio-button  :label="false">隐藏</el-radio-button>
+                        </el-radio-group>
+                    </div>
+                </div>
+                
+                <div class="group-item top20">
+                    <div class="left">标题内容 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入标题内容" type="text" v-model="curItem.params.title" size="small" clearable></el-input>
+                    </div>
+                </div>
+                <div class="group-item top20">
+                    <div class="left">信息内容 </div>
+                    <div class="right">
+                        <el-input placeholder="请输入信息内容" type="textarea" v-model="curItem.params.description" size="small" clearable></el-input>
+                    </div>
+                </div>
+            </div>
+        </el-card>
+
+    </template>
+</div>
+

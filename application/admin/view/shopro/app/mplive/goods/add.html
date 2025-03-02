@@ -1,0 +1,118 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .desc {
+        font-size: 14px;
+        color: #999999;
+        margin-left: 12px;
+    }
+
+    .title {
+        margin: 0 0 18px 50px;
+    }
+
+    .price-title {
+        margin-right: 8px;
+    }
+
+    .price2-title {
+        margin: 0 8px 0 16px;
+    }
+
+    .el-form .sa-w-160 {
+        max-width: 160px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        flex-wrap: nowrap;
+    }
+</style>
+
+<div id="addEdit" class="molive-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="120px">
+                    <div class="sa-color--warning title">在小程序直播控制台添加的商品，不支持通过此系统操作。</div>
+                    <el-form-item label="商品来源">
+                        <el-radio-group v-model="form.model.type">
+                            <el-radio :label="0">我的小程序</el-radio>
+                            <el-radio :label="1">其他小程序</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="商品选择" prop="goods_id" v-if="form.model.type === 0">
+                        <el-button type="primary" link @click="selectGoods" v-if="!form.model.goods_id">+ 添加商品
+                        </el-button>
+                        <div class="sa-template-wrap">
+                            <template v-if="form.model.goods_id">
+                                <div class="header">
+                                    <div class="key">商品信息</div>
+                                    <div class="oper">操作</div>
+                                </div>
+                                <div class="item">
+                                    <div class="goods-item key">
+                                        <sa-image class="goods-image" :url="goods.image" size="40">
+                                        </sa-image>
+                                        <div>
+                                            <div class="goods-title sa-table-line-1">{{ goods.title }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="oper">
+                                        <el-button type="danger" link @click="deleteItems()">移除
+                                        </el-button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="商品封面">
+                        <sa-uploader v-model="form.model.cover_img_url" fileType="image"></sa-uploader>
+                        <div class="desc"> 图片尺寸最大300像素*300像素 </div>
+                    </el-form-item>
+                    <el-form-item label="商品名称" prop="name">
+                        <el-input v-model="form.model.name" :maxlength="14" :minlength="3" show-word-limit
+                            placeholder="请输入商品名称"></el-input>
+                    </el-form-item>
+                    <el-form-item label="价格形式" prop="price_type">
+                        <el-radio-group v-model="form.model.price_type">
+                            <el-radio :label="1">一口价</el-radio>
+                            <el-radio :label="2">价格区间</el-radio>
+                            <el-radio :label="3">显示折扣价</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="价格">
+                        <div class="price-title" v-if="form.model.price_type !== 1">{{
+                            form.model.price_type === 2 ? '最小价格' : '市场价'
+                            }}</div>
+                        <el-input v-model="form.model.price" placeholder="请输入价格" class="sa-w-160" type="number"
+                            :step="0.01" :min="0" :precision="2">
+                            <template #append>元</template>
+                        </el-input>
+                        <div class="price2-title" v-if="form.model.price_type !== 1">{{
+                            form.model.price_type === 2 ? '最大价格' : '现价'
+                            }}</div>
+                        <el-input v-model="form.model.price2" placeholder="请输入价格" class="sa-w-160" type="number"
+                            :step="0.01" :min="0" :precision="2" v-if="form.model.price_type !== 1">
+                            <template #append>元</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="APPID" prop="third_party_appid" v-if="form.model.type === 1">
+                        <el-input v-model="form.model.third_party_appid" placeholder="请输入该小程序APPID"></el-input>
+                    </el-form-item>
+
+                    <el-form-item label="商品路径" prop="url">
+                        <div>
+                            <el-input v-model="form.model.url" placeholder="请输入商品路径"></el-input>
+                            <div class="desc">
+                                请确保小程序页面路径可被访问。例如：pages/goods/index?query=value
+                            </div>
+                        </div>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

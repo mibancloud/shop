@@ -1,0 +1,36 @@
+{include file="/shopro/common/script" /}
+
+<div id="confirm" class="invoice-confirm" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-alert v-if="state.item.order_status_text || state.item.order_fee" class="mb-4" type="warning">
+                    <template #title>
+                        <div v-if="state.item.order_status_text">
+                            {{state.item.order_status_text }}
+                        </div>
+                        <div v-if="state.item.order_fee">
+                            该订单存在改价，原应付金额：￥{{
+                            state.item.order_fee.original_pay_fee
+                            }}，改价后支付金额：￥{{state.item.order_fee.pay_fee }}
+                        </div>
+                    </template>
+                </el-alert>
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="120px">
+                    <el-form-item label="实际开票金额" prop="invoice_amount">
+                        <el-input class="sa-w-360" type="number" :min="0" :step="0.01"
+                            v-model="form.model.invoice_amount" placeholder="请输入实际开票金额">
+                            <template #append>元</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="选择发票图片" prop="download_urls">
+                        <sa-uploader v-model="form.model.download_urls" :multiple="true"></sa-uploader>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

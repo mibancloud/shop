@@ -1,0 +1,75 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .category-index .style {
+        width: 32px;
+        height: 32px;
+    }
+
+    .style-popover img {
+        width: 220px;
+        height: 350px;
+    }
+</style>
+
+<div id="index" class="category-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">商品分类</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                    {if $auth->check('shopro/category/add')}
+                    <el-button icon="Plus" type="primary" @click="onAdd">添加</el-button>
+                    {/if}
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe>
+                <el-table-column prop="id" label="ID" min-width="90"> </el-table-column>
+                <el-table-column prop="name" label="分类名称" min-width="100">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.name || '-' }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="style" label="分类样式" min-width="100">
+                    <template #default="scope">
+                        <el-popover popper-class="style-popover sa-popper" placement="right-start" trigger="hover">
+                            <img :src="`/assets/addons/shopro/img/category/${scope.row.style}.png`" />
+                            <template #reference>
+                                <img class="style" :src="`/assets/addons/shopro/img/category/${scope.row.style}.png`" />
+                            </template>
+                        </el-popover>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="weigh" label="权重" min-width="100">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.weigh || '0' }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="操作" min-width="120">
+                    <template #default="scope">
+                        {if $auth->check('shopro/category/edit')}
+                        <el-button type="primary" link @click="onEdit(scope.row.id)">编辑</el-button>
+                        {/if}
+                        <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                            title="确认删除这条记录?" @confirm="onDelete(scope.row.id)">
+                            <template #reference>
+                                {if $auth->check('shopro/category/delete')}
+                                <el-button type="danger" link>删除</el-button>
+                                {/if}
+                            </template>
+                        </el-popconfirm>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

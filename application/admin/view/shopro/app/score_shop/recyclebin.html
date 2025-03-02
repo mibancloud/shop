@@ -1,0 +1,54 @@
+{include file="/shopro/common/script" /}
+
+<div id="recyclebin" class="score-shop-recyclebin" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @selection-change="onChangeSelection"
+                @sort-change="onChangeSort">
+                <el-table-column type="selection" width="48" align="center"></el-table-column>
+                <el-table-column prop="id" label="ID" min-width="90" sortable="custom"></el-table-column>
+                <el-table-column label="名称" min-width="100">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.title || '-' }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="deletetime" label="删除时间" min-width="172" sortable="custom"></el-table-column>
+                <el-table-column fixed="right" label="操作" min-width="120">
+                    <template #default="scope">
+                        {if $auth->check('shopro/app/score_shop/restore')}
+                        <el-button type="primary" link @click="onRestore(scope.row.id)">还原</el-button>
+                        {/if}
+                        <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                            title="确认销毁这条记录?" @confirm="onDestroy(scope.row.id)">
+                            <template #reference>
+                                {if $auth->check('shopro/app/score_shop/destroy')}
+                                <el-button type="danger" link>销毁</el-button>
+                                {/if}
+                            </template>
+                        </el-popconfirm>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-between sa-flex-wrap">
+            <div class="sa-batch sa-flex">
+                <div class="tip">
+                    已选择 <span>{{batchHandle.data.length}}</span> 项</div>
+                <div class="sa-flex">
+                    {if $auth->check('shopro/app/score_shop/restore')}
+                    <el-button type="primary" :disabled="!batchHandle.data.length" @click="onBatchHandle('restore')">还原
+                    </el-button>
+                    {/if}
+                    {if $auth->check('shopro/app/score_shop/destroy')}
+                    <el-button type="danger" :disabled="!batchHandle.data.length" @click="onBatchHandle('destroy')">销毁
+                    </el-button>
+                    {/if}
+                    {if $auth->check('shopro/app/score_shop/destroy')}
+                    <el-button type="danger" @click="onBatchHandle('all')">清空回收站</el-button>
+                    {/if}
+                </div>
+            </div>
+            <sa-pagination class="is-ellipsis" v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+</div>

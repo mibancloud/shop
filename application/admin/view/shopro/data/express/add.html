@@ -1,0 +1,24 @@
+{include file="/shopro/common/script" /}
+
+<div id="addEdit" class="express-form" v-cloak>
+  <el-container class="panel-block">
+    <el-main>
+      <el-scrollbar height="100%">
+        <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+          <el-form-item label="快递公司" prop="name">
+            <el-input class="sa-w-360" v-model="form.model.name" placeholder="请输入快递公司"></el-input>
+          </el-form-item>
+          <el-form-item label="快递编码" prop="code">
+            <el-input class="sa-w-360" v-model="form.model.code" placeholder="请输入快递编码"></el-input>
+          </el-form-item>
+          <el-form-item label="权重" prop="weigh">
+            <el-input class="sa-w-360" v-model="form.model.weigh" placeholder="请输入权重" type="number"></el-input>
+          </el-form-item>
+        </el-form>
+      </el-scrollbar>
+    </el-main>
+    <el-footer class="sa-footer--submit sa-flex sa-row-right">
+      <el-button type="primary" @click="onConfirm">确定</el-button>
+    </el-footer>
+  </el-container>
+</div>

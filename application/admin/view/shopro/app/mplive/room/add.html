@@ -1,0 +1,134 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .desc {
+        font-size: 14px;
+        color: #999999;
+        margin-left: 12px;
+    }
+
+    .qrcode-img {
+        width: 150px;
+        height: 150px;
+    }
+</style>
+
+<div id="addEdit" class="molive-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="120px">
+                    <el-form-item label="直播类型" prop="type">
+                        <div>
+                            <el-radio-group v-model="form.model.type">
+                                <el-radio :label="0">手机直播</el-radio>
+                                <el-radio :label="1">推流设备直播</el-radio>
+                            </el-radio-group>
+                            <div class="desc" v-if="form.model.type === 0">通过“小程序直播”小程序开播</div>
+                            <div class="desc" v-if="form.model.type === 1">通过第三方推流设备发起直播，请自行定义画面宽高比</div>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="直播间标题" prop="name">
+                        <el-input v-model="form.model.name" placeholder="请输入直播间标题"></el-input>
+                    </el-form-item>
+                    <el-form-item label="背景图" prop="cover_img">
+                        <sa-uploader v-model="form.model.cover_img" fileType="image"></sa-uploader>
+                        <div class="desc"> 直播间背景图，图片建议像素1080*1920，大小不超过2M </div>
+                    </el-form-item>
+                    <el-form-item label="分享图" prop="share_img">
+                        <sa-uploader v-model="form.model.share_img" fileType="image"></sa-uploader>
+                        <div class="desc"> 直播间分享图，图片建议像素800*640，大小不超过1M </div>
+                    </el-form-item>
+                    <el-form-item label="封面图" prop="feeds_img">
+                        <sa-uploader v-model="form.model.feeds_img" fileType="image"></sa-uploader>
+                        <div class="desc">
+                            购物直播频道封面图，图片建议像素800*800，大小不超过100KB
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="开播时间" prop="date_time">
+                        <div>
+                            <el-date-picker v-model="form.model.date_time" type="datetimerange"
+                                value-format="YYYY-MM-DD HH:mm:ss" format="YYYY-MM-DD HH:mm:ss"
+                                :default-time="defaultTime"
+                                range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间"
+                                prefix-icon="Calendar" :editable="false" :disabled-date="disabledDate" />
+                        </div>
+                        <div class="desc">
+                            开播时间需要在当前时间的30分钟后 并且 开始时间不能在 6 个月后<br />
+                            开播时间和结束时间间隔不得短于30分钟，不得超过72小时<br />
+                            开播时间段仅供参考，不是实际直播间可以开播的时间。<br />
+                            直播间在开始时间前也可以开播，并且到结束时间后不会强制结束。<br />
+                            若到结束时间仍未开播，则直播间无法再开播。
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="主播昵称" prop="anchor_name">
+                        <el-input v-model="form.model.anchor_name" placeholder="请输入主播昵称"></el-input>
+                    </el-form-item>
+                    <el-form-item label="主播微信账号" prop="anchor_wechat">
+                        <div>
+                            <el-input v-model="form.model.anchor_wechat" placeholder="请输入主播微信账号"></el-input>
+                            <div class="desc">
+                                每个直播间需要绑定一个用作核实主播身份，不会展示给观众。<br />
+                                主播微信号，如果未实名认证，需要先前往“小程序直播”小程序进行实名验证。
+                            </div>
+
+                            <el-popover :width="180" trigger="click">
+                                <template #reference>
+                                    <el-button class="is-link" type="primary">小程序认证</el-button>
+                                </template>
+                                <img class="qrcode-img" src="/assets/addons/shopro/img/live-qrcode.png" />
+                            </el-popover>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="主播副号" prop="sub_anchor_wechat">
+                        <el-input v-model="form.model.sub_anchor_wechat" placeholder="请输入主播副号"></el-input>
+                    </el-form-item>
+                    <el-form-item label="官方收录">
+                        <div>
+                            <el-switch v-model="form.model.is_feeds_public" :active-value="1"
+                                :inactive-value="0"></el-switch>
+                            <div class="desc">
+                                开启后本场直播将有可能被官方推荐。<br />
+                                此项设置在直播间创建完成后可以在控制台内修改。
+                            </div>
+                        </div>
+                    </el-form-item>
+
+                    <el-form-item label="允许点赞">
+                        <el-radio-group v-model="form.model.close_like">
+                            <el-radio :label="0">开启</el-radio>
+                            <el-radio :label="1">关闭</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="展示商品货架">
+                        <el-radio-group v-model="form.model.close_goods">
+                            <el-radio :label="0">开启</el-radio>
+                            <el-radio :label="1">关闭</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="允许评论">
+                        <el-radio-group v-model="form.model.close_comment">
+                            <el-radio :label="0">开启</el-radio>
+                            <el-radio :label="1">关闭</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="允许回放">
+                        <el-radio-group v-model="form.model.close_replay">
+                            <el-radio :label="0">开启</el-radio>
+                            <el-radio :label="1">关闭</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="打开客服">
+                        <el-radio-group v-model="form.model.close_kf">
+                            <el-radio :label="0">开启</el-radio>
+                            <el-radio :label="1">关闭</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

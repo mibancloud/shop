@@ -1,0 +1,68 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .score-shop-select .goods-item .goods-image {
+        margin-right: 12px;
+    }
+
+    .score-shop-select .goods-item .goods-title {
+        height: 20px;
+        line-height: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--sa-font);
+    }
+
+    .score-shop-select .goods-item .goods-subtitle {
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subfont);
+        margin-bottom: 6px;
+    }
+</style>
+
+<div id="select" class="score-shop-select" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @selection-change="onChangeSelection">
+                <el-table-column v-if="state.multiple" type="selection" width="48"></el-table-column>
+                <el-table-column prop="id" label="ID" min-width="80"></el-table-column>
+                <el-table-column label="商品信息" min-width="440">
+                    <template #default="scope">
+                        <div class="goods-item sa-flex">
+                            <sa-image :url="scope.row.image" size="64"></sa-image>
+                            <div>
+                                <div class="goods-title sa-table-line-1">{{scope.row.title}}</div>
+                                <div class="goods-subtitle sa-table-line-1">{{scope.row.subtitle}}</div>
+                                <div v-if="scope.row.is_sku">
+                                    多规格
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="积分现金" min-width="200">
+                    <template #default="scope">
+                        <div class="sa-flex">
+                            {{ scope.row.score_price.score }}积分
+                            <div v-if="Number(scope.row.score_price.price)">+￥{{ scope.row.score_price.price }}</div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="score_sales" label="销量" min-width="100"></el-table-column>
+                <el-table-column prop="score_stock" label="库存" min-width="100"></el-table-column>
+                <el-table-column v-if="!state.multiple" label="操作" width="80">
+                    <template #default="scope">
+                        <el-button type="primary" link @click="onSelect(scope.row)">选择</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex" :class="state.multiple ? 'sa-row-between' : 'sa-row-right'">
+            <sa-pagination class="is-ellipsis" v-model="pagination" @pagination-change="getData"></sa-pagination>
+            <el-button v-if="state.multiple" type="primary" @click="onConfirm">确 定</el-button>
+        </el-footer>
+    </el-container>
+</div>

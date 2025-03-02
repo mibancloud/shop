@@ -1,0 +1,201 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .order-dispatch .title {
+        height: 32px;
+        line-height: 32px;
+        padding: 0 16px;
+        background: var(--sa-table-header-bg);
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subtitle);
+        margin-bottom: 16px;
+    }
+
+    .order-dispatch .main {
+        margin-left: 16px;
+    }
+
+    .order-dispatch .left {
+        color: var(--sa-subfont);
+    }
+
+    .order-dispatch.right {
+        color: var(--sa-subtitle);
+    }
+
+    .order-dispatch .address .consignee {
+        margin-bottom: 8px;
+    }
+
+    .order-dispatch .address .pcd {
+        margin-bottom: 16px;
+    }
+</style>
+
+<div id="dispatch" class="order-dispatch" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-tabs class="mb-2" v-model="state.dispatch_type">
+                    <el-tab-pane v-if="state.nosendItem.length" label="快递发货" name="express"></el-tab-pane>
+                    <el-tab-pane v-if="state.customItem.length" label="手动发货" name="custom"></el-tab-pane>
+                </el-tabs>
+                <el-alert class="mb-4" type="warning">
+                    <template #title>温馨提示：正在售后中的商品，请先处理完售后再发货</template>
+                </el-alert>
+                <div v-if="state.dispatch_type=='express'">
+                    <el-table class="sa-table" :data="state.nosendItem" @selection-change="onChangeSelection">
+                        <el-table-column type="selection" width="48"></el-table-column>
+                        <el-table-column label="商品信息" min-width="360">
+                            <template #default="scope">
+                                <div class="sa-flex">
+                                    <sa-image :url="scope.row.goods_image" size="40"></sa-image>
+                                    <div class="ml-2">{{ scope.row.goods_title }}</div>
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="goods_num" label="数量" min-width="80"></el-table-column>
+                        <el-table-column prop="dispatch_status_text" label="状态" min-width="140">
+                            <template #default="scope">
+                                {{ scope.row.dispatch_status_text }}/{{ scope.row.aftersale_status_text }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="快递单号" min-width="80">
+                            <template #default>-</template>
+                        </el-table-column>
+                    </el-table>
+                    <div class="address">
+                        <div class="title">配送信息</div>
+                        <div class="main" v-if="state.detail.address">
+                            <div class="consignee sa-flex">
+                                <div class="left">收货信息：</div>
+                                <div class="right">
+                                    {{ state.detail.address.consignee }}&nbsp;
+                                    {{ state.detail.address.mobile }}
+                                </div>
+                            </div>
+                            <div class="pcd sa-flex sa-col-top">
+                                <div class="left">收货地址：</div>
+                                <div class="right">
+                                    <div>
+                                        {{ state.detail.address.province_name }}&nbsp;
+                                        {{ state.detail.address.city_name }}&nbsp;
+                                        {{ state.detail.address.district_name }}
+                                    </div>
+                                    <div>{{ state.detail.address.address }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="express">
+                        <div class="title">物流信息</div>
+                        <div class="main">
+                            <el-form-item label="发货方式">
+                                <el-radio-group v-model="express.method">
+                                    <el-radio label="input">物流快递</el-radio>
+                                    <el-radio label="api">一键发货</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                            <el-form v-if="express.method == 'input'" ref="expressRef" :inline="true"
+                                :model="express.form.model"
+                                :rules="express.method == 'input' ? express.form.rules : {}">
+                                <el-form-item label="快递公司" prop="code">
+                                    <el-select v-model="express.form.model.code" placeholder="请选择快递公司"
+                                        @change="onChangeExpressCode" filterable remote reserve-keyword
+                                        :remote-method="remoteMethod" :loading="deliverCompany.loading"
+                                        autocomplete="none">
+                                        <el-option v-for="dc in deliverCompany.select" :key="dc" :label="dc.name"
+                                            :value="dc.code" :ref="`express-${dc.code}`" :data-name="dc.name">{{
+                                            dc.name
+                                            }}&nbsp;({{ dc.code }})</el-option>
+                                        <sa-pagination class="is-ellipsis" v-model="deliverCompany.pagination"
+                                            @pagination-change="getExpressSelect">
+                                        </sa-pagination>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="快递单号" prop="no">
+                                    <el-input v-model="express.form.model.no" placeholder="请输入快递单号"></el-input>
+                                </el-form-item>
+                            </el-form>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="state.dispatch_type=='custom'">
+                    <el-table class="sa-table" :data="state.customItem" @selection-change="onChangeSelection">
+                        <el-table-column type="selection" width="48"></el-table-column>
+                        <el-table-column label="商品信息" min-width="360">
+                            <template #default="scope">
+                                <div class="sa-flex">
+                                    <sa-image :url="scope.row.goods_image" size="40"></sa-image>
+                                    <div class="ml-2">{{ scope.row.goods_title }}</div>
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="goods_num" label="数量" min-width="80"></el-table-column>
+                        <el-table-column prop="dispatch_status_text" label="状态" min-width="140">
+                            <template #default="scope">
+                                {{ scope.row.dispatch_status_text }}/{{ scope.row.aftersale_status_text }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="快递单号" min-width="80">
+                            <template #default>-</template>
+                        </el-table-column>
+                    </el-table>
+                    <el-form class="mt-4">
+                        <el-form-item label="发货类型：">
+                            <el-radio-group v-model="state.custom_type" @change="onChangeAutosendType">
+                                <el-radio label="text">固定内容</el-radio>
+                                <el-radio label="params">自定义内容</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item v-if="state.custom_type=='text'" label="发货内容：">
+                            <el-input v-model="state.custom_content" placeholder="请输入自动发货内容"></el-input>
+                        </el-form-item>
+                        <el-form-item v-if="state.custom_type=='params'" label="发货内容：">
+                            <div class="sa-template-wrap">
+                                <div class="header sa-flex">
+                                    <div class="key">参数名称</div>
+                                    <div class="key">内容</div>
+                                    <div class="oper">操作</div>
+                                </div>
+                                <draggable v-model="state.custom_content" :animation="300"
+                                    handle=".sortable-drag" item-key="element">
+                                    <template #item="{ element, index }">
+                                        <div class="item">
+                                            <el-form-item class="key">
+                                                <el-input placeholder="请输入" v-model="element.title">
+                                                </el-input>
+                                            </el-form-item>
+                                            <el-form-item class="key">
+                                                <el-input placeholder="请输入" v-model="element.content">
+                                                </el-input>
+                                            </el-form-item>
+                                            <el-form-item class="oper">
+                                                <el-popconfirm width="fit-content" confirm-button-text="确认"
+                                                    cancel-button-text="取消" title="确认删除这条记录?"
+                                                    @confirm="onDeleteContent(index)">
+                                                    <template #reference>
+                                                        <el-button type="danger" link @click.stop>删除
+                                                        </el-button>
+                                                    </template>
+                                                </el-popconfirm>
+                                                <i class="iconfont iconmove sortable-drag"></i>
+                                            </el-form-item>
+                                        </div>
+                                    </template>
+                                </draggable>
+                                <el-button class="add-params" type="primary" plain icon="Plus" @click="onAddContent">添加
+                                </el-button>
+                            </div>
+                        </el-form-item>
+                    </el-form>
+                </div>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" :disabled="batchHandle.data.length == 0" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

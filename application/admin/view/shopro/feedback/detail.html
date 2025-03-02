@@ -1,0 +1,46 @@
+{include file="/shopro/common/script" /}
+
+<div id="detail" class="feedback-detail" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item label="反馈用户">
+                        <sa-user-profile :user="form.model.user" :id="form.model.user_id"></sa-user-profile>
+                    </el-form-item>
+                    <el-form-item label="反馈类型">
+                        {{ form.model.type }}
+                    </el-form-item>
+                    <el-form-item label="反馈内容">
+                        {{ form.model.content }}
+                    </el-form-item>
+                    <el-form-item label="截图">
+                        <el-scrollbar>
+                            <div class="sa-flex">
+                                <sa-image class="mr-1" v-for="item in form.model.images" :url="item" size="30">
+                                </sa-image>
+                            </div>
+                        </el-scrollbar>
+                    </el-form-item>
+                    <el-form-item label="联系电话">
+                        {{ form.model.phone }}
+                    </el-form-item>
+                    <el-form-item label="是否处理">
+                        <el-radio-group v-model="form.model.status">
+                            <el-radio label="0">待处理</el-radio>
+                            <el-radio label="1">已处理</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="系统备注">
+                        <el-input v-model="form.model.remark" placeholder="请输入系统备注"></el-input>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            {if $auth->check('shopro/feedback/edit')}
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+            {/if}
+        </el-footer>
+    </el-container>
+</div>

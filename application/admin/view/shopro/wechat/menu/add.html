@@ -1,0 +1,293 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .menu-left {
+        width: 100%;
+        max-width: 268px;
+        height: 420px;
+        border: 1px solid var(--sa-border);
+        margin-right: 30px;
+        padding-top: 382px;
+        font-size: 12px;
+        position: relative;
+    }
+
+    .menu-left .title {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 36px;
+        line-height: 36px;
+        text-align: center;
+        background: var(--sa-table-header-bg);
+    }
+
+    .menu-left .menu-left-bottom {
+        position: relative;
+        height: 36px;
+        border-top: 1px solid var(--sa-border);
+    }
+
+    .menu-left .menu-left-bottom .left-icon {
+        width: 36px;
+        font-size: 20px;
+    }
+
+    .menu-left .menu-left-bottom .left-add {
+        height: 36px;
+        flex: 1;
+        color: var(--sa-font);
+        border-left: 1px solid var(--sa-border);
+    }
+
+    .menu-left .menu-left-bottom .menu-item {
+        width: 100%;
+        height: 36px;
+        padding: 0 4px;
+        border: 1px solid var(--sa-border);
+        border-bottom: none;
+        line-height: 36px;
+        text-align: center;
+        color: var(--sa-font);
+    }
+
+    .menu-left .menu-left-bottom .menu-item.is-active {
+        border: 1px solid var(--el-color-primary);
+        color: var(--el-color-primary);
+    }
+
+    .menu-left .menu-left-bottom .draggable-item {
+        position: relative;
+        border: none;
+        border-left: 1px solid var(--sa-border);
+        flex: 1;
+    }
+
+    .menu-left .menu-left-bottom .draggable-item .menu-level2-body {
+        display: none;
+        position: absolute;
+        bottom: 48px;
+        width: calc(100% + 2px);
+    }
+
+    .menu-left .menu-left-bottom .draggable-item .menu-level2-body .menu-level2-add {
+        width: 100%;
+        border: 1px solid var(--sa-border);
+        position: relative;
+    }
+
+    .menu-left .menu-left-bottom .draggable-item .menu-level2-body .menu-level2-add::before {
+        content: '';
+        width: 0;
+        height: 0;
+        border: 8px solid;
+        position: absolute;
+        bottom: -16px;
+        border-color: var(--sa-border) transparent transparent;
+        z-index: 1;
+    }
+
+    .menu-left .menu-left-bottom .draggable-item .menu-level2-body .menu-level2-add::after {
+        content: '';
+        width: 0;
+        height: 0;
+        border: 7px solid;
+        position: absolute;
+        bottom: -14px;
+        left: 50%;
+        margin-left: -5px;
+        border-color: var(--sa-background-assist) transparent transparent;
+        z-index: 2;
+    }
+
+    .menu-left .menu-left-bottom .draggable-item .menu-level2-body.menu-level2-body-show {
+        display: block;
+    }
+
+    .menu-left .menu-left-tip {
+        text-align: center;
+        height: 12px;
+        line-height: 12px;
+        font-size: 12px;
+        margin: 8px 0 0 0;
+        color: var(--el-color-warning);
+    }
+
+    .menu-right-tip {
+        width: 100%;
+        height: 420px;
+    }
+
+    .menu-right {
+        width: 100%;
+        max-width: 858px;
+        min-height: 320px;
+        padding: 20px;
+        border: 1px solid var(--sa-border);
+        border-radius: 8px;
+        background: var(--sa-table-header-bg);
+    }
+
+    .menu-right .title {
+        font-size: 14px;
+        color: var(--sa-title);
+    }
+</style>
+
+<div id="addEdit" class="menu-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form class="mb-4" :model="form.model" :rules="form.rules" ref="formRef" label-width="90px">
+                    <el-form-item label="菜单名称" prop="name">
+                        <el-input v-model="form.model.name" placeholder="请输入菜单名称"></el-input>
+                    </el-form-item>
+                </el-form>
+                <div class="menu-content sa-flex sa-col-top">
+                    <div class="menu-left">
+                        <div class="title">公众号菜单</div>
+                        <div class="menu-left-bottom sa-flex">
+                            <div class="left-icon sa-flex sa-row-center">
+                                <i class="iconfont iconkeyboard"></i>
+                            </div>
+                            <draggable :list="form.model.rules" class="sa-flex sa-flex-1" animation="100"
+                                item-key="event">
+                                <template #item="{ element, index }">
+                                    <div class="draggable-item menu-item sa-flex sa-row-center cursor-pointer"
+                                        :class="element.selected ? 'is-active' : ''"
+                                        @click.stop="onEditMenu(index, null)">
+                                        <span v-if="element.sub_button && element.sub_button.length > 0"
+                                            class="mr-1">≡</span>
+                                        <span class="sa-line-1">{{ element.name }}</span>
+                                        <div v-if="element.sub_button" class="menu-level2-body"
+                                            :class="element.show ? 'menu-level2-body-show' : ''" :style="{
+                                  'border-bottom':
+                                    element.sub_button.length >= 5 ? '1px solid #E7E7EB' : 'none',
+                                }">
+                                            <draggable :list="element.sub_button" animation="500" item-key="event">
+                                                <template #item="scope">
+                                                    <div>
+                                                        <div class="menu-item sa-line-1"
+                                                            :class="scope.element.selected ? 'is-active' : ''"
+                                                            @click.stop="onEditMenu(index, scope.index)">
+                                                            {{scope.element.name }}</div>
+                                                    </div>
+                                                </template>
+                                            </draggable>
+                                            <div class="menu-item menu-level2-add cursor-pointer"
+                                                v-if="element.sub_button.length < 5" @click.stop="onAddMenu(index, 2)">
+                                                <el-icon>
+                                                    <Plus />
+                                                </el-icon>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template #footer>
+                                    <div class="left-add sa-flex sa-row-center cursor-pointer"
+                                        v-if="form.model.rules.length < 3" @click.stop="onAddMenu(null, 1)">
+                                        <el-icon>
+                                            <Plus />
+                                        </el-icon>
+                                    </div>
+                                </template>
+                            </draggable>
+                        </div>
+                        <div class="menu-left-tip mt-2">可直接拖动菜单排序</div>
+                    </div>
+                    <div class="menu-right-tip sa-flex sa-row-center" v-if="!state.rightShow">您尚未添加自定义菜单</div>
+                    <div class="menu-right" v-if="state.rightShow">
+                        <div class="sa-flex sa-row-between mb-4">
+                            <div class="title">菜单名称</div>
+                            <el-button type="danger" link @click="onDeleteMenu">删除菜单</el-button>
+                        </div>
+                        <el-form :model="state.right" label-width="86px">
+                            <el-form-item :label="state.selectLevel == 2 ? '子菜单名称' : '菜单名称'" prop="name">
+                                <el-input v-model="state.right.name"></el-input>
+                                <div class="tip">菜单名称字数不多于4个汉字或8个字母</div>
+                            </el-form-item>
+                            <el-form-item v-if="
+                            (state.selectLevel == 1 &&
+                              (!state.right.sub_button || state.right.sub_button.length == 0)) ||
+                            state.selectLevel == 2
+                          " :label="state.selectLevel == 2 ? '子页面内容' : '页面内容'">
+                                <el-radio-group v-model="state.right.type" @change="onChangeType">
+                                    <el-radio label="view">跳转网页</el-radio>
+                                    <el-radio label="miniprogram">跳转小程序</el-radio>
+                                    <el-radio label="click">回复素材</el-radio>
+                                </el-radio-group>
+                                <!-- <div class="tip">点击该菜单会跳到页面链接</div> -->
+                            </el-form-item>
+                            <template v-if="!state.right.sub_button || state.right.sub_button.length == 0">
+                                <template v-if="state.right.type == 'miniprogram'">
+                                    <el-form-item label="AppId">
+                                        <el-input v-model="state.right.appid"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="小程序路径">
+                                        <el-input v-model="state.right.pagepath"></el-input>
+                                    </el-form-item>
+                                    <el-form-item style="margin-top: -20px">
+                                        <div class="tip" v-if="state.right.type == 'view'">点击该菜单会跳到页面链接</div>
+                                        <div class="tip" v-if="state.right.type == 'miniprogram'">小程序路径不可用时将跳转备用页面链接
+                                        </div>
+                                    </el-form-item>
+                                </template>
+                                <template v-if="state.right.type == 'view' || state.right.type == 'miniprogram'">
+                                    <el-form-item label="备用页面链接">
+                                        <el-input v-model="state.right.url"></el-input>
+                                    </el-form-item>
+                                    <el-form-item>
+                                        <el-button @click.stop="onSelectUrl">选择路径</el-button>
+                                    </el-form-item>
+                                </template>
+                                <!-- 回复素材 -->
+                                <template v-if="state.right.type == 'click'">
+                                    <el-form-item label="消息类型">
+                                        <el-radio-group v-model="state.right.media_type" @change="onChangeMediaType">
+                                            <el-radio label="news">图文消息</el-radio>
+                                            <el-radio label="image">图片</el-radio>
+                                            <el-radio label="video">视频</el-radio>
+                                            <el-radio label="voice">语音</el-radio>
+                                            <el-radio label="text">文本</el-radio>
+                                            <el-radio label="link">链接</el-radio>
+                                        </el-radio-group>
+                                    </el-form-item>
+                                    <el-form-item v-if="state.right.media_type" label="消息内容">
+                                        <el-select popper-class="material-select" v-model="state.right.media_id">
+                                            <el-option v-for="item in material.select" :key="item.media_id"
+                                                :label="item.title" :value="item.media_id + ''">
+                                                <div class="sa-flex">
+                                                    <sa-image v-if="
+                                        item.type == 'news' ||
+                                        item.type == 'image' ||
+                                        item.type == 'video' ||
+                                        item.type == 'link'
+                                      " :url="item.thumb_url" size="30"></sa-image>
+                                                    <div class="title ml-2 sa-line-1">
+                                                        {{ item.title }}
+                                                    </div>
+                                                    <div class="media_id ml-2 sa-line-1">
+                                                        {{ item.media_id }}
+                                                    </div>
+                                                </div>
+                                            </el-option>
+                                            <sa-pagination class="is-ellipsis" v-model="material.pagination"
+                                                @pagination-change="getMaterialSelect">
+                                            </sa-pagination>
+                                        </el-select>
+                                    </el-form-item>
+                                </template>
+                            </template>
+                        </el-form>
+                    </div>
+                </div>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" plain @click="onConfirm">确定</el-button>
+            {if $auth->check('shopro/wechat/menu/publish')}
+            <el-button type="primary" @click="onPublish">确定&发布</el-button>
+            {/if}
+        </el-footer>
+    </el-container>
+</div>

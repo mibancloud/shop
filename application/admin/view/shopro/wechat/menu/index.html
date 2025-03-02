@@ -1,0 +1,122 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .menu-index .menu-current {
+        border-bottom: 1px solid var(--sa-space);
+    }
+
+    .menu-index .menu-current .left {
+        flex-shrink: 0;
+        font-size: 14px;
+        color: var(--sa-subtitle);
+    }
+
+    .menu-index .menu-current .right {
+        flex: 1;
+        height: 32px;
+        line-height: 32px;
+        border: 1px solid var(--sa-border);
+        box-sizing: border-box;
+        border-radius: 4px;
+        position: relative;
+    }
+
+    .menu-index .menu-current .right .menu-current-tag {
+        height: 30px;
+    }
+
+    .menu-index .menu-current .right .el-button {
+        position: absolute;
+        top: -1px;
+        right: 0;
+    }
+</style>
+
+<div id="index" class="menu-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="menu-current sa-title sa-flex sa-row-between">
+                <div class="left mr-4">当前菜单</div>
+                <div class="right">
+                    <el-scrollbar>
+                        <div class="menu-current-tag sa-flex ml-1">
+                            <el-tag class="mr-1" v-for="item in state.current" :key="item">{{ item.name }}</el-tag>
+                        </div>
+                    </el-scrollbar>
+                    {if $auth->check('shopro/wechat/menu/copy')}
+                    <el-button type="primary" @click="onCopy(0)">复制</el-button>
+                    {/if}
+                </div>
+            </div>
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">自定义菜单</div>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    {if $auth->check('shopro/wechat/menu/add')}
+                    <el-button icon="Plus" type="primary" @click="onAdd">添加</el-button>
+                    {/if}
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table class="sa-table" height="100%" stripe :data="state.data" @sort-change="onChangeSort">
+                <el-table-column sortable="custom" prop="id" label="ID" min-width="90"> </el-table-column>
+                <el-table-column label="名称" min-width="160">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.name || '-' }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="菜单名称" min-width="260">
+                    <template #default="scope">
+                        <el-scrollbar>
+                            <div class="sa-flex">
+                                <el-tag class="mr-1" v-for="item in scope.row.rules" :key="item.id">{{ item.name }}
+                                </el-tag>
+                            </div>
+                        </el-scrollbar>
+                    </template>
+                </el-table-column>
+                <el-table-column sortable="custom" prop="updatetime" label="更新时间" width="172">
+                    <template #default="scope">
+                        {{ scope.row.updatetime || '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="菜单状态" width="100">
+                    <template #default="scope">
+                        <div :class="scope.row.status == 0 ? 'sa-color--info' : 'sa-color--success'">
+                            {{ scope.row.status_text}}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="操作" min-width="200">
+                    <template #default="scope">
+                        {if $auth->check('shopro/wechat/menu/publish')}
+                        <el-button type="primary" link @click="onPublish(scope.row.id)">发布</el-button>
+                        {/if}
+                        {if $auth->check('shopro/wechat/menu/edit')}
+                        <el-button type="primary" link @click="onEdit(scope.row.id)">编辑</el-button>
+                        {/if}
+                        {if $auth->check('shopro/wechat/menu/copy')}
+                        <el-button type="primary" link @click="onCopy(scope.row.id)">复制</el-button>
+                        {/if}
+                        <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                            title="确认删除这条记录?" @confirm="onDelete(scope.row.id)">
+                            <template #reference>
+                                {if $auth->check('shopro/wechat/menu/delete')}
+                                <el-button type="danger" link>删除</el-button>
+                                {/if}
+                            </template>
+                        </el-popconfirm>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+</div>

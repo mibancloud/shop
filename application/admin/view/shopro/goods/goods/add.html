@@ -1,0 +1,889 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .goods-form .el-header {
+        --el-header-padding: 10px 20px 0;
+        --el-header-height: fit-content;
+    }
+
+    .goods-form .el-header .el-tabs__header {
+        margin: 0;
+    }
+
+    .goods-form .goods-type {
+        width: 140px;
+        height: 56px;
+        border: 1px solid rgb(230, 230, 230);
+        border-radius: 4px;
+        margin-left: 16px;
+        cursor: pointer;
+    }
+
+    .goods-form .goods-type.is-active {
+        border: 1px solid var(--el-color-primary);
+    }
+
+    .goods-form .title {
+        width: 100%;
+        height: 40px;
+        line-height: 40px;
+        padding-left: 16px;
+        background: var(--sa-table-striped);
+        margin: 24px 0 16px;
+        font-weight: 500;
+        font-size: 14px;
+        color: #434343;
+    }
+
+    .goods-form .sku-wrap {
+        width: 100%;
+        border: 1px solid var(--sa-border);
+        padding: 8px;
+        box-sizing: border-box;
+    }
+
+    .goods-form .sku-wrap .sku {
+        width: 100%;
+        min-height: 100px;
+    }
+
+    .goods-form .sku-wrap .sku .sku-key {
+        width: 100%;
+        height: 40px;
+        color: var(--sa-subtitle);
+        padding: 0 16px;
+        background: var(--sa-table-header-bg);
+        font-size: 14px;
+    }
+
+    .goods-form .sku-wrap .sku .sku-key .sku-value-title {
+        margin-right: 16px;
+    }
+
+    .goods-form .sku-wrap .sku .sku-key .sku-key-input {
+        width: 120px;
+    }
+
+    .goods-form .sku-wrap .sku .sku-key .sku-key-icon {
+        color: var(--el-color-primary);
+        cursor: pointer;
+    }
+
+    .goods-form .sku-wrap .sku .sku-value {
+        padding: 12px 0 0 30px;
+        font-size: 14px;
+        color: var(--sa-subtitle);
+    }
+
+    .goods-form .sku-wrap .sku .sku-value .sku-value-title {
+        height: 32px;
+        margin-right: 16px;
+        margin-bottom: 16px;
+    }
+
+    .goods-form .sku-wrap .sku .sku-value .sku-value-box {
+        position: relative;
+        margin-right: 24px;
+        margin-bottom: 16px;
+    }
+
+    .goods-form .sku-wrap .sku .sku-value .sku-value-box .sku-value-input {
+        width: 104px;
+    }
+
+    .goods-form .sku-wrap .sku .sku-value .sku-value-box .sku-value-icon {
+        position: absolute;
+        right: -8px;
+        top: -8px;
+        width: 16px;
+        height: 16px;
+        color: var(--el-color-primary);
+    }
+
+    .goods-form .sku-wrap .sku .sku-value .sku-value-add {
+        margin-right: 24px;
+        margin-bottom: 16px;
+    }
+
+    .goods-form .sku-wrap .sku-tools {
+        width: 100%;
+        height: 40px;
+        color: #434343;
+        padding-left: 16px;
+        background: var(--sa-table-header-bg);
+        font-size: 12px;
+    }
+
+    .goods-form .sku-table-wrap {
+        width: 100%;
+        overflow: auto;
+        margin-top: 16px;
+    }
+
+    .goods-form .sku-table-wrap .sku-table {
+        width: 100%;
+        border: 1px solid var(--sa-border);
+    }
+
+    .goods-form .sku-table-wrap .sku-table tbody {
+        font-size: 12px;
+    }
+
+    .goods-form .sku-table-wrap .sku-table th {
+        font-size: 12px;
+        color: var(--subtitle);
+        height: 32px;
+        line-height: 1;
+        padding-left: 12px;
+        box-sizing: border-box;
+        text-align: left;
+    }
+
+    .goods-form .sku-table-wrap .sku-table th .sku-table-header-title {
+        margin-right: 10px;
+    }
+
+    .goods-form .sku-table-wrap .sku-table th .th-title {
+        font-size: 12px;
+        color: var(--subtitle);
+        font-weight: bold;
+    }
+
+    .goods-form .sku-table-wrap .sku-table td {
+        min-width: 88px;
+        padding: 0 10px;
+        height: 40px;
+        box-sizing: border-box;
+    }
+
+    .goods-form .sku-table-wrap .sku-table td.image {
+        min-width: 48px;
+    }
+
+    .goods-form .sku-table-wrap .sku-table td.stock {
+        min-width: 138px;
+    }
+
+    .goods-form .sku-table-wrap .sku-table td.stock_warning {
+        min-width: 168px;
+    }
+
+    .goods-form .sku-table-wrap .sku-table td.stock_warning .sku-stock-switch {
+        margin-right: 10px;
+    }
+
+    .goods-form .sku-table-wrap .sku-table td.sn {
+        min-width: 116px;
+    }
+
+    .goods-form .batch-icon {
+        font-size: 12px;
+        color: var(--el-color-primary);
+        margin-left: 8px;
+        cursor: pointer;
+    }
+
+    .sales-show-type .exact,
+    .sales-show-type .sketchy {
+        width: 220px;
+        height: 98px;
+    }
+
+    .stock-show-type .exact,
+    .stock-show-type .sketchy {
+        width: 220px;
+        height: 74px;
+    }
+
+    .goods-form .el-select {
+        flex: 1;
+    }
+
+    .goods-form .category-tag-wrap {
+        flex: 1;
+        min-height: 32px;
+        padding-right: 12px;
+        border-radius: 4px;
+        border: 1px solid var(--sa-border);
+        cursor: pointer;
+        position: relative;
+    }
+
+    .goods-form .category-tag-wrap .el-tag {
+        display: inline-flex;
+        align-items: center;
+        max-width: 100%;
+        margin: 2px 0 2px 6px;
+        text-overflow: ellipsis;
+    }
+
+    .goods-form .category-tag-wrap-suffix {
+        width: 12px;
+        height: 100%;
+        position: absolute;
+        right: 6px;
+        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .goods-form .category-tag-wrap-suffix .circle-close {
+        display: none;
+    }
+
+    .goods-form .category-tag-wrap-suffix.is-active:hover .circle-close {
+        display: block;
+    }
+
+    .goods-form .category-tag-wrap-suffix.is-active:hover .arrow-down {
+        display: none;
+    }
+
+    .category-tooltip {}
+
+    .goods-form .is-error {
+        color: #FF4D4F;
+    }
+    .goods-form .el-affix, .goods-form .el-tabs{
+        width: 100%;
+    }
+
+    .editor-form-item .el-form-item__content {
+        margin-left: 16px !important;
+    }
+
+    .note-editable {
+        height: 300px !important;
+    }
+</style>
+
+<div id="addEdit" class="goods-form" v-cloak>
+    <el-container class="panel-block">
+        <el-header>
+            <el-tabs v-model="state.activeStep" @tab-click="isValidate">
+                <el-tab-pane :name="0">
+                    <template #label>
+                        <div class="sa-flex" :class="validateData['0']?'is-error':''">
+                            基本信息
+                            <el-icon v-if="validateData['0']" class="ml-1">
+                                <warning-filled />
+                            </el-icon>
+                        </div>
+                    </template>
+                </el-tab-pane>
+                <el-tab-pane :name="1">
+                    <template #label>
+                        <div class="sa-flex" :class="validateData['1']?'is-error':''">
+                            价格/库存
+                            <el-icon v-if="validateData['1']" class="ml-1">
+                                <warning-filled />
+                            </el-icon>
+                        </div>
+                    </template>
+                </el-tab-pane>
+                <el-tab-pane :name="2">
+                    <template #label>
+                        <div class="sa-flex" :class="validateData['2']?'is-error':''">
+                            发货设置
+                            <el-icon v-if="validateData['2']" class="ml-1">
+                                <warning-filled />
+                            </el-icon>
+                        </div>
+                    </template>
+                </el-tab-pane>
+                <el-tab-pane :name="3">
+                    <template #label>
+                        <div class="sa-flex" :class="validateData['3']?'is-error':''">
+                            商品参数
+                            <el-icon v-if="validateData['3']" class="ml-1">
+                                <warning-filled />
+                            </el-icon>
+                        </div>
+                    </template>
+                </el-tab-pane>
+                <el-tab-pane :name="4">
+                    <template #label>
+                        <div class="sa-flex" :class="validateData['4']?'is-error':''">
+                            商品详情
+                            <el-icon v-if="validateData['4']" class="ml-1">
+                                <warning-filled />
+                            </el-icon>
+                        </div>
+                    </template>
+                </el-tab-pane>
+            </el-tabs>
+        </el-header>
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef0" label-width="100px">
+                    <div v-show="state.activeStep==0">
+                        <div class="sa-flex mb-4">
+                            <img v-if="!(state.type=='edit' && form.model.type=='virtual')" class="goods-type" :class="form.model.type=='normal'?'is-active':''"
+                                src="/assets/addons/shopro/img/goods/normal.png" @click="onChangeGoodsType('normal')" />
+                            <img v-if="!(state.type=='edit' && form.model.type=='normal')" class="goods-type" :class="form.model.type=='virtual'?'is-active':''"
+                                src="/assets/addons/shopro/img/goods/virtual.png"
+                                @click="onChangeGoodsType('virtual')" />
+                        </div>
+                        <el-form-item label="商品标题" prop="title">
+                            <el-input class="sa-w-360" v-model="form.model.title" placeholder="请输入商品标题"></el-input>
+                        </el-form-item>
+                        <el-form-item label="副标题">
+                            <el-input class="sa-w-360" v-model="form.model.subtitle" placeholder="请输入副标题"></el-input>
+                        </el-form-item>
+                        <el-form-item label="商品主图" prop="image">
+                            <sa-uploader v-model="form.model.image" type="size" @success="onSuccess"></sa-uploader>
+                            <div class="warning"> 作用于商城列表、分享图片；建议尺寸：750*750 px </div>
+                        </el-form-item>
+                        <el-form-item label="轮播图" prop="images">
+                            <sa-uploader v-model="form.model.images" :multiple="true"></sa-uploader>
+                            <div class="warning">
+                                作用于商品详情顶部轮播显示，<br />轮播图可以拖拽调整顺序
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="商品分类">
+                            <div class="sa-w-360">
+                                <el-popover popper-class="category-tooltip sa-popper" effect="light"
+                                    placement="top-start" trigger="click">
+                                    <el-tabs v-model="tempCategory.tabActive">
+                                        <el-tab-pane v-for="tab in category.select" :key="tab" :label="tab.name"
+                                            :name="tab.id + ''">
+                                            <el-cascader-panel v-model="tempCategory.idsArr[tab.id]"
+                                                :ref="(el) => setCategoryRef(el, tab)" :options="tab.children" :props="{
+                                                        multiple: true,
+                                                        checkStrictly: true,
+                                                        value: 'id',
+                                                        label: 'name',
+                                                        children: 'children',
+                                                        emitPath: false,
+                                                    }" @change="onChangeCategoryIds"></el-cascader-panel>
+                                        </el-tab-pane>
+                                    </el-tabs>
+                                    <template #reference>
+                                        <div class="category-tag-wrap">
+                                            <el-tag v-for="(value, key) in tempCategory.label" :key="key" type="info"
+                                                closable @close.stop="onDeleteCategoryIds(key)">{{ value }}</el-tag>
+                                            <div class="category-tag-wrap-suffix"
+                                                :class="JSON.stringify(tempCategory.label) == '{}'?'':'is-active'">
+                                                <el-icon class="arrow-down">
+                                                    <arrow-down />
+                                                </el-icon>
+                                                <el-icon class="circle-close" @click.stop="onClearCategoryIds">
+                                                    <circle-close />
+                                                </el-icon>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </el-popover>
+                                {if $auth->check('shopro/category/add')}
+                                <el-button class="label-tip" type="primary" link @click="onAddCategory">添加商品分类</el-button>
+                                {/if}
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="商品排序">
+                            <el-input class="sa-w-360" v-model="form.model.weigh" placeholder="请输入商品排序" type="number"
+                                :min="0">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="限购类型">
+                            <el-radio-group v-model="form.model.limit_type">
+                                <el-radio label="none">不限购</el-radio>
+                                <el-radio label="daily">每日</el-radio>
+                                <el-radio label="all">累计</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item v-if="form.model.limit_type != 'none'" label="限购数量">
+                            <el-input class="sa-w-360" v-model="form.model.limit_num" placeholder="请输入限购数量" :min="0"
+                                type="number">
+                            </el-input>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="商品状态">
+                            <el-radio-group v-model="form.model.status">
+                                <el-radio label="up">上架</el-radio>
+                                <el-radio label="hidden">隐藏</el-radio>
+                                <el-radio label="down">下架</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+
+                    </div>
+                </el-form>
+                <el-form :model="form.model" :rules="form.rules" ref="formRef1" label-width="100px">
+                    <div v-show="state.activeStep==1">
+                        <el-form-item label="商品规格">
+                            <div class="sa-flex">
+                                <el-radio-group :disabled="state.type == 'edit'" v-model="form.model.is_sku">
+                                    <el-radio :label="0">单规格</el-radio>
+                                    <el-radio :label="1">多规格</el-radio>
+                                </el-radio-group>
+                                <div class="warning">
+                                    如商品参与了拼团、秒杀、积分等活动，切换规格，可能导致活动规格不可用
+                                </div>
+                            </div>
+                        </el-form-item>
+                        <template v-if="form.model.is_sku == 1">
+                            <div class="sku-wrap">
+                                <div class="sku" v-for="(s, k) in form.model.skus" :key="k">
+                                    <div class="sku-key sa-flex sa-row-between">
+                                        <div class="sa-flex">
+                                            <div class="sku-value-title">规格名称</div>
+                                            <el-input class="sku-key-input" v-model="s.name" placeholder="请输入规格名称">
+                                            </el-input>
+                                        </div>
+                                        <el-icon class="sku-key-icon" @click="deleteMainSku(k)">
+                                            <circle-close-filled />
+                                        </el-icon>
+                                    </div>
+                                    <div class="sku-value sa-flex sa-flex-wrap">
+                                        <div class="sku-value-title sa-flex"> 规格值 </div>
+                                        <div class="sku-value-box" v-for="(sc, c) in s.children" :key="c">
+                                            <el-input class="sku-value-input" v-model="sc.name" placeholder="请输入规格值">
+                                            </el-input>
+                                            <el-icon class="sku-value-icon" @click="deleteChildrenSku(k, c)">
+                                                <circle-close-filled />
+                                            </el-icon>
+                                        </div>
+                                        <el-button class="sku-value-add" type="primary" link @click="addChildrenSku(k)">
+                                            添加规格值
+                                        </el-button>
+                                    </div>
+                                </div>
+                                <div class="sku-tools sa-flex">
+                                    <el-button class="add" type="primary" @click="addMainSku">+ 添加规格</el-button>
+                                </div>
+                            </div>
+                            <!-- 表格 -->
+                            <div class="sku-table-wrap mb-4">
+                                <table class="sku-table" rules="all">
+                                    <thead>
+                                        <tr>
+                                            <template v-for="(item, i) in form.model.skus" :key="i">
+                                                <th v-if="item.children.length">{{ item.name }}</th>
+                                            </template>
+                                            <th>图片</th>
+                                            <th>
+                                                <div class="sa-flex">
+                                                    <div class="th-title">价格(元)</div>
+                                                    <el-popover placement="top" width="160"
+                                                        v-model:visible="batchPopover.flag.price" trigger="click">
+                                                        <template #reference>
+                                                            <el-icon class="batch-icon">
+                                                                <Edit />
+                                                            </el-icon>
+                                                        </template>
+                                                        <el-input class="mb-2" v-model="batchPopover.value"
+                                                            placeholder="请输入价格" size="small" type="number" :step="0.01"
+                                                            :min="0" :precision="2"></el-input>
+                                                        <div class="sa-flex sa-row-right">
+                                                            <el-button type="primary" link size="small"
+                                                                @click="onbatchPopover('price', 'cancel')">取消
+                                                            </el-button>
+                                                            <el-button type="primary" size="small"
+                                                                @click="onbatchPopover('price', 'confirm')">确定
+                                                            </el-button>
+                                                        </div>
+                                                    </el-popover>
+                                                </div>
+                                            </th>
+                                            <th>
+                                                <div class="sa-flex">
+                                                    <div class="th-title">划线价格</div>
+                                                    <el-popover placement="top" width="160"
+                                                        v-model:visible="batchPopover.flag.original_price"
+                                                        trigger="click">
+                                                        <template #reference>
+                                                            <el-icon class="batch-icon">
+                                                                <Edit />
+                                                            </el-icon>
+                                                        </template>
+                                                        <el-input class="mb-2" v-model="batchPopover.value"
+                                                            placeholder="请输入划线价格" size="small" type="number"
+                                                            :step="0.01" :min="0" :precision="2"></el-input>
+                                                        <div class="sa-flex sa-row-right">
+                                                            <el-button type="primary" link size="small"
+                                                                @click="onbatchPopover('original_price', 'cancel')">取消
+                                                            </el-button>
+                                                            <el-button type="primary" size="small"
+                                                                @click="onbatchPopover('original_price', 'confirm')">确定
+                                                            </el-button>
+                                                        </div>
+                                                    </el-popover>
+                                                </div>
+                                            </th>
+                                            <th>
+                                                <div class="sa-flex">
+                                                    <div class="th-title">成本价</div>
+                                                    <el-popover placement="top" width="160"
+                                                        v-model:visible="batchPopover.flag.cost_price" trigger="click">
+                                                        <template #reference>
+                                                            <el-icon class="batch-icon">
+                                                                <Edit />
+                                                            </el-icon>
+                                                        </template>
+                                                        <el-input class="mb-2" v-model="batchPopover.value"
+                                                            placeholder="请输入成本价" size="small" type="number" :step="0.01"
+                                                            :min="0" :precision="2"></el-input>
+                                                        <div class="sa-flex sa-row-right">
+                                                            <el-button type="primary" link size="small"
+                                                                @click="onbatchPopover('cost_price', 'cancel')">取消
+                                                            </el-button>
+                                                            <el-button type="primary" size="small"
+                                                                @click="onbatchPopover('cost_price', 'confirm')">确定
+                                                            </el-button>
+                                                        </div>
+                                                    </el-popover>
+                                                </div>
+                                            </th>
+                                            <th>库存(件)</th>
+                                            <th>库存预警(件)</th>
+                                            <th>
+                                                <div class="sa-flex">
+                                                    <div class="th-title">重量(kg)</div>
+                                                    <el-popover placement="top" width="160"
+                                                        v-model:visible="batchPopover.flag.weight" trigger="click">
+                                                        <template #reference>
+                                                            <el-icon class="batch-icon">
+                                                                <Edit />
+                                                            </el-icon>
+                                                        </template>
+                                                        <el-input class="mb-2" v-model="batchPopover.value"
+                                                            placeholder="请输入重量" size="small" type="number" :step="0.01"
+                                                            :min="0" :precision="2"></el-input>
+                                                        <div class="sa-flex sa-row-right">
+                                                            <el-button type="primary" link size="small"
+                                                                @click="onbatchPopover('weight', 'cancel')">取消
+                                                            </el-button>
+                                                            <el-button type="primary" size="small"
+                                                                @click="onbatchPopover('weight', 'confirm')">确定
+                                                            </el-button>
+                                                        </div>
+                                                    </el-popover>
+                                                </div>
+                                            </th>
+                                            <th>
+                                                <div class="sa-flex">
+                                                    <div class="th-title">规格编码</div>
+                                                    <el-popover placement="top" width="160"
+                                                        v-model:visible="batchPopover.flag.sn" trigger="click">
+                                                        <template #reference>
+                                                            <el-icon class="batch-icon">
+                                                                <Edit />
+                                                            </el-icon>
+                                                        </template>
+                                                        <el-input class="mb-2" v-model="batchPopover.value"
+                                                            placeholder="请输入规格编码" size="small" type="number"></el-input>
+                                                        <div class="sa-flex sa-row-right">
+                                                            <el-button type="primary" link size="small"
+                                                                @click="onbatchPopover('sn', 'cancel')">取消</el-button>
+                                                            <el-button type="primary" size="small"
+                                                                @click="onbatchPopover('sn', 'confirm')">确定</el-button>
+                                                        </div>
+                                                    </el-popover>
+                                                </div>
+                                            </th>
+                                            <th>商品状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(item, i) in form.model.sku_prices" :key="i">
+                                            <template v-for="(v, j) in item.goods_sku_text" :key="j">
+                                                <td>
+                                                    <span class="th-center">{{ v }}</span>
+                                                </td>
+                                            </template>
+                                            <td class="image">
+                                                <sa-uploader v-model="item.image" size="28">
+                                                </sa-uploader>
+                                            </td>
+                                            <td>
+                                                <el-input v-model="item.price" placeholder="请输入价格" size="small"
+                                                    type="number" :step="0.01" :min="0" :precision="2"></el-input>
+                                            </td>
+                                            <td>
+                                                <el-input v-model="item.original_price" placeholder="请输入划线价格"
+                                                    size="small" type="number" :step="0.01" :min="0" :precision="2">
+                                                </el-input>
+                                            </td>
+                                            <td>
+                                                <el-input v-model="item.cost_price" placeholder="请输入成本价" size="small"
+                                                    type="number" :step="0.01" :min="0" :precision="2"></el-input>
+                                            </td>
+                                            <td class="stock">
+                                                <el-input v-if="state.type == 'add'" v-model="item.stock"
+                                                    placeholder="请输入库存" size="small" type="number" :step="1" :min="0">
+                                                </el-input>
+                                                </el-input>
+                                                <span v-if="state.type == 'edit'">
+                                                    {{ item.stock }}
+                                                </span>
+                                            </td>
+                                            <td class="stock_warning">
+                                                <div class="sa-flex">
+                                                    <el-switch class="sku-stock-switch"
+                                                        v-model="item.stock_warning_switch"
+                                                        @change="onChangeStockWarningSwitch(i)"></el-switch>
+                                                    <span v-if="!item.stock_warning_switch">使用默认库存预警</span>
+                                                    <el-input v-if="item.stock_warning_switch"
+                                                        v-model="item.stock_warning" placeholder="请输入" size="small"
+                                                        type="number" :step="1" :min="0"></el-input>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <el-input v-model="item.weight" placeholder="请输入" size="small"
+                                                    type="number" :step="0.01" :min="0" :precision="2"></el-input>
+                                            </td>
+                                            <td class="sn">
+                                                <el-input v-model="item.sn" placeholder="请输入" size="small"></el-input>
+                                            </td>
+                                            <td>
+                                                <el-select v-model="item.status" placeholder="请选择" size="small">
+                                                    <el-option label="上架" value="up"></el-option>
+                                                    <el-option label="下架" value="down"></el-option>
+                                                </el-select>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
+                        <template v-if="form.model.is_sku == 0">
+                            <el-form-item label="售卖价格" prop="price">
+                                <el-input class="sa-w-360" v-model="form.model.price" placeholder="请输入售卖价格" type="number">
+                                    <template #append>元</template>
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="划线价格">
+                                <el-input class="sa-w-360" v-model="form.model.original_price" placeholder="请输入划线价格"
+                                    type="number" :step="0.01" :min="0" :precision="2">
+                                    <template #append>元</template>
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="成本价格">
+                                <el-input class="sa-w-360" v-model="form.model.cost_price" placeholder="请输入成本价格"
+                                    type="number" :step="0.01" :min="0" :precision="2">
+                                    <template #append>元</template>
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="库存类型">
+                                <el-radio-group v-model="form.model.stock_show_type">
+                                    <el-radio label="exact">
+                                        <div class="sa-flex">
+                                            <div>精确显示</div>
+                                            <el-popover popper-class="stock-show-type sa-popper" trigger="hover">
+                                                <img class="exact"
+                                                    src="/assets/addons/shopro/img/goods/stock-exact.png" />
+                                                <template #reference>
+                                                    <el-icon class="warning">
+                                                        <warning />
+                                                    </el-icon>
+                                                </template>
+                                            </el-popover>
+                                        </div>
+                                    </el-radio>
+                                    <el-radio label="sketchy">
+                                        <div class="sa-flex">
+                                            <div>粗略显示</div>
+                                            <el-popover popper-class="stock-show-type sa-popper" trigger="hover">
+                                                <img class="sketchy"
+                                                    src="/assets/addons/shopro/img/goods/stock-sketchy.png" />
+                                                <template #reference>
+                                                    <el-icon class="warning">
+                                                        <warning />
+                                                    </el-icon>
+                                                </template>
+                                            </el-popover>
+                                        </div>
+                                    </el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                            <el-form-item label="商品库存">
+                                <el-input class="sa-w-360" v-model="form.model.stock" placeholder="请输入商品库存"
+                                    type="number" :step="1" :min="0" :disabled="state.type == 'edit'">
+                                    <template #append>件</template>
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="库存预警">
+                                <el-switch v-model="state.tempData.isStockWarning"></el-switch>
+                                <div class="warning"> 库存预警在未开启的状态下，使用默认库存预警 </div>
+                            </el-form-item>
+                            <el-form-item v-if="state.tempData.isStockWarning" label="预警数量">
+                                <el-input class="sa-w-360" v-model="form.model.stock_warning" placeholder="请输入库存预警数量">
+                                    <template #append>件</template>
+                                </el-input>
+                            </el-form-item>
+                        </template>
+                        <el-form-item label="销量类型">
+                            <el-radio-group v-model="form.model.sales_show_type">
+                                <el-radio label="exact">
+                                    <div class="sa-flex">
+                                        <div>精确显示</div>
+                                        <el-popover popper-class="sales-show-type sa-popper" trigger="hover">
+                                            <img class="exact" src="/assets/addons/shopro/img/goods/sales-exact.png" />
+                                            <template #reference>
+                                                <el-icon class="warning">
+                                                    <warning />
+                                                </el-icon>
+                                            </template>
+                                        </el-popover>
+                                    </div>
+                                </el-radio>
+                                <el-radio label="sketchy">
+                                    <div class="sa-flex">
+                                        <div>粗略显示</div>
+                                        <el-popover popper-class="sales-show-type sa-popper" trigger="hover">
+                                            <img class="sketchy"
+                                                src="/assets/addons/shopro/img/goods/sales-sketchy.png" />
+                                            <template #reference>
+                                                <el-icon class="warning">
+                                                    <warning />
+                                                </el-icon>
+                                            </template>
+                                        </el-popover>
+                                    </div>
+                                </el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="虚拟销量">
+                            <div class="sa-form-wrap">
+                                <el-input class="sa-w-360" v-model="form.model.show_sales" placeholder="请输入虚拟销量"
+                                    type="number" :min="0">
+                                </el-input>
+                                <div class="warning"> 可以提高商品的销量排行榜，鼓励用户下单 </div>
+                            </div>
+                        </el-form-item>
+                        <template v-if="form.model.is_sku == 0">
+                            <el-form-item label="商品重量">
+                                <el-input class="sa-w-360" v-model="form.model.weight" placeholder="请输入商品重量"
+                                    type="number" :step="0.01" :min="0" :precision="2">
+                                    <template #append>kg</template>
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="商品编号">
+                                <el-input class="sa-w-360" v-model="form.model.sn" placeholder="请输入商品编号"></el-input>
+                            </el-form-item>
+                        </template>
+                    </div>
+                </el-form>
+                <el-form :model="form.model" :rules="form.rules" ref="formRef2" label-width="100px">
+                    <div v-show="state.activeStep==2">
+                        <template v-if="form.model.type=='normal'">
+                            <el-form-item label="配送方式">
+                                <el-radio-group v-model="form.model.dispatch_type">
+                                    <el-radio label="express">物流快递</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                            <el-form-item v-if="form.model.dispatch_type" label="物流快递" prop="dispatch_id">
+                                <div class="sa-w-360">
+                                    <el-select v-model="form.model.dispatch_id" placeholder="请选择物流快递">
+                                        <el-option v-for="item in dispatch.select" :key="item.id" :label="item.name"
+                                            :value="item.id"></el-option>
+                                    </el-select>
+                                    {if $auth->check('shopro/dispatch/dispatch/add')}
+                                    <el-button class="label-tip" type="primary" link @click="onAddDispatch('express')">
+                                        添加物流快递
+                                    </el-button>
+                                    {/if}
+                                </div>
+                            </el-form-item>
+                            <el-form-item label="货到付款">
+                                <el-switch v-model="form.model.is_offline" :active-value="1" :inactive-value="0"></el-switch>
+                            </el-form-item>
+                        </template>
+                        <template v-if="form.model.type=='virtual'">
+                            <el-form-item label="配送方式">
+                                <el-radio-group v-model="form.model.dispatch_type" @change="onChangeDispatchType">
+                                    <el-radio label="autosend">自动发货</el-radio>
+                                    <el-radio label="custom">手动发货
+                                        <el-popover popper-class="sa-popper" trigger="hover">
+                                            在订单管理，手动对订单进行发货，发货时填写自定义发货内容
+                                            <template #reference>
+                                                <el-icon class="warning">
+                                                    <warning />
+                                                </el-icon>
+                                            </template>
+                                        </el-popover>
+                                    </el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                            <el-form-item v-if="form.model.dispatch_type=='autosend'" label="自动发货" prop="dispatch_id">
+                                <div class="sa-w-360">
+                                    <el-select v-model="form.model.dispatch_id" placeholder="请选择自动发货">
+                                        <el-option v-for="item in dispatch.select" :key="item.id" :label="item.name"
+                                            :value="item.id"></el-option>
+                                    </el-select>
+                                    {if $auth->check('shopro/dispatch/dispatch/add')}
+                                    <el-button class="label-tip" type="primary" link @click="onAddDispatch('autosend')">
+                                        添加自动发货
+                                    </el-button>
+                                    {/if}
+                                </div>
+                            </el-form-item>
+                        </template>
+                    </div>
+                </el-form>
+                <el-form :model="form.model" :rules="form.rules" ref="formRef3" label-width="100px">
+                    <div v-show="state.activeStep==3">
+                        <el-form-item label="服务保障" prop="service_ids">
+                            <div class="sa-w-360">
+                                <el-select v-model="form.model.service_ids" placeholder="请选择服务保障" multiple>
+                                    <el-option v-for="item in service.select" :key="item.id" :label="item.name"
+                                        :value="item.id"></el-option>
+                                </el-select>
+                                {if $auth->check('shopro/goods/service/add')}
+                                <el-button class="label-tip" type="primary" link @click="onAddService">
+                                    添加服务保障
+                                </el-button>
+                                {/if}
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="参数详情">
+                            <div class="sa-template-wrap">
+                                <div class="header">
+                                    <div class="key">参数名称</div>
+                                    <div class="key">内容</div>
+                                    <div class="oper">操作</div>
+                                </div>
+                                <draggable v-model="form.model.params" :animation="300" handle=".sortable-drag"
+                                    item-key="element">
+                                    <template #item="{ element, index }">
+                                        <div class="item">
+                                            <el-form-item class="key" :prop="'params.' + index + '.title'"
+                                                :rules="paramsRules.title">
+                                                <el-input placeholder="请输入名称" v-model="element.title"></el-input>
+                                            </el-form-item>
+                                            <el-form-item class="key" :prop="'params.' + index + '.content'"
+                                                :rules="paramsRules.content">
+                                                <el-input placeholder="请输入内容" v-model="element.content"></el-input>
+                                            </el-form-item>
+                                            <el-form-item class="oper">
+                                                <el-button type="danger" link @click="onDeleteParams(index)">删除
+                                                </el-button>
+                                                <i class="iconfont iconmove sortable-drag"></i>
+                                            </el-form-item>
+                                        </div>
+                                    </template>
+                                </draggable>
+                                <el-button class="add-params" icon="Plus" @click="onAddParams">添加
+                                </el-button>
+                            </div>
+                        </el-form-item>
+                    </div>
+                </el-form>
+                <el-form :model="form.model" :rules="form.rules" ref="formRef4" label-width="100px">
+                    <div v-show="state.activeStep==4">
+                        <el-form-item class="editor-form-item" label="">
+                            <form role="form">
+                                <textarea id="goodsContent" class="editor"></textarea>
+                            </form>
+                        </el-form-item>
+                    </div>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <!-- <el-button plain v-if="state.activeStep > 0" @click="onBack">上一步</el-button>
+            <el-button v-if="state.activeStep < 4" type="primary" @click="onNext">下一步</el-button> -->
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

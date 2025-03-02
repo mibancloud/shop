@@ -1,0 +1,197 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .record-index .sa-title {
+        border-bottom: 1px solid var(--sa-table-header-bg);
+    }
+
+    .record-index .el-scrollbar {
+        padding: 20px;
+    }
+
+    .record-index .record-index-main {
+        --el-main-padding: 0;
+    }
+
+    .record-index .record-item {
+        margin-bottom: 20px;
+        align-items: flex-start;
+    }
+
+    .record-index .loading-status {
+        color: var(--el-color-info);
+    }
+
+    .record-index .center {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .record-index .record-item.sa-row-right .center {
+        align-items: flex-end;
+    }
+
+    .record-index .record-item.sa-row-left .center {
+        align-items: flex-start;
+    }
+
+    .record-index .record-message {
+        max-width: 50%;
+
+        padding: 8px;
+        font-size: 14px;
+        color: var(--sa-font);
+        white-space: normal;
+        word-break: break-all;
+        word-wrap: break-word;
+    }
+
+    .record-index .message-date {
+        color: var(--sa-subfont);
+        font-size: 12px;
+    }
+
+    .record-index .record-item.sa-row-right .record-message {
+        background: var(--t-bg-active);
+        border-radius: 4px 4px 0 4px;
+    }
+
+    .record-index .record-item.sa-row-left .record-message {
+        background: var(--sa-table-header-bg);
+        border-radius: 4px 4px 4px 0;
+    }
+
+    .record-index .record-emoji {
+        width: 24px;
+        height: 24px;
+        margin-right: 4px;
+    }
+
+    .record-index .record-emoji:last-of-type {
+        margin-right: 0;
+    }
+
+    .record-index img {
+        width: 100% !important;
+    }
+
+    .record-index .goods-item .goods-price {
+        color: var(--el-color-danger);
+    }
+
+    .record-index .order-sn {
+        font-size: 12px;
+        color: var(--el-color-primary);
+    }
+
+    .record-index .order-goods {
+        padding: 8px;
+        background: var(--sa-background-assist);
+        border-radius: 4px;
+    }
+</style>
+
+<div id="index" class="record-index" v-cloak>
+    <el-container class="panel-block">
+        <el-header>
+            <div class="sa-title sa-flex sa-row-between">
+                <div>{{ state.nickname }}</div>
+                <el-dropdown trigger="click" @command="onCommand">
+                    <el-button class="sa-flex" link>
+                        <div class="mr-2">{{ state.room_name }}</div>
+                        <el-icon>
+                            <arrow-down />
+                        </el-icon>
+                    </el-button>
+                    <template #dropdown>
+                        <el-dropdown-menu>
+                            <el-dropdown-item v-for="item in chat.config.default_rooms" :command="item.value">
+                                {{ item.name }}
+                            </el-dropdown-item>
+                        </el-dropdown-menu>
+                    </template>
+                </el-dropdown>
+            </div>
+        </el-header>
+        <el-main class="record-index-main">
+            <el-scrollbar height="100%">
+                <div class="loading-status sa-flex sa-row-center mb-2">
+                    <button link v-show="state.data.length && pagination.lastPage > 1" @click="onLoadMore">
+                        {{loadingMap[pagination.loadStatus].title}}
+                    </button>
+                </div>
+                <template v-for="(item,index) in state.data">
+                    <div class="sa-flex sa-row-center">
+                        <div v-if="item.sender_identify == 'system'" class="message-system mb-4">
+                            {{ item.content.text }}
+                        </div>
+                        <div v-if="showTime(item, index)" class="message-date mb-4">
+                            {{ formatTime(item.createtime) }}
+                        </div>
+                    </div>
+                    <div class="record-item sa-flex" :class="[
+                            item.sender_identify == 'customer_service'
+                                ? 'sa-row-right'
+                                : item.sender_identify == 'customer'
+                                ? 'sa-row-left'
+                                : '',
+                        ]">
+                        <el-avatar v-if="item.sender_identify == 'customer'" class="mr-2" :size="40"
+                            :src="Fast.api.cdnurl(item.sender?.avatar)">
+                            <img src="/assets/addons/shopro/img/default-avatar.png" />
+                        </el-avatar>
+
+                        <div class="center">
+                            <div class="mb-1">{{item.sender?.nickname || item.sender?.name || item.sender_id}}</div>
+                            <div class="record-message">
+                                <!-- 文本 -->
+                                <template v-if="item.message_type=='text'">
+                                    <div v-html="replaceEmoji(item.message)"></div>
+                                </template>
+                                <!-- 图片 -->
+                                <template v-if="item.message_type=='image'">
+                                    <img :src="Fast.api.cdnurl(item.message)" />
+                                </template>
+                                <!-- 商品 -->
+                                <template v-if="item.message_type=='goods'">
+                                    <div class="goods-item sa-flex">
+                                        <sa-image class="mr-2" :url="item.message.image" size="40"></sa-image>
+                                        <div>
+                                            <div class="sa-table-line-1">{{item.message.title}}</div>
+                                            <div class="goods-price">¥{{item.message.price.join(',')}}</div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- 订单 -->
+                                <template v-if="item.message_type=='order'">
+                                    <div class="order-item">
+                                        <div class="order-sn mb-2">{{item.message.order_sn}}</div>
+                                        <div class="order-goods sa-flex">
+                                            <sa-image class="mr-2" :url="item.message.items[0]?.image" size="40">
+                                            </sa-image>
+                                            <div>
+                                                <div class="sa-table-line-1">{{item.message.items[0]?.goods_title}}
+                                                </div>
+                                                <div class="sa-flex sa-row-between">
+                                                    <div class="order-goods-price">共{{item.message.items.length}}件商品
+                                                    </div>
+                                                    <div class="order-goods-total">合计 ¥{{item.message.pay_fee}}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <el-avatar v-if="item.sender_identify== 'customer_service'" class="ml-2" :size="40"
+                            :src="Fast.api.cdnurl(item.sender?.avatar)">
+                            <img src="/assets/addons/shopro/img/default-avatar.png" />
+                        </el-avatar>
+                    </div>
+                </template>
+            </el-scrollbar>
+        </el-main>
+    </el-container>
+</div>

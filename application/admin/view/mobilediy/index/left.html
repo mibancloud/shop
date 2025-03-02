@@ -1,0 +1,98 @@
+<div class="left">
+    <el-card class="box-card" :body-style="{ padding: '10px' }">
+        <div slot="header">
+          <span>前端组件库</span>
+          <el-button style="float: right; padding: 3px 0" type="text" @click.stop="onSubmit">更新发布</el-button>
+        </div>
+        <div class="content-box">
+            <div class="item" @click="onAdd('thetitle')">
+                <p class="icon"><i class="fa fa-window-maximize fa-fw"></i></p>
+                <p class="ctitle">主副标题</p>
+            </div>
+            <div class="item" @click="onAdd('banner')">
+                <p class="icon"><i class="fa fa-television fa-fw"></i></p>
+                <p class="ctitle">图片轮播</p>
+            </div>
+            <div class="item" @click="onAdd('images')">
+                <p class="icon"><i class="fa fa-picture-o fa-fw"></i></p>
+                <p class="ctitle">单图组</p>
+            </div>
+            <div class="item" @click="onAdd('navBar')">
+                <p class="icon"><i class="fa fa-table"></i></p>
+                <p class="ctitle">导航组</p>
+            </div>
+            <div class="item" @click="onAdd('textbutton')">
+                <p class="icon"><i class="fa fa-bold fa-fw"></i></p>
+                <p class="ctitle">文字按钮</p>
+            </div>
+            <div class="item" @click="onAdd('blank')">
+                <p class="icon"><i class="fa fa-calendar-o fa-fw"></i></p>
+                <p class="ctitle">辅助空白</p>
+            </div>
+            <div class="item" @click="onAdd('guide')">
+                <p class="icon"><i class="fa fa-ellipsis-h fa-fw"></i></p>
+                <p class="ctitle">辅助线条</p>
+            </div>
+            <div class="item" @click="onAdd('notice')">
+                <p class="icon"><i class="fa fa-bullhorn fa-fw"></i></p>
+                <p class="ctitle">广播</p>
+            </div>
+            <div class="item" @click="onAdd('window')">
+                <p class="icon"><i class="fa fa-object-group fa-fw"></i></p>
+                <p class="ctitle">图片橱窗</p>
+            </div>
+            <div class="item" @click="onAdd('service')">
+                <p class="icon"><i class="fa fa-comments-o fa-fw"></i></p>
+                <p class="ctitle">悬浮框</p>
+            </div>
+            <div class="item" @click="onAdd('informationcard')">
+                <p class="icon"><i class="fa fa-credit-card fa-fw"></i></p>
+                <p class="ctitle">信息卡片</p>
+            </div>
+            <div class="item" @click="onAdd('video')">
+                <p class="icon"><i class="fa fa-film fa-fw"></i></p>
+                <p class="ctitle">在线视频</p>
+            </div>
+            <div class="item" @click="onAdd('webview')">
+                <p class="icon"><i class="fa fa-edge fa-fw"></i></p>
+                <p class="ctitle">webview</p>
+            </div>
+            <div class="item" @click="onAdd('ad')">
+                <p class="icon"><i class="fa fa-cc-amex fa-fw"></i></p>
+                <p class="ctitle">AD组件</p>
+            </div>
+            <div class="item" @click="onAdd('text')">
+                <p class="icon"><i class="fa fa-building-o fa-fw"></i></p>
+                <p class="ctitle">文本组</p>
+            </div>
+            <div class="item" @click="onAdd('titlebar')">
+                <p class="icon"><i class="fa fa-cubes"></i></p>
+                <p class="ctitle">标题单元</p>
+            </div>
+            <div class="item" @click="onAdd('richText')">
+                <p class="icon"><i class="fa fa-header"></i></p>
+                <p class="ctitle">富文本</p>
+            </div>
+            <div class="item" @click="onAdd('bgm')">
+                <p class="icon"><i class="fa fa-music"></i></p>
+                <p class="ctitle">背景音乐</p>
+            </div>
+            <div class="item" @click="onAdd('button')">
+                <p class="icon"><i class="fa fa-unlink"></i></p>
+                <p class="ctitle">图文按钮</p>
+            </div>
+            <div class="item" @click="onAdd('diymap')">
+                <p class="icon"><i class="fa fa-map-o"></i></p>
+                <p class="ctitle">地图</p>
+            </div>
+            <div class="item" @click="onAdd('timeline')">
+                <p class="icon"><i class="fa fa-asterisk"></i></p>
+                <p class="ctitle">时间线</p>
+            </div>
+            <div class="item" @click="onAdd('AlertTips')">
+                <p class="icon"><i class="fa fa-bell-o"></i></p>
+                <p class="ctitle">警告提示</p>
+            </div>
+        </div>
+      </el-card>
+</div>

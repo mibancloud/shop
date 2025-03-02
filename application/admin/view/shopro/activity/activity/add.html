@@ -1,0 +1,674 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .activity-form .w-120 {
+        width: 120px;
+    }
+
+    .activity-form .el-form-item-inner {
+        --el-form-label-font-size: 12px;
+    }
+
+    .activity-form .el-form-item-inner .el-form-item__label {
+        width: fit-content !important;
+    }
+
+    .activity-form .tip,
+    .activity-form .delete {
+        margin-left: 12px;
+    }
+
+    .activity-form .rules-title {
+        width: 100%;
+        max-width: 360px;
+        height: 32px;
+        line-height: 32px;
+        padding: 0 16px;
+        border-radius: 4px;
+        background: var(--sa-table-header-bg);
+        font-size: 12px;
+        color: var(--sa-subtitle);
+    }
+
+    .activity-form .goods-image {
+        margin-right: 12px;
+    }
+
+    .activity-form .goods-title {
+        color: var(--sa-font);
+        margin-bottom: 6px;
+    }
+
+    .activity-form .goods-price {
+        color: var(--el-color-danger);
+    }
+
+    .activity-form .sa-template-wrap .setting {
+        flex: none;
+        width: 100px;
+    }
+</style>
+
+<div id="addEdit" class="activity-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="110px">
+                    <el-form-item label="活动名称" prop="title">
+                        <el-input class="sa-w-360" v-model="form.model.title" placeholder="例如：国庆活动" />
+                    </el-form-item>
+                    <el-form-item v-if="form.model.status == 'ing'" label="活动时间" required>
+                        <el-form-item prop="start_time">
+                            <el-date-picker v-model="form.model.start_time" type="datetime"
+                                value-format="YYYY-MM-DD HH:mm:ss" format="YYYY-MM-DD HH:mm:ss"
+                                :disabled="state.activityStatus" prefix-icon="Calendar" placeholder="开始时间"
+                                :editable="false">
+                            </el-date-picker>
+                        </el-form-item>
+                        <span class="ml-2 mr-2">至</span>
+                        <el-form-item prop="end_time">
+                            <el-date-picker v-model="form.model.end_time" type="datetime"
+                                value-format="YYYY-MM-DD HH:mm:ss" format="YYYY-MM-DD HH:mm:ss" prefix-icon="Calendar"
+                                placeholder="结束时间" :editable="false" @change="onChangeEndtime"></el-date-picker>
+                        </el-form-item>
+                    </el-form-item>
+                    <el-form-item v-if="form.model.status != 'ing'" label="活动时间" prop="dateTime">
+                        <div>
+                            <el-date-picker v-model="form.model.dateTime" type="datetimerange"
+                                value-format="YYYY-MM-DD HH:mm:ss" format="YYYY-MM-DD HH:mm:ss"
+                                :default-time="[new Date(2000, 1, 1, 0, 0, 0), new Date(2000, 2, 1, 23, 59, 59)]"
+                                range-separator="至" start-placeholder="开始时间" end-placeholder="结束时间"
+                                prefix-icon="Calendar" :editable="false" />
+                        </div>
+                    </el-form-item>
+                    <template v-if="form.model.type == 'full_reduce' || form.model.type == 'full_discount'">
+                        <el-form-item label="优惠类型" prop="rules.type" required>
+                            <el-radio-group v-model="form.model.rules.type">
+                                <el-radio label="money">消费金额</el-radio>
+                                <el-radio label="num">购买件数</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <div class="el-form-item-inner" v-for="(ditem, dindex) in form.model.rules.discounts"
+                            :key="dindex">
+                            <el-form-item>
+                                <el-form-item :label="`规则${dindex + 1}`" required>
+                                    <el-form-item class="is-no-asterisk" label="消费满"
+                                        :prop="'rules.discounts.' + dindex + '.full'"
+                                        :rules="form.rules.rules.discounts.full">
+                                        <el-input class="w-120" v-model="ditem.full" type="number">
+                                            <template #append>
+                                                {{ form.model.rules.type == 'money' ? '元' : '件' }}
+                                            </template>
+                                        </el-input>
+                                    </el-form-item>
+                                    <el-form-item class="is-no-asterisk ml-2"
+                                        :label="`${form.model.type == 'full_reduce' ? '优惠' : '折扣'}`"
+                                        :prop="'rules.discounts.' + dindex + '.discount'"
+                                        :rules="form.rules.rules.discounts.discount">
+                                        <el-input class="w-120" v-model="ditem.discount" type="number">
+                                            <template #append>
+                                                {{ form.model.type == 'full_reduce' ? '元' : '折' }}
+                                            </template>
+                                        </el-input>
+                                        <div class="tip" v-if="form.model.rules.type == 'money' && dindex == 0">
+                                            {{
+                                            form.model.type == 'full_reduce' ? '满减' : '满折'
+                                            }}金额优惠按照商品实际金额计算
+                                        </div>
+                                        <el-button v-if="dindex" class="delete" type="danger" link
+                                            @click="onDeleteDiscounts(dindex)">
+                                            删除
+                                        </el-button>
+                                    </el-form-item>
+                                </el-form-item>
+                            </el-form-item>
+                        </div>
+                        <el-form-item>
+                            <el-button v-if="
+                                form.model.rules.discounts && form.model.rules.discounts.length < 5
+                              " type="primary" link @click="onAddDiscounts">+ 添加优惠</el-button>
+                        </el-form-item>
+                    </template>
+                    <template v-if="form.model.type == 'full_gift'">
+                        <el-form-item label="参与次数" required>
+                            <el-radio-group v-model="state.limitNumType" @change="onChangeLimitNumType">
+                                <el-radio label="all">不限制</el-radio>
+                                <el-radio label="part">
+                                    每人最多可参与
+                                    <el-input v-if="state.limitNumType == 'part'" class="w-120 ml-2"
+                                        v-model="form.model.rules.limit_num">
+                                        <template #append>次数</template>
+                                    </el-input>
+                                </el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="赠送时机" prop="rules.event" required>
+                            <el-radio-group v-model="form.model.rules.event">
+                                <el-radio label="paid">支付完成</el-radio>
+                                <el-radio label="confirm">
+                                    <div class="sa-flex">
+                                        确认收货
+                                        <el-popover popper-class="sa-popper" trigger="hover">
+                                            <div>必须全部确认收货才能满足条件</div>
+                                            <template #reference>
+                                                <el-icon class="warning">
+                                                    <warning />
+                                                </el-icon>
+                                            </template>
+                                        </el-popover>
+                                    </div>
+                                </el-radio>
+                                <el-radio label="finish">交易完成</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="优惠类型" prop="rules.type" required>
+                            <el-radio-group v-model="form.model.rules.type">
+                                <el-radio label="money">满足金额</el-radio>
+                                <el-radio label="num">满足件数</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <div class="el-form-item-inner" v-for="(ditem, dindex) in form.model.rules.discounts"
+                            :key="ditem">
+                            <el-form-item>
+                                <div class="rules-title">{{ `规则${dindex + 1}` }}</div>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-form-item label="消费满" :prop="'rules.discounts.' + dindex + '.full'"
+                                    :rules="form.rules.rules.discounts.full">
+                                    <el-input class="w-120" v-model="ditem.full" type="number">
+                                        <template #append>
+                                            {{ form.model.rules.type == 'money' ? '元' : '件' }}
+                                        </template>
+                                    </el-input>
+                                    <div v-if="dindex == 0" class="tip"> 满赠金额优惠按照商品实际金额计算 </div>
+                                    <el-button v-if="dindex" class="delete" type="danger" link
+                                        @click="onDeleteDiscounts(dindex)">删除</el-button>
+                                </el-form-item>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-form-item label="赠送单数" :prop="'rules.discounts.' + dindex + '.gift_num'"
+                                    :rules="form.rules.rules.discounts.gift_num">
+                                    <el-input class="w-120" v-positiveinteger v-model="ditem.gift_num" type="number">
+                                        <template #append>单</template>
+                                    </el-input>
+                                    <div v-if="dindex == 0" class="tip">
+                                        该单数指赠品发放单数，如设置100单，那参与此活动的前100个订单可获取赠品
+                                    </div>
+                                </el-form-item>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-form-item label="赠送类型" :prop="'rules.discounts.' + dindex + '.types'"
+                                    :rules="form.rules.rules.discounts.types">
+                                    <el-checkbox-group v-model="ditem.types">
+                                        <el-checkbox label="coupon">优惠券</el-checkbox>
+                                        <el-checkbox label="score">积分</el-checkbox>
+                                        <el-checkbox label="money">余额</el-checkbox>
+                                    </el-checkbox-group>
+                                </el-form-item>
+                            </el-form-item>
+                            <div class="ml-4">
+                                <!-- 优惠券 -->
+                                <el-form-item v-if="ditem.types.includes('coupon')">
+                                    <div>
+                                        <el-form-item label="优惠券">
+                                            <el-button type="primary" link @click="onSelectCoupon(dindex)">
+                                                选择优惠券</el-button>
+                                        </el-form-item>
+                                        <el-form-item>
+                                            <div class="sa-template-wrap">
+                                                <template v-if="ditem.coupon_list.length > 0">
+                                                    <div class="header sa-flex">
+                                                        <div class="key">名称</div>
+                                                        <div class="key">优惠内容</div>
+                                                        <div class="oper">操作</div>
+                                                    </div>
+                                                    <div class="item" v-for="(element, index) in ditem.coupon_list"
+                                                        :key="element">
+                                                        <div class="key">
+                                                            <div class="sa-table-line-1">{{ element.name }}</div>
+                                                        </div>
+                                                        <div class="key">
+                                                            <div class="sa-table-line-1">
+                                                                {{ element.amount_text }}
+                                                            </div>
+                                                        </div>
+                                                        <div class="oper">
+                                                            <el-button type="danger" link
+                                                                @click="onDeleteCoupon(dindex, index)">
+                                                                移除
+                                                            </el-button>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </el-form-item>
+                                    </div>
+                                </el-form-item>
+                                <!-- 积分 -->
+                                <el-form-item v-if="ditem.types.includes('score')">
+                                    <el-form-item label="积分">
+                                        <el-input class="w-120" v-positiveinteger v-model="ditem.score" type="number">
+                                            <template #append>积分</template>
+                                        </el-input>
+                                    </el-form-item>
+                                </el-form-item>
+                                <!-- 余额 -->
+                                <el-form-item v-if="ditem.types.includes('money')">
+                                    <el-form-item label="余额">
+                                        <el-input class="w-120" v-model="ditem.money" type="number">
+                                            <template #append>元</template>
+                                        </el-input>
+                                    </el-form-item>
+                                </el-form-item>
+                            </div>
+                        </div>
+                        <el-form-item>
+                            <el-button type="primary" link @click="onAddDiscounts">+ 添加优惠</el-button>
+                        </el-form-item>
+                    </template>
+                    <template v-if="form.model.type == 'free_shipping'">
+                        <el-form-item label="优惠类型" prop="rules.type" required>
+                            <el-radio-group v-model="form.model.rules.type">
+                                <el-radio label="money">按消费金额包邮</el-radio>
+                                <el-radio label="num">按购买件数包邮</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <div class="el-form-item-inner">
+                            <el-form-item>
+                                <el-form-item :label="`规则`" required>
+                                    <el-form-item class="is-no-asterisk" label="消费满" prop="rules.full_num"
+                                        :rules="form.rules.rules.full_num">
+                                        <el-input class="w-120" v-model="form.model.rules.full_num" type="number">
+                                            <template #append>
+                                                {{ form.model.rules.type == 'money' ? '元' : '件' }}
+                                            </template>
+                                        </el-input>
+                                        <span class="tip">满邮金额优惠按照商品实际金额计算</span>
+                                    </el-form-item>
+                                </el-form-item>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-form-item label="不支持地区" required>
+                                    <div>
+                                        <div class="sa-flex">
+                                            <template v-for="level in form.model.rules.district_text" :key="level">
+                                                <template v-for="name in level" :key="name">{{ name }},</template>
+                                            </template>
+                                        </div>
+                                        <el-button type="primary" link @click="onSelectArea">添加地区</el-button>
+                                    </div>
+                                </el-form-item>
+                            </el-form-item>
+                        </div>
+                    </template>
+                    <template v-if="form.model.type == 'groupon' || form.model.type == 'groupon_ladder'">
+                        <el-form-item label="预热时间" prop="prehead_time">
+                            <el-date-picker v-model="form.model.prehead_time" type="datetime"
+                                value-format="YYYY-MM-DD HH:mm:ss" format="YYYY-MM-DD HH:mm:ss" placeholder="预热时间"
+                                prefix-icon="Calendar" :disabled="state.activityStatus" :editable="false">
+                            </el-date-picker>
+                        </el-form-item>
+                        <el-form-item label="拼团解散时间" prop="rules.valid_time" :rules="form.rules.rules.valid_time">
+                            <el-input class="w-120" v-model="form.model.rules.valid_time" type="number"
+                                :disabled="state.activityStatus">
+                                <template #append>小时</template>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item v-if="form.model.type == 'groupon'" label="成团人数" prop="rules.team_num"
+                            :rules="form.rules.rules.team_num">
+                            <el-input class="w-120" v-positiveinteger v-model="form.model.rules.team_num"
+                                placeholder="最少两人" type="number" :disabled="state.activityStatus">
+                                <template #append>人</template>
+                            </el-input>
+                        </el-form-item>
+                        <template v-if="form.model.type == 'groupon_ladder'">
+                            <el-form-item label="成团人数" required>
+                                <el-form-item class="is-no-asterisk" label="第一阶梯人数" prop="rules.ladders.ladder_one"
+                                    :rules="form.rules.rules.ladder_one">
+                                    <el-input class="w-120" v-positiveinteger
+                                        v-model="form.model.rules.ladders.ladder_one" placeholder="最少两人" type="number"
+                                        :disabled="state.activityStatus">
+                                        <template #append>人</template>
+                                    </el-input>
+                                </el-form-item>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-form-item class="is-no-asterisk" label="第二阶梯人数" prop="rules.ladders.ladder_two"
+                                    :rules="form.rules.rules.ladder_two">
+                                    <el-input class="w-120" v-positiveinteger
+                                        v-model="form.model.rules.ladders.ladder_two" placeholder="最少两人" type="number"
+                                        :disabled="state.activityStatus">
+                                        <template #append>人</template>
+                                    </el-input>
+                                </el-form-item>
+                            </el-form-item>
+                            <el-form-item v-if="Object.keys(form.model.rules.ladders).includes('ladder_three')">
+                                <el-form-item class="is-no-asterisk" label="第三阶梯人数" prop="rules.ladders.ladder_three"
+                                    :rules="form.rules.rules.ladder_three">
+                                    <el-input class="w-120" v-positiveinteger
+                                        v-model="form.model.rules.ladders.ladder_three" placeholder="最少两人" type="number"
+                                        :disabled="state.activityStatus">
+                                        <template #append>人</template>
+                                    </el-input>
+                                    <el-button class="delete" type="danger" link @click="onDeleteLadders">删除
+                                    </el-button>
+                                </el-form-item>
+                            </el-form-item>
+                            <el-form-item v-if="Object.keys(form.model.rules.ladders).length < 3">
+                                <el-button type="primary" link @click="onAddLadders" :disabled="state.activityStatus">+
+                                    添加拼团梯队
+                                </el-button>
+                            </el-form-item>
+                        </template>
+                        <el-form-item label="单独购买">
+                            <el-switch v-model="form.model.rules.is_alone" active-value="1" inactive-value="0"
+                                :disabled="state.activityStatus"></el-switch>
+                            <span class="ml-2" :class="form.model.rules.is_alone == 0 ?'':'sa-color--primary'">
+                                {{ form.model.rules.is_alone == 0 ? '不允许' : '允许' }}
+                            </span>
+                        </el-form-item>
+                        <el-form-item label="虚拟成团">
+                            <el-switch v-model="form.model.rules.is_fictitious" active-value="1" inactive-value="0"
+                                :disabled="state.activityStatus"></el-switch>
+                            <span class="ml-2" :class="form.model.rules.is_fictitious == 0 ?'':'sa-color--primary'">
+                                {{ form.model.rules.is_fictitious == 0 ? '不允许' : '允许' }}
+                            </span>
+                            <div class="tip">
+                                开启虚拟成团后，在拼团有效期内人数不够的团，系统会虚拟用户凑满人数，使拼团成功。
+                                虚拟的用户不生成订单，只需对真实买家发货。(请在资料管理中添加足够数量的虚拟用户，否则虚拟成团不会成功)
+                            </div>
+                        </el-form-item>
+                        <div class="el-form-item-inner" v-if="form.model.rules.is_fictitious == 1">
+                            <el-form-item>
+                                <el-form-item class="is-no-asterisk" label="最多虚拟人数" prop="rules.fictitious_num"
+                                    :rules="form.rules.rules.fictitious_num">
+                                    <el-input class="w-120" v-model="form.model.rules.fictitious_num" type="number"
+                                        :disabled="state.activityStatus">
+                                        <template #append>人</template>
+                                    </el-input>
+                                    <div class="tip"> 单团最多虚拟人数的名额限制，不填时，不限制名额 </div>
+                                </el-form-item>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-form-item class="is-no-asterisk" label="虚拟成团时间" prop="rules.fictitious_time"
+                                    :rules="form.rules.rules.fictitious_time">
+                                    <el-input class="w-120" v-model="form.model.rules.fictitious_time" type="number"
+                                        :disabled="state.activityStatus">
+                                        <template #append>小时</template>
+                                    </el-input>
+                                    <div class="tip">将会在拼团解散时间之前尝试虚拟成团</div>
+                                </el-form-item>
+                            </el-form-item>
+                        </div>
+                        <el-form-item label="参团卡显示">
+                            <el-switch v-model="form.model.rules.is_team_card" active-value="1" inactive-value="0"
+                                :disabled="state.activityStatus"></el-switch>
+                            <span class="ml-2" :class="form.model.rules.is_team_card == 0?'':'sa-color--primary'">
+                                {{ form.model.rules.is_team_card == 0 ? '关闭' : '开启' }}
+                            </span>
+                            <div class="tip">
+                                开启参团卡显示后，商品详情页显示未成团的团列表，买家可以直接选择一个参团。
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="拼团销量展示">
+                            <el-radio-group v-model="form.model.rules.sales_show_type" :disabled="state.activityStatus">
+                                <el-radio label="real">真实活动销量</el-radio>
+                                <el-radio label="goods">
+                                    <div class="sa-flex">
+                                        商品总销量
+                                        <div class="tip">商品总销量包含虚拟销量</div>
+                                    </div>
+                                </el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="是否参与分销">
+                            <el-switch v-model="form.model.rules.is_commission" active-value="1" inactive-value="0"
+                                :disabled="state.activityStatus"></el-switch>
+                            <span class="ml-2" :class="form.model.rules.is_commission == 0?'':'sa-color--primary'">
+                                {{ form.model.rules.is_commission == 0 ? '不参与' : '参与' }}
+                            </span>
+                        </el-form-item>
+                        <el-form-item label="是否包邮">
+                            <el-switch v-model="form.model.rules.is_free_shipping" active-value="1" inactive-value="0"
+                                :disabled="state.activityStatus"></el-switch>
+                            <span class="ml-2" :class="form.model.rules.is_free_shipping == 0?'':'sa-color--primary'">
+                                {{ form.model.rules.is_free_shipping == 0 ? '不包邮' : '包邮' }}
+                            </span>
+                        </el-form-item>
+                        <el-form-item label="团长优惠">
+                            <el-switch v-model="form.model.rules.is_leader_discount" active-value="1" inactive-value="0"
+                                :disabled="state.activityStatus"></el-switch>
+                        </el-form-item>
+                        <el-form-item label="限购数量">
+                            <el-input class="w-120" v-positiveinteger v-model="form.model.rules.limit_num" type="number"
+                                :disabled="state.activityStatus">
+                                <template #append>件</template>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="退款方式">
+                            <div>
+                                <el-radio-group v-model="form.model.rules.refund_type" :disabled="state.activityStatus">
+                                    <el-radio label="back">原路返回</el-radio>
+                                    <el-radio label="money">退回到余额</el-radio>
+                                </el-radio-group>
+                                <div class="tip">拼团失败解散时，默认退款方式</div>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="订单支付时间" prop="rules.order_auto_close"
+                            :rules="form.rules.rules.order_auto_close">
+                            <el-input class="w-120" v-model="form.model.rules.order_auto_close" type="number"
+                                :disabled="state.activityStatus">
+                                <template #append>分钟</template>
+                            </el-input>
+                        </el-form-item>
+                    </template>
+                    <template v-if="form.model.type == 'seckill'">
+                        <el-form-item label="预热时间" prop="prehead_time">
+                            <el-date-picker v-model="form.model.prehead_time" type="datetime"
+                                value-format="YYYY-MM-DD HH:mm:ss" format="YYYY-MM-DD HH:mm:ss" placeholder="预热时间"
+                                prefix-icon="Calendar" :disabled="state.activityStatus" :editable="false">
+                            </el-date-picker>
+                        </el-form-item>
+                        <el-form-item label="是否参与分销">
+                            <el-switch v-model="form.model.rules.is_commission" active-value="1" inactive-value="0"
+                                :disabled="state.activityStatus"></el-switch>
+                            <span class="ml-2" :class="form.model.rules.is_commission == 0?'':'sa-color--primary'">
+                                {{ form.model.rules.is_commission == 0 ? '不参与' : '参与' }}
+                            </span>
+                        </el-form-item>
+                        <el-form-item label="是否包邮">
+                            <el-switch v-model="form.model.rules.is_free_shipping" active-value="1" inactive-value="0"
+                                :disabled="state.activityStatus"></el-switch>
+                            <span class="ml-2" :class="form.model.rules.is_free_shipping == 0?'':'sa-color--primary'">
+                                {{ form.model.rules.is_free_shipping == 0 ? '不包邮' : '包邮' }}
+                            </span>
+                        </el-form-item>
+                        <el-form-item label="秒杀销量展示">
+                            <el-radio-group v-model="form.model.rules.sales_show_type" :disabled="state.activityStatus">
+                                <el-radio label="real">真实活动销量</el-radio>
+                                <el-radio label="goods">
+                                    <div class="sa-flex">
+                                        商品总销量
+                                        <div class="tip">商品总销量包含虚拟销量</div>
+                                    </div>
+                                </el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="限购数量">
+                            <el-input class="w-120" v-positiveinteger v-model="form.model.rules.limit_num" type="number"
+                                :disabled="state.activityStatus">
+                                <template #append>件</template>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="订单支付时间" prop="rules.order_auto_close" :rules="form.rules.order_auto_close">
+                            <el-input class="w-120" v-model="form.model.rules.order_auto_close" type="number"
+                                :disabled="state.activityStatus">
+                                <template #append>分钟</template>
+                            </el-input>
+                        </el-form-item>
+                    </template>
+                    <template v-if="form.model.type == 'signin'">
+                        <el-form-item label="日签奖励" prop="rules.everyday">
+                            <span>每日签到固定积分</span>
+                            <el-input class="w-120 ml-2" v-positiveinteger v-model="form.model.rules.everyday"
+                                type="number">
+                                <template #append>积分</template>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="递增签到" prop="rules.is_inc" required>
+                            <el-switch v-model="form.model.rules.is_inc" active-value="1" inactive-value="0">
+                            </el-switch>
+                            <span class="ml-2" :class="form.model.rules.is_inc == 0 ?'':'sa-color--primary'">
+                                {{ form.model.rules.is_inc == 0 ? '关闭' : '开启' }}
+                            </span>
+                        </el-form-item>
+                        <div v-if="form.model.rules.is_inc == 1" class="el-form-item-inner">
+                            <el-form-item>
+                                <el-form-item class="is-no-asterisk" label="次日起递增奖励" prop="rules.inc_num">
+                                    <el-input class="w-120" v-positiveinteger v-model="form.model.rules.inc_num"
+                                        type="number">
+                                        <template #append>积分</template>
+                                    </el-input>
+                                </el-form-item>
+                                <el-form-item class="is-no-asterisk ml-2" label="自" prop="rules.until_day">
+                                    <el-input class="w-120" v-positiveinteger v-model="form.model.rules.until_day"
+                                        type="number">
+                                        <template #append>天</template>
+                                    </el-input>
+                                    <span class="desc ml-2">后不再递增</span>
+                                </el-form-item>
+                            </el-form-item>
+                        </div>
+                        <el-form-item label="连续签到">
+                            <el-switch v-model="state.is_discounts" active-value="1" inactive-value="0"
+                                @change="onChangeDiscounts"></el-switch>
+                            <span class="ml-2" :class="state.is_discounts == 0?'':'sa-color--primary'">
+                                {{ state.is_discounts == 0 ? '关闭' : '开启' }}
+                            </span>
+                        </el-form-item>
+                        <div v-if="state.is_discounts == 1" class="el-form-item-inner">
+                            <el-form-item v-for="(d, dindex) in form.model.rules.discounts" :key="d">
+                                <el-form-item :label="`条件${dindex + 1}`" required>
+                                    <el-form-item class="is-no-asterisk" label="连续签到"
+                                        :prop="'rules.discounts.' + dindex + '.full'"
+                                        :rules="form.rules.rules.discounts.full">
+                                        <el-input class="w-120" v-positiveinteger v-model="d.full" type="number">
+                                            <template #append>天</template>
+                                        </el-input>
+                                    </el-form-item>
+                                    <el-form-item class="is-no-asterisk ml-2" label="赠送积分"
+                                        :prop="'rules.discounts.' + dindex + '.value'"
+                                        :rules="form.rules.rules.discounts.value">
+                                        <el-input class="w-120" v-positiveinteger v-model="d.value" type="number">
+                                            <template #append>积分</template>
+                                        </el-input>
+                                        <el-button v-if="dindex" class="delete" type="danger" link size="small"
+                                            @click="onDeleteDiscounts">
+                                            删除
+                                        </el-button>
+                                    </el-form-item>
+                                </el-form-item>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button v-if="form.model.rules.discounts.length < 3" type="primary" link
+                                    @click="onAddDiscounts">
+                                    + 添加连续签到天数
+                                </el-button>
+                            </el-form-item>
+                        </div>
+                        <el-form-item label="补签设置">
+                            <el-switch v-model="form.model.rules.is_replenish" active-value="1" inactive-value="0">
+                            </el-switch>
+                            <span class="ml-2" :class="form.model.rules.is_replenish == 0 ?'':'sa-color--primary'">
+                                {{ form.model.rules.is_replenish == 0 ? '关闭' : '开启' }}
+                            </span>
+                        </el-form-item>
+                        <div v-if="form.model.rules.is_replenish == 1" class="el-form-item-inner">
+                            <el-form-item>
+                                <el-form-item label="用户在" prop="rules.replenish_limit">
+                                    <el-input class="w-120" v-positiveinteger v-model="form.model.rules.replenish_limit"
+                                        type="number">
+                                        <template #append>天</template>
+                                    </el-input>
+                                </el-form-item>
+                                <el-form-item class="is-no-asterisk ml-2" label="内可补签" prop="rules.replenish_days">
+                                    <el-input class="w-120" v-positiveinteger v-model="form.model.rules.replenish_days"
+                                        type="number">
+                                        <template #append>天</template>
+                                    </el-input>
+                                </el-form-item>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-form-item label="每次补签消耗积分" prop="rules.replenish_num">
+                                    <el-input class="w-120" v-positiveinteger v-model="form.model.rules.replenish_num"
+                                        type="number">
+                                        <template #append>积分</template>
+                                    </el-input>
+                                </el-form-item>
+                            </el-form-item>
+                        </div>
+                    </template>
+                    <el-form-item label="活动说明">
+                        <el-input class="sa-w-360" v-model="form.model.richtext_title" placeholder="请选择活动说明">
+                            <template #append>
+                                <span class="cursor-pointer" @click="onSelectRichtext">选择活动说明</span>
+                            </template>
+                        </el-input>
+                    </el-form-item>
+                    <template v-if="form.model.type != 'signin'">
+                        <el-form-item v-if="!isActivity" label="活动商品" prop="state.goodsType">
+                            <el-radio-group v-model="state.goodsType" :disabled="state.activityStatus"
+                                @change="onChangeGoodsType">
+                                <el-radio label="all">全部商品</el-radio>
+                                <el-radio label="part">部分商品</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <template v-if="state.goodsType == 'part'">
+                            <el-form-item :label="isActivity ? '活动商品' : ''"
+                                :prop="state.goodsType == 'part' || isActivity ? 'goods_list' : ''">
+                                <el-button type="primary" link @click="onSelectGoods" :disabled="state.activityStatus">+
+                                    添加商品
+                                </el-button>
+                            </el-form-item>
+                        </template>
+                        <el-form-item v-if="form.model.goods_list.length > 0">
+                            <div class="sa-template-wrap" :class="isActivity ? 'sa-template-wrap-activity' : ''">
+                                <div class="header sa-flex">
+                                    <div class="key">商品信息</div>
+                                    <div v-if="isActivity" class="key setting">设置</div>
+                                    <div class="oper">操作</div>
+                                </div>
+                                <div>
+                                    <div class="item" v-for="(element, index) in form.model.goods_list" :key="element">
+                                        <div class="key goods-item">
+                                            <sa-image class="goods-image" :url="element.image" size="40"></sa-image>
+                                            <div class="">
+                                                <div class="goods-title sa-table-line-1">
+                                                    {{ element.title }}
+                                                </div>
+                                                <div class="goods-price"> ¥{{ element.price.join('~') }} </div>
+                                            </div>
+                                        </div>
+                                        <div v-if="isActivity" class="key setting">
+                                            <el-button type="primary" link
+                                                @click="onSetActivitySkuPrices(index, element.id)">设置商品</el-button>
+                                        </div>
+                                        <div class="oper">
+                                            <el-button type="danger" link @click="onDeleteGoods(index)"
+                                                :disabled="state.activityStatus">
+                                                移除
+                                            </el-button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-form-item>
+                    </template>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

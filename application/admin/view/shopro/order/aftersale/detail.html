@@ -1,0 +1,417 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .aftersale-detail .el-scrollbar__wrap {
+        overflow-x: hidden;
+    }
+
+    .aftersale-detail .el-scrollbar__bar.is-horizontal {
+        display: none;
+    }
+
+    .aftersale-detail .tip {
+        margin-bottom: 16px;
+    }
+
+    .aftersale-detail .status-text {
+        line-height: 24px;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--sa-title);
+        margin-bottom: 4px;
+    }
+
+    .aftersale-detail .status-desc {
+        line-height: 16px;
+        font-size: 12px;
+        color: var(--sa-subfont);
+        margin-bottom: 16px;
+    }
+
+    .aftersale-detail .el-step__head .el-step__line {
+        top: 15px;
+    }
+
+    .aftersale-detail .el-step__head .el-step__icon {
+        width: 32px;
+        height: 32px;
+        color: var(--sa-background-assist);
+        background: var(--sa-place);
+        border: 2px solid var(--sa-table-header-bg);
+    }
+
+    .aftersale-detail .el-step__head.is-finish .el-step__icon {
+        color: var(--sa-background-assist);
+        background: var(--el-color-primary);
+    }
+
+    .aftersale-detail .el-step__title {
+        color: var(--sa-subfont);
+        font-size: 14px;
+        font-weight: 400;
+    }
+
+    .aftersale-detail .el-step__title.is-finish {
+        color: var(--sa-subtitle);
+    }
+
+    .aftersale-detail .el-step__description {
+        padding: 0;
+        color: var(--sa-subfont);
+    }
+
+    .aftersale-detail .el-step__description.is-finish .step-status {
+        color: var(--el-color-primary);
+    }
+
+    .aftersale-detail .step-status {
+        color: var(--sa-font);
+        font-size: 14px;
+    }
+
+    .aftersale-detail .status-steps-mobile {
+        margin-top: 32px;
+        display: none;
+
+        @media only screen and (max-width: 768px) {
+            display: flex;
+        }
+    }
+
+    .aftersale-detail .status-steps-mobile .el-step__head {
+        width: fit-content;
+    }
+
+    .aftersale-detail .status-steps-mobile .el-step__head .el-step__line {
+        left: 15px;
+    }
+
+    .aftersale-detail .status-steps-pc {
+        display: flex;
+        margin-top: 32px;
+
+        @media only screen and (max-width: 768px) {
+            display: none;
+        }
+    }
+
+    .aftersale-detail .status-steps-pc .step-status {
+        position: absolute;
+        top: -12px;
+        right: -30px;
+        width: 60px;
+    }
+
+    .aftersale-content {
+        padding: var(--sa-padding) var(--sa-padding) 0;
+        background: var(--sa-background-hex-hover);
+        border-radius: 8px;
+        margin-bottom: 16px;
+    }
+
+    .aftersale-detail .el-col {
+        margin-bottom: var(--sa-padding);
+    }
+
+    .aftersale-detail .title {
+        line-height: 20px;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--sa-title);
+        margin-bottom: 16px;
+    }
+
+    .aftersale-detail .subtitle {
+        line-height: 18px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--sa-title);
+        margin-bottom: 12px;
+    }
+
+    .aftersale-detail .item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .aftersale-detail .left {
+        line-height: 16px;
+        font-size: 12px;
+        color: var(--sa-subfont);
+    }
+
+    .aftersale-detail .right {
+        line-height: 16px;
+        font-size: 12px;
+        color: var(--sa-subtitle);
+        display: flex;
+        align-items: center;
+    }
+
+    .aftersale-detail .goods-item .goods-title {
+        height: 14px;
+        line-height: 14px;
+        font-size: 12px;
+        font-weight: 500;
+        margin-bottom: 6px;
+    }
+
+    .aftersale-detail .goods-item .goods-price {
+        flex-shrink: 0;
+        line-height: 14px;
+        font-size: 12px;
+        color: var(--sa-font);
+        margin-bottom: 12px;
+    }
+
+    .aftersale-detail .goods-item .goods-sku-text {
+        width: fit-content;
+        height: 18px;
+        line-height: 18px;
+        padding: 0 8px;
+        font-size: 12px;
+        color: var(--sa-subfont);
+        background: var(--sa-space);
+        border-radius: 10px;
+    }
+
+    .aftersale-detail .log-item {
+        line-height: 16px;
+        font-size: 12px;
+        color: var(--sa-subfont);
+    }
+
+    .aftersale-detail .log-oper {
+        margin-right: 12px;
+    }
+
+    .aftersale-detail .name {
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .aftersale-detail .create-time {
+        font-weight: 400;
+        margin-bottom: 8px;
+    }
+
+    .aftersale-detail .log-content {
+        margin-bottom: 8px;
+    }
+
+    .aftersale-detail .log-image {
+        margin-right: 4px;
+    }
+
+    .aftersale-detail .log-imageZ:last-of-type {
+        margin-right: 0;
+    }
+
+    .aftersale-detail .log-type-text,
+    .aftersale-detail .log-content {
+        font-weight: 500;
+        color: var(--sa-subtitle);
+        margin-bottom: 8px;
+    }
+</style>
+
+<div id="detail" class="aftersale-detail" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <div class="tip">
+                    <div>温馨提示</div>
+                    <div>1、如果同意申请，请发送正确的退货地址给买家</div>
+                    <div>2、如果拒绝申请，请发送给买家拒绝理由</div>
+                </div>
+                <el-row class="aftersale-content sa-m-b-16" :gutter="10">
+                    <el-col :xs="24" :sm="8" :md="8" :lg="8" :xl="8">
+                        <div class="status-text sa-m-b-4">
+                            {{ state.data.aftersale_status_text }}
+                        </div>
+                        <div class="status-desc sa-m-b-16">
+                            {{ state.data.aftersale_status_desc }}
+                        </div>
+                        <div class="tools">
+                            <template v-if="state.data.aftersale_status == 0 || state.data.aftersale_status == 1">
+                                {if $auth->check('shopro/order/aftersale/refund')}
+                                <el-button type="primary" link @click="onRefund">售后退款</el-button>
+                                {/if}
+                                {if $auth->check('shopro/order/aftersale/refuse')}
+                                <el-button @click="onRefuse">拒绝售后</el-button>
+                                {/if}
+                                {if $auth->check('shopro/order/aftersale/completed')}
+                                <el-button type="primary" link @click="onCompleted">售后完成</el-button>
+                                {/if}
+                            </template>
+                        </div>
+                    </el-col>
+                    <el-col :xs="24" :sm="16" :md="16" :lg="16" :xl="16">
+                        <el-steps class="status-steps-mobile" direction="vertical" :active="state.stepActive"
+                            :align-center="true" :space="80">
+                            <el-step title="买家申请售后" :description="state.data.create_time"></el-step>
+                            <el-step title="售后申请处理中" :description="
+                                state.stepActive >= 2
+                                ? state.data.logs.length > 0
+                                    ? state.data.logs[0].updatetime
+                                    : ''
+                                : ''
+                            "></el-step>
+                            <el-step title="处理完成" :description="state.stepActive == 3 ? state.data.updatetime : ''">
+                            </el-step>
+                        </el-steps>
+                        <el-steps class="status-steps-pc" direction="horizontal" :active="state.stepActive"
+                            :align-center="true">
+                            <el-step title="买家申请售后" :description="state.data.create_time"></el-step>
+                            <el-step title="售后申请处理中" :description="
+                                state.stepActive >= 2
+                                ? state.data.logs.length > 0
+                                    ? state.data.logs[0].updatetime
+                                    : ''
+                                : ''
+                            "></el-step>
+                            <el-step title="处理完成" :description="state.stepActive == 3 ? state.data.updatetime : ''">
+                            </el-step>
+                        </el-steps>
+                    </el-col>
+                </el-row>
+                <div class="refund-content aftersale-content sa-m-b-26">
+                    <div class="title sa-m-b-16">售后详情</div>
+                    <el-row :gutter="10">
+                        <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                            <div class="subtitle">交易信息</div>
+                            <div class="item">
+                                <div class="left">用户信息：</div>
+                                <div class="right">
+                                    <sa-user-profile :user="state.data.user" :id="state.data.user_id" :isavatar="false">
+                                    </sa-user-profile>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="left">订单编号：</div>
+                                <div class="right">
+                                    <template v-if="state.data.order">
+                                        {{ state.data.order.order_sn }}
+                                        <el-icon class="copy-document" @click="onClipboard(state.data.order.order_sn)">
+                                            <copy-document />
+                                        </el-icon>
+                                    </template>
+                                    <template v-else>{{ state.data.order_id }}</template>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="left">物流状态：</div>
+                                <div class="right">{{ state.data.dispatch_status_text }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="left">订单实付：</div>
+                                <div class="right">¥{{ state.data?.order?.pay_fee }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="left">订单运费：</div>
+                                <div class="right"> ¥{{ state.data?.order?.dispatch_amount }} </div>
+                            </div>
+                            <div class="item">
+                                <div class="left">订单优惠：</div>
+                                <div class="right"> ¥{{ state.data?.order?.total_discount_fee }} </div>
+                            </div>
+                            <div class="item">
+                                <div class="left">商品运费：</div>
+                                <div class="right">¥{{ state.data.dispatch_fee }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="left">商品优惠：</div>
+                                <div class="right">¥{{ state.data.discount_fee }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="left">建议退款：</div>
+                                <div class="right">¥{{ state.data.suggest_refund_fee }}</div>
+                            </div>
+                        </el-col>
+                        <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                            <div class="subtitle">售后信息</div>
+                            <div class="item">
+                                <div class="left">售后单号：</div>
+                                <div class="right">
+                                    {{ state.data.aftersale_sn }}
+                                    <el-icon class="copy-document" @click="onClipboard(state.data.aftersale_sn)">
+                                        <copy-document />
+                                    </el-icon>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="left">申请时间：</div>
+                                <div class="right">{{ state.data.createtime }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="left">联系电话：</div>
+                                <div class="right">{{ state.data.mobile || '-' }}</div>
+                            </div>
+                            <div class="item">
+                                <div class="left">售后类型：</div>
+                                <div class="right">
+                                    <span class="sa-color--danger">{{ state.data.type_text }}</span>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="left">实际退款：</div>
+                                <div class="right">
+                                    <span class="sa-color--danger">¥{{ state.data.refund_fee }}</span>
+                                </div>
+                            </div>
+                            <div class="item">
+                                <div class="left">申请原因：</div>
+                                <div class="right"> {{ state.data.reason }} </div>
+                            </div>
+                            <div class="item">
+                                <div class="left">相关描述：</div>
+                                <div class="right" v-html="state.data.content"></div>
+                            </div>
+                        </el-col>
+                        <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                            <div class="subtitle">商品信息</div>
+                            <div class="goods-item sa-flex sa-col-top">
+                                <sa-image class="mr-2" :url="state.data.goods_image" size="64"></sa-image>
+                                <div>
+                                    <div class="goods-title sa-table-line-1">
+                                        {{state.data.goods_title}}</div>
+                                    <div class="goods-price">
+                                        ¥{{state.data.goods_price}} <span class="ml-1">x{{state.data.goods_num}}</span>
+                                    </div>
+                                    <div v-if="state.data.goods_sku_text" class="goods-sku-text">
+                                        {{state.data.goods_sku_text}}
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+                    </el-row>
+                </div>
+                <div class="log-content aftersale-content">
+                    <div class="title sa-flex sa-row-between">
+                        <div class="left">协商记录</div>
+                        {if $auth->check('shopro/order/aftersale/addLog')}
+                        <el-button type="primary" link @click="onAddLog">回复买家</el-button>
+                        {/if}
+                    </div>
+                    <div class="log-item sa-flex sa-col-top" v-for="(log, index) in state.data.logs" :key="log">
+                        <sa-image v-if="log.oper" class="log-oper" :url="log.oper.avatar" size="48" radius="24">
+                        </sa-image>
+                        <div>
+                            <div v-if="log.oper" class="name">{{ log.oper.name }}</div>
+                            <div class="create-time">{{ log.createtime }}</div>
+                            <div class="log-type-text">{{ log.log_type_text }}</div>
+                            <div v-if="index < state.data.logs.length - 1" class="log-content" v-html="log.content">
+                            </div>
+                            <div class="sa-flex mb-2">
+                                <template v-for="item in log.images" :key="img">
+                                    <sa-image class="log-image" :url="item" size="48"></sa-image>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </el-scrollbar>
+        </el-main>
+    </el-container>
+</div>

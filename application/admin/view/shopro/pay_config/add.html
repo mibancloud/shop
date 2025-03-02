@@ -1,0 +1,180 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .pay-config-form .local-ajax-upload-wrap .local-ajax-upload {
+        display: none !important;
+    }
+</style>
+
+<div id="addEdit" class="pay-config-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="122px">
+                    <el-form-item label="标题" prop="name">
+                        <el-input class="sa-w-360" v-model="form.model.name" placeholder="请输入标题"></el-input>
+                    </el-form-item>
+                    <el-form-item label="支付方式类型">
+                        <el-radio-group v-model="form.model.type" :disabled="state.type=='edit'">
+                            <el-radio label="wechat"> 微信支付V3版 </el-radio>
+                            <el-radio label="alipay">支付宝支付</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="商户类型">
+                        <el-radio-group v-model="form.model.params.mode">
+                            <el-radio label="0">普通商户</el-radio>
+                            <el-radio label="2">服务商</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <template v-if="form.model.type == 'wechat'">
+                        <el-form-item v-if="form.model.params.mode == 2" label="主商户AppId" prop="params.app_id">
+                            <div class="sa-form-wrap">
+                                <el-input class="sa-w-360" v-model="form.model.params.app_id" placeholder="请输入主商户AppId">
+                                </el-input>
+                                <div class="tip">主商户绑定的公众号或者小程序的AppId</div>
+                            </div>
+                        </el-form-item>
+                        <el-form-item :label="form.model.params.mode == 2 ? '主商户号' : '商户号'" prop="params.mch_id">
+                            <el-input class="sa-w-360" v-model="form.model.params.mch_id"
+                                :placeholder="`请输入${form.model.params.mode == 2 ? '主商户号' : '商户号'}`">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item :label="form.model.params.mode == 2 ? '主商户密钥' : '商户密钥'"
+                            prop="params.mch_secret_key">
+                            <el-input class="sa-w-360" v-model="form.model.params.mch_secret_key"
+                                :placeholder="`请输入${form.model.params.mode == 2 ? '主商户密钥' : '商户密钥'}`">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item :label="form.model.params.mode == 2 ? '主商户证书' : '商户证书'"
+                            prop="params.mch_public_cert_path">
+                            <el-input class="local-ajax-upload-wrap sa-w-360"
+                                v-model="form.model.params.mch_public_cert_path"
+                                :placeholder="`请上传${form.model.params.mode == 2 ? '主商户证书' : '商户证书'}`">
+                                <template #append>
+                                    <label class="cursor-pointer" for="mch_public_cert_path">上传</label>
+                                    <input class="local-ajax-upload" id="mch_public_cert_path" type="file"
+                                        @change="onAjaxUpload('mch_public_cert_path')">
+                                </template>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item :label="form.model.params.mode == 2 ? '主商户Key证书' : '商户Key证书'"
+                            prop="params.mch_secret_cert">
+                            <el-input class="local-ajax-upload-wrap sa-w-360"
+                                v-model="form.model.params.mch_secret_cert"
+                                :placeholder="`请上传${form.model.params.mode == 2 ? '主商户Key证书' : '商户Key证书'}`">
+                                <template #append>
+                                    <label class="cursor-pointer" for="mch_secret_cert">上传</label>
+                                    <input class="local-ajax-upload" id="mch_secret_cert" type="file"
+                                        @change="onAjaxUpload('mch_secret_cert')">
+                                </template>
+                            </el-input>
+                        </el-form-item>
+                        <template v-if="form.model.params.mode == 2">
+                            <el-form-item label="子商户号" prop="params.sub_mch_id">
+                                <el-input class="sa-w-360" v-model="form.model.params.sub_mch_id" placeholder="请输入子商户号">
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="子商户秘钥">
+                                <div class="sa-form-wrap">
+                                    <el-input class="sa-w-360" v-model="form.model.params.sub_mch_secret_key"
+                                        placeholder="请输入子商户秘钥">
+                                    </el-input>
+                                    <div class="tip">
+                                        如果需要打款功能（分销商佣金打款等）请配置子商户支付密钥
+                                    </div>
+                                </div>
+                            </el-form-item>
+                            <el-form-item label="子商户证书">
+                                <div>
+                                    <el-input class="local-ajax-upload-wrap sa-w-360"
+                                        v-model="form.model.params.sub_mch_public_cert_path" placeholder="请上传子商户证书">
+                                        <template #append>
+                                            <label class="cursor-pointer" for="sub_mch_public_cert_path">上传</label>
+                                            <input class="local-ajax-upload" id="sub_mch_public_cert_path" type="file"
+                                                @change="onAjaxUpload('sub_mch_public_cert_path')">
+                                        </template>
+                                    </el-input>
+                                    <div class="tip">
+                                        如果需要打款功能（分销商佣金打款等）请配置子商户证书
+                                    </div>
+                                </div>
+                            </el-form-item>
+                            <el-form-item label="子商户Key证书">
+                                <div>
+                                    <el-input class="local-ajax-upload-wrap sa-w-360"
+                                        v-model="form.model.params.sub_mch_secret_cert" placeholder="请上传子商户Key证书">
+                                        <template #append>
+                                            <label class="cursor-pointer" for="sub_mch_secret_cert">上传</label>
+                                            <input class="local-ajax-upload" id="sub_mch_secret_cert" type="file"
+                                                @change="onAjaxUpload('sub_mch_secret_cert')">
+                                        </template>
+                                    </el-input>
+                                    <div class="tip">
+                                        如果需要打款功能（分销商佣金打款等）请配置子商户Key证书
+                                    </div>
+                                </div>
+                            </el-form-item>
+                        </template>
+                    </template>
+                    <template v-if="form.model.type == 'alipay'">
+                        <el-form-item label="商户号AppId" prop="params.app_id">
+                            <el-input class="sa-w-360" v-model="form.model.params.app_id" placeholder="请输入商户号AppId">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="支付宝公钥证书" prop="params.alipay_public_cert_path">
+                            <el-input class="local-ajax-upload-wrap sa-w-360"
+                                v-model="form.model.params.alipay_public_cert_path"
+                                placeholder="请上传支付宝公钥证书 alipayCertPublicKey_RSA2.crt">
+                                <template #append>
+                                    <label class="cursor-pointer" for="alipay_public_cert_path">上传</label>
+                                    <input class="local-ajax-upload" id="alipay_public_cert_path" type="file"
+                                        @change="onAjaxUpload('alipay_public_cert_path')">
+                                </template>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="应用公钥证书" prop="params.app_public_cert_path">
+                            <el-input class="local-ajax-upload-wrap sa-w-360"
+                                v-model="form.model.params.app_public_cert_path"
+                                placeholder="请上传应用公钥证书 appCertPublicKey_***.crt">
+                                <template #append>
+                                    <label class="cursor-pointer" for="app_public_cert_path">上传</label>
+                                    <input class="local-ajax-upload" id="app_public_cert_path" type="file"
+                                        @change="onAjaxUpload('app_public_cert_path')">
+                                </template>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="支付宝根证书" prop="params.alipay_root_cert_path">
+                            <el-input class="local-ajax-upload-wrap sa-w-360"
+                                v-model="form.model.params.alipay_root_cert_path"
+                                placeholder="请上传支付宝根证书 alipayRootCert.crt">
+                                <template #append>
+                                    <label class="cursor-pointer" for="alipay_root_cert_path">上传</label>
+                                    <input class="local-ajax-upload" id="alipay_root_cert_path" type="file"
+                                        @change="onAjaxUpload('alipay_root_cert_path')">
+                                </template>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="私钥" prop="params.app_secret_cert">
+                            <el-input class="sa-w-360" v-model="form.model.params.app_secret_cert" placeholder="请输入私钥">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item v-if="form.model.params.mode == 2" label="主商户ID"
+                            prop="params.service_provider_id">
+                            <el-input class="sa-w-360" v-model="form.model.params.service_provider_id"
+                                placeholder="请输入主商户ID"></el-input>
+                        </el-form-item>
+                    </template>
+                    <el-form-item label="状态">
+                        <el-radio-group v-model="form.model.status">
+                            <el-radio label="normal">显示</el-radio>
+                            <el-radio label="disabled">禁用</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

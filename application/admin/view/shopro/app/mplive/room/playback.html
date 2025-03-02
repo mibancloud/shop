@@ -1,0 +1,68 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .program {
+        width: 360px;
+        height: 260px;
+        background: #f5f5f5;
+        border-radius: 4px;
+    }
+
+    .path {
+        width: 360px;
+        height: 260px;
+        background: #f5f5f5;
+        border-radius: 4px;
+    }
+
+    .title {
+        font-size: 14px;
+        line-height: 20px;
+        color: var(--sa-subtitle);
+    }
+
+    .desc {
+        color: var(--sa-subfont);
+        font-size: 14px;
+        line-height: 20px;
+        word-break: break-all;
+        word-wrap: break-word;
+    }
+</style>
+
+<div id="playback" class="mplive-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <!-- v-loading="loading" -->
+        <el-main class="sa-p-0">
+            <el-table :data="table.data" class="sa-table" stripe>
+                <template #empty>
+                    <sa-empty />
+                </template>
+                <el-table-column label="回放片段" min-width="140">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ '片段' + scope.row.index || '-' }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="创建时间" min-width="140">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{
+                            dayjs(scope.row.create_time).format('YYYY-MM-DD HH:mm:ss') || '-'
+                            }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="过期时间" min-width="140">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{
+                            dayjs(scope.row.expire_time).format('YYYY-MM-DD HH:mm:ss') || '-'
+                            }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="操作" min-width="120">
+                    <template #default="scope">
+                        <el-button class="is-link" type="primary" @click="play(scope.row.media_url)">播放</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+    </el-container>
+</div>

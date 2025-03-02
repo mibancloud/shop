@@ -1,0 +1,80 @@
+{include file="/shopro/common/script" /}
+<style>
+    .tip {
+        line-height: 20px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subfont);
+        margin-left: 100px;
+        margin-bottom: 20px;
+
+    }
+
+    .tip a {
+        color: var(--sa-subfont);
+        text-decoration: underline;
+    }
+
+    @media screen and (max-width: 992px) {
+        .tip {
+            margin-left: 0px;
+        }
+    }
+</style>
+
+<div id="index" class="config-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-tabs class="sa-tabs">
+                <el-tab-pane label="公众号配置"></el-tab-pane>
+            </el-tabs>
+        </el-header>
+        <el-main>
+            <el-scrollbar height="100%">
+                <div class="tip">配置说明：<a href="https://kf.qq.com/faq/170104AJ3y26170104Yj673y.html"
+                        target="_blank">公众平台接口权限列表说明</a></div>
+                <el-form ref="formRef" :model="form.model" :rules="form.rules" label-width="160px">
+                    <el-form-item label="公众号名称" prop="name">
+                        <el-input class="sa-w-360" placeholder="请输入公众号名称" v-model="form.model.name"></el-input>
+                    </el-form-item>
+                    <el-form-item label="公众号类型">
+                        <el-radio-group v-model="form.model.type">
+                            <el-radio :label="1">订阅号</el-radio>
+                            <el-radio :label="2">认证订阅号</el-radio>
+                            <el-radio :label="3">服务号</el-radio>
+                            <el-radio :label="4">认证服务号</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="公众号Logo" prop="logo">
+                        <sa-uploader v-model="form.model.logo"></sa-uploader>
+                    </el-form-item>
+                    <el-form-item label="公众号二维码" prop="qrcode">
+                        <sa-uploader v-model="form.model.qrcode"></sa-uploader>
+                    </el-form-item>
+                    <el-form-item label="开发者AppId" prop="app_id">
+                        <el-input class="sa-w-360" placeholder="请输入开发者AppId" v-model="form.model.app_id"></el-input>
+                    </el-form-item>
+                    <el-form-item label="开发者AppSecret" prop="secret">
+                        <el-input class="sa-w-360" placeholder="请输入开发者AppSecret" v-model="form.model.secret"></el-input>
+                    </el-form-item>
+                    <el-form-item label="服务器地址">
+                        <el-input class="sa-w-360" v-model="form.model.server_url" disabled>
+                            <template #append>
+                                <span class="cursor-pointer" @click="onClipboard(form.model.server_url)">复制</span>
+                            </template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="令牌(Token)" prop="token">
+                        <el-input class="sa-w-360" placeholder="请输入令牌(Token)" v-model="form.model.token"></el-input>
+                    </el-form-item>
+                    <el-form-item label="消息加解密密钥" prop="aes_key">
+                        <el-input class="sa-w-360" placeholder="请输入消息加解密密钥" v-model="form.model.aes_key"></el-input>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

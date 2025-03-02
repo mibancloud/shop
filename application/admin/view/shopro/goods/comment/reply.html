@@ -1,0 +1,18 @@
+{include file="/shopro/common/script" /}
+
+<div id="reply" class="comment-reply" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item label="回复内容" prop="content">
+                        <el-input class="sa-w-360" v-model="form.model.content" placeholder="请输入回复内容"></el-input>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

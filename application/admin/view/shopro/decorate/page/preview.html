@@ -1,0 +1,152 @@
+{include file="/shopro/common/script" /}
+
+<script src="__CDN__/assets/addons/shopro/libs/qrcode.min.js?v={$site.version|htmlentities}"></script>
+
+<style>
+    .template-preview {
+        text-align: center;
+    }
+
+    .template-preview .el-scrollbar__wrap {
+        overflow-x: hidden;
+    }
+
+    .template-preview .el-scrollbar__bar.is-horizontal {
+        display: none;
+    }
+
+    .template-preview .preview-title {
+        color: var(--sa-subtitle);
+        margin-bottom: 12px;
+    }
+
+    .template-preview .web-preview {
+        width: 300px;
+        height: 594px;
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        color: #434343;
+    }
+
+    .template-preview .web-preview .bg {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+
+    .template-preview .web-preview #preview {
+        border: none;
+        margin: 0 auto;
+        width: 100%;
+        height: 100%;
+        border-radius: 26px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .template-preview .web-preview .web-preview-msg {
+        position: relative;
+        z-index: 1;
+    }
+
+    .template-preview .name {
+        font-size: 18px;
+        color: var(--sa-title);
+        margin-bottom: 12px;
+    }
+
+    .template-preview .platform .el-icon {
+        font-size: 20px;
+    }
+
+    .template-preview .copyright {
+        font-size: 12px;
+        color: var(--sa-subfont);
+        margin-bottom: 12px;
+    }
+
+    .template-preview .h5,
+    .template-preview .wechat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .template-preview #qrcode {
+        width: 132px;
+        height: 132px;
+    }
+
+    .template-preview #qrcode img {
+        width: 100%;
+        height: 100%;
+    }
+
+    .template-preview .tip {
+        font-size: 14px;
+        color: var(--sa-font);
+        margin-bottom: 24px;
+    }
+</style>
+
+<div id="preview" class="template-preview" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar>
+                <el-row :gutter="20">
+                    <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                        <div v-if="
+                    state.detail?.type == 'diypage' ||
+                    state.detail?.platform?.includes('H5') ||
+                    state.detail?.platform?.includes('WechatOfficialAccount')
+                  " class="left sa-flex-col sa-col-center">
+                            <div class="preview-title">此为预览效果，实际效果请扫码查看</div>
+                            <div class="web-preview">
+                                <img class="bg" :src="`/assets/addons/shopro/img/decorate/preview_bg.png`" />
+                                <div v-if="isShowIframe" class="web-preview-msg">
+                                    <span v-html="isShowIframe"></span>
+                                </div>
+                                <iframe v-else id="preview" :src="urlData.H5" frameborder="1" height="600px"></iframe>
+                            </div>
+                        </div>
+                    </el-col>
+                    <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                        <div class="name">{{ state.detail?.name }}</div>
+                        <template v-if="
+                    state.detail?.type == 'diypage' || state.detail?.platform?.length > 0
+                  ">
+                            <div class="platform mb-4">
+                                <i :class="`iconfont icon${pl} mr-1`" v-for="pl in state.detail?.platform" :style="{
+                                color: platformList.find((pf) => {
+                                  return pf.type == pl;
+                                })?.color,
+                              }"></i>
+                            </div>
+                            <div v-if="
+                      state.detail?.type == 'diypage' ||
+                      state.detail?.platform?.includes('H5') ||
+                      state.detail?.platform?.includes('WechatOfficialAccount')
+                    " class="h5">
+                                <div id="qrcode"></div>
+                                <div class="tip mt-2">微信扫描二维码即可预览</div>
+                            </div>
+                            <div v-if="
+                      state.detail?.type == 'diypage' ||
+                      state.detail?.platform?.includes('WechatMiniProgram')
+                    " class="wechat">
+                                <sa-image :url="urlData.WechatMiniProgram" size="132"></sa-image>
+                                <div class="tip mt-2">微信扫描小程序即可预览</div>
+                            </div>
+                        </template>
+                        <div class="copyright">星品科技Shopro版权所有 Copyright 2020-2022</div>
+                    </el-col>
+                </el-row>
+            </el-scrollbar>
+        </el-main>
+    </el-container>
+</div>

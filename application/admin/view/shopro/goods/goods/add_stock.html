@@ -1,0 +1,153 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .goods-add-stock .sku-table-wrap {
+        width: 100%;
+        overflow: auto;
+    }
+
+    .goods-add-stock .sku-table-wrap .sku-table {
+        width: 100%;
+        border: 1px solid var(--sa-border);
+    }
+
+    .goods-add-stock .sku-table-wrap .sku-table th {
+        font-size: 12px;
+        color: var(--subtitle);
+        height: 32px;
+        line-height: 1;
+        padding-left: 12px;
+        box-sizing: border-box;
+        text-align: left;
+    }
+
+    .goods-add-stock .sku-table-wrap .sku-table th .th-title {
+        font-size: 12px;
+        color: var(--subtitle);
+        font-weight: bold;
+    }
+
+    .goods-add-stock .sku-table-wrap .sku-table td {
+        min-width: 88px;
+        padding: 0 10px;
+        height: 40px;
+        box-sizing: border-box;
+    }
+
+    .goods-add-stock .sku-table-wrap .sku-table td.image {
+        min-width: 48px;
+    }
+
+    .goods-add-stock .sku-table-wrap .sku-table td.stock {
+        min-width: 190px;
+    }
+
+    .goods-add-stock .sku-table-wrap .sku-table td.stock .addsku-input {
+        width: 80px;
+    }
+
+    .goods-add-stock .sku-table-wrap .sku-table td.stock_warning {
+        min-width: 168px;
+    }
+
+    .goods-add-stock .sku-table-wrap .sku-table td.sn {
+        min-width: 116px;
+    }
+
+    .sku-table-wrap .sku-table .up {
+        color: var(--el-color-success);
+    }
+
+    .goods-add-stock .sku-table-wrap .sku-table .down {
+        color: var(--el-color-danger);
+    }
+
+    .goods-add-stock .sku-table-wrap .sku-table .hidden {
+        color: var(--el-color-info);
+    }
+</style>
+
+<div id="addStock" class="goods-add-stock" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item v-if="state.is_sku == 0" label="商品库存：" prop="add_stock">
+                        <div class="sa-w-360">
+                            <div class="mr-2">{{ state.stock }}</div>
+                            <el-input type="number" v-model="form.model.add_stock" placeholder="补充库存"><template
+                                    #append>件</template></el-input>
+                        </div>
+                    </el-form-item>
+                    <div v-if="state.is_sku == 1" class="sku-table-wrap">
+                        <table class="sku-table" rules="all">
+                            <thead>
+                                <tr>
+                                    <th>规格值</th>
+                                    <th>图片</th>
+                                    <th>价格(元)</th>
+                                    <th>划线价格</th>
+                                    <th>成本价</th>
+                                    <th>
+                                        <div class="sa-flex">
+                                            <div class="th-title">库存(件)</div>
+                                            <el-popover placement="top" width="160" trigger="click"
+                                                v-model:visible="batchPopover.flag">
+                                                <template #reference>
+                                                    <el-icon class="sa-color--primary ml-1">
+                                                        <Edit />
+                                                    </el-icon>
+                                                </template>
+                                                <el-input class="mb-2" v-model="batchPopover.add_stock"
+                                                    placeholder="请输入内容" size="small"></el-input>
+                                                <div class="sa-flex sa-row-right">
+                                                    <el-button type="primary" link size="small"
+                                                        @click="onBatchPopover('cancel')">取消</el-button>
+                                                    <el-button type="primary" size="small"
+                                                        @click="onBatchPopover('define')">确定</el-button>
+                                                </div>
+                                            </el-popover>
+                                        </div>
+                                    </th>
+                                    <th>库存预警(件)</th>
+                                    <th>重量(kg)</th>
+                                    <th>规格编码</th>
+                                    <th>商品状态</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(item, i) in form.model.sku_prices" :key="i">
+                                    <td>{{ item.goods_sku_text.join('/') }}</td>
+                                    <td class="image">
+                                        <sa-image :url="item.image" size="28"></sa-image>
+                                    </td>
+                                    <td>{{ item.price }}</td>
+                                    <td>{{ item.original_price }}</td>
+                                    <td>{{ item.cost_price }}</td>
+                                    <td class="stock">
+                                        <div class="sa-flex sa-row-between">
+                                            <div class="stock-title">{{ item.stock }}</div>
+                                            <el-input v-model="item.add_stock" placeholder="补充库存量" size="small"
+                                                class="addsku-input"
+                                                οnkeyup="value=value.replace(/[^\d]/g, '').replace(/^0{1,}/g,'')">
+                                            </el-input>
+                                        </div>
+                                    </td>
+                                    <td class="stock_warning">{{ item.stock_warning }}</td>
+                                    <td>{{ item.weight }}</td>
+                                    <td>{{ item.sn }}</td>
+                                    <td :class="item.status">
+                                        {{ item.status == 'up' ? `${item.status_text}中` : `已${item.status_text}` }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

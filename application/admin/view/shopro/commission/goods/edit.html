@@ -1,0 +1,353 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .goods-form .sa-title.is-line {
+        margin-bottom: 16px;
+    }
+
+    .goods-form .goods-item {
+        margin-bottom: 16px;
+    }
+
+    .goods-form .goods-item .goods-title {
+        height: 16px;
+        line-height: 16px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--sa-font);
+        margin-bottom: 8px;
+    }
+
+    .goods-form .goods-item .goods-sku {
+        width: fit-content;
+        height: 18px;
+        line-height: 18px;
+        background: var(--el-color-primary);
+        border-radius: 10px;
+        padding: 0 8px;
+        font-size: 12px;
+        color: var(--sa-background-assist);
+    }
+
+    .goods-form .commission-table {
+        overflow: hidden;
+        overflow-x: auto;
+    }
+
+    .goods-form .commission-table .commission-header {
+        border-left: 1px solid var(--sa-border);
+    }
+
+    .goods-form .commission-table .commission-header .col-item {
+        padding: 0 12px;
+        height: 40px;
+        line-height: 40px;
+        background: var(--sa-table-header-bg);
+        border-top: 1px solid var(--sa-border);
+    }
+
+    .goods-form .commission-table .commission-content {
+        border-left: 1px solid var(--sa-border);
+    }
+
+    .goods-form .commission-table .col-item {
+        width: 150px;
+        min-width: 150px;
+        padding: 0 12px;
+        height: 48px;
+        line-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-right: 1px solid var(--sa-border);
+        border-bottom: 1px solid var(--sa-border);
+    }
+
+    .goods-form .commission-table .col-item .el-input {
+        margin-right: 12px;
+    }
+
+    .goods-form .commission-table .col-item .el-input:last-of-type {
+        margin-right: 0;
+    }
+
+    .goods-form .commission-table .col-item.commission-item {
+        width: 240px;
+        min-width: 240px;
+    }
+
+    .goods-form .batch-edit {
+        color: var(--el-color-primary);
+        margin-left: 8px;
+    }
+
+    .commission-popover .commission-item {
+        margin-bottom: 12px;
+    }
+
+    .commission-popover .commission-item .el-input {
+        margin-right: 12px;
+    }
+
+    .commission-popover .commission-item .el-input:last-of-type {
+        margin-right: 0;
+    }
+</style>
+
+<div id="addEdit" class="goods-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <div class="sa-title is-line">商品信息</div>
+                <div v-for="goods in state.data?.goods" :key="goods">
+                    <div class="goods-item sa-flex sa-col-top">
+                        <sa-image class="mr-2" :url="goods.image" size="48"></sa-image>
+                        <div>
+                            <div class="goods-title sa-table-line-1">
+                                {{ goods.title }}
+                            </div>
+                            <div v-if="goods.is_sku" class="goods-sku">
+                                {{ goods.is_sku ? '多规格' : '' }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sa-title is-line">佣金设置</div>
+                <el-form label-width="120px">
+                    <el-form-item label="是否参与">
+                        <el-radio-group v-model="state.commission_goods.status">
+                            <el-radio :label="0">不参与</el-radio>
+                            <el-radio :label="1">参与</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="分销商业绩">
+                        <el-radio-group v-model="state.commission_goods.commission_order_status">
+                            <el-radio :label="0">不计入</el-radio>
+                            <el-radio :label="1">
+                                <span class="sa-flex">
+                                    计入
+                                    <el-popover placement="top" :width="310" content="关闭则只分佣，不计入分销订单金额和订单数">
+                                        <template #reference>
+                                            <el-icon class="warning sa-m-l-8">
+                                                <warning />
+                                            </el-icon>
+                                        </template>
+                                    </el-popover>
+                                </span>
+                            </el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="佣金规则">
+                        <el-radio-group v-model="state.commission_goods.self_rules" @change="onChangeSelfRules">
+                            <el-radio :label="0">默认规则</el-radio>
+                            <el-radio :label="1" v-if="state.rulesType != 'batch'">独立规则</el-radio>
+                            <el-radio :label="2">批量规则</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item
+                        v-if="state.commission_goods.self_rules == 1 || state.commission_goods.self_rules == 2"
+                        label="分销设置">
+                        <el-switch v-model="state.commission_config_temp.status"
+                            @change="onChangeCommissionConfigStatus" :active-value="1" :inactive-value="0" />
+                        <span class="sa-m-l-8">
+                            {{ state.commission_config_temp.status ? '自定义' : '默认' }}
+                        </span>
+                    </el-form-item>
+                    <el-form-item label="分销层级">
+                        <el-radio-group v-model="state.commission_config_temp.level"
+                            :disabled="state.commission_config_temp.status == 0">
+                            <el-radio :label="1">一级</el-radio>
+                            <el-radio :label="2">二级</el-radio>
+                            <el-radio :label="3">三级</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="分销自购">
+                        <div>
+                            <el-radio-group v-model="state.commission_config_temp.self_buy"
+                                :disabled="state.commission_config_temp.status == 0">
+                                <el-radio :label="0">关闭</el-radio>
+                                <el-radio :label="1">开启</el-radio>
+                            </el-radio-group>
+                            <div class="tip"> 分销自购开启后，分销商自己购买时，下单可以给自己返佣 </div>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="商品结算方式">
+                        <div>
+                            <el-radio-group v-model="state.commission_config_temp.reward_type"
+                                :disabled="state.commission_config_temp.status == 0">
+                                <el-radio label="goods_price">商品价</el-radio>
+                                <el-radio label="pay_price">实际支付价</el-radio>
+                            </el-radio-group>
+                            <div class="tip">
+                                商品价: 商品实际售价/规格价，实际支付价:实际支付的费用(不含运费)
+                            </div>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="佣金结算方式">
+                        <el-radio-group v-model="state.commission_config_temp.reward_event"
+                            :disabled="state.commission_config_temp.status == 0">
+                            <el-radio label="paid">支付后结算</el-radio>
+                            <el-radio label="confirm">确认收货结算</el-radio>
+                            <el-radio label="finish">订单完成结算</el-radio>
+                            <el-radio label="admin">手动打款</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <div class="commission-table">
+                        <template v-if="state.commission_goods.self_rules == 0">
+                            <div class="commission-header sa-flex">
+                                <div class="col-item">分销等级名称</div>
+                                <template v-for="commission in state.commission_config_temp.level" :key="commission">
+                                    <div v-if="commission == 1" class="col-item commission-item">
+                                        一级(自购)佣金比例
+                                    </div>
+                                    <div v-if="commission == 2" class="col-item commission-item"> 二级佣金比例 </div>
+                                    <div v-if="commission == 3" class="col-item commission-item"> 三级佣金比例 </div>
+                                </template>
+                            </div>
+                            <div class="commission-content sa-flex" v-for="level in state.levelData" :key="level">
+                                <div class="col-item">{{ level.name }}</div>
+                                <template v-for="commission in state.commission_config_temp.level" :key="commission">
+                                    <div class="col-item commission-item">
+                                        {{ level.commission_rules[`commission_${commission}`] }}%
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template v-if="state.commission_goods.self_rules == 1">
+                            <div class="commission-header sa-flex">
+                                <div class="col-item">商品规格</div>
+                                <div class="col-item">价格</div>
+                                <div class="col-item">分销等级名称</div>
+                                <template v-for="commission in state.commission_config_temp.level" :key="commission">
+                                    <div class="col-item commission-item">
+                                        <template v-if="commission == 1">一级(自购)佣金比例</template>
+                                        <template v-if="commission == 2">二级佣金比例</template>
+                                        <template v-if="commission == 3">三级佣金比例</template>
+                                        <el-popover popper-class="commission-popover"
+                                            v-model:visible="commissionPopover.flag[commission]" placement="top"
+                                            :width="220" trigger="click">
+                                            <div class="commission-item sa-flex">
+                                                <el-input v-model="commissionPopover.form.rate" type="number"
+                                                    :disabled="commissionPopover.form.money != ''">
+                                                    <template #append>%</template>
+                                                </el-input>
+                                                <el-input v-model="commissionPopover.form.money" type="number"
+                                                    :disabled="commissionPopover.form.rate != ''">
+                                                    <template #append>元</template>
+                                                </el-input>
+                                            </div>
+                                            <div class="sa-flex sa-row-right">
+                                                <el-button class="is-link" type="primary" size="small"
+                                                    @click="onCancelCommissionPopover(commission)">取消</el-button>
+                                                <el-button type="primary" size="small"
+                                                    @click="onConfirmCommissionPopover(commission)">确定</el-button>
+                                            </div>
+                                            <template #reference>
+                                                <el-icon class="batch-edit">
+                                                    <edit />
+                                                </el-icon>
+                                            </template>
+                                        </el-popover>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="commission-content sa-flex">
+                                <div class="sa-flex sa-flex-col">
+                                    <div class="sa-flex" v-for="sku in state.detailData.sku_prices" :key="sku">
+                                        <div class="col-item" :style="{ height: 48 * state.levelData.length + 'px' }">
+                                            {{ state.detailData?.is_sku ? sku.goods_sku_text.join(',') : '默认规格' }}
+                                        </div>
+                                        <div class="col-item" :style="{ height: 48 * state.levelData.length + 'px' }">
+                                            {{ sku.price }}
+                                        </div>
+                                        <div>
+                                            <div class="col-item" v-for="level in state.levelData" :key="level">
+                                                {{ level.name }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div v-for="sku in state.commission_goods.commission_rules" :key="sku">
+                                        <div class="sa-flex" v-for="level in sku" :key="level">
+                                            <template v-for="commission in state.commission_config_temp.level"
+                                                :key="commission">
+                                                <div v-if="level[commission]" class="col-item commission-item">
+                                                    <el-input v-model="level[commission].rate" type="number"
+                                                        :disabled="level[commission].money != ''">
+                                                        <template #append>%</template>
+                                                    </el-input>
+                                                    <el-input v-model="level[commission].money" type="number"
+                                                        :disabled="level[commission].rate != ''">
+                                                        <template #append>元</template>
+                                                    </el-input>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <template v-if="state.commission_goods.self_rules == 2">
+                            <div class="commission-header sa-flex">
+                                <div class="col-item">商品规格</div>
+                                <template v-for="commission in state.commission_config_temp.level" :key="commission">
+                                    <div class="col-item commission-item">
+                                        <template v-if="commission == 1">一级(自购)佣金比例</template>
+                                        <template v-if="commission == 2">二级佣金比例</template>
+                                        <template v-if="commission == 3">三级佣金比例</template>
+                                        <el-popover popper-class="commission-popover"
+                                            v-model:visible="commissionPopover.flag[commission]" placement="top"
+                                            :width="220" trigger="click">
+                                            <div class="commission-item sa-flex">
+                                                <el-input v-model="commissionPopover.form.rate" type="number"
+                                                    :disabled="commissionPopover.form.money != ''">
+                                                    <template #append>%</template>
+                                                </el-input>
+                                            </div>
+                                            <div class="sa-flex sa-row-right">
+                                                <el-button class="is-link" type="primary" size="small"
+                                                    @click="onCancelCommissionPopover(commission)">取消</el-button>
+                                                <el-button size="small" type="primary"
+                                                    @click="onConfirmCommissionPopover(commission)">确定</el-button>
+                                            </div>
+                                            <template #reference>
+                                                <el-icon class="batch-edit">
+                                                    <edit />
+                                                </el-icon>
+                                            </template>
+                                        </el-popover>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="commission-content sa-flex">
+                                <div>
+                                    <div class="col-item" v-for="level in state.levelData" :key="level">
+                                        {{ level.name }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="sa-flex" v-for="level in state.commission_goods.commission_rules"
+                                        :key="level">
+                                        <template v-for="commission in state.commission_config_temp.level"
+                                            :key="commission">
+                                            <div v-if="level[commission]" class="col-item commission-item">
+                                                <el-input v-model="level[commission].rate" type="number"
+                                                    :disabled="level[commission].money != ''">
+                                                    <template #append>%</template>
+                                                </el-input>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

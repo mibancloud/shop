@@ -1,0 +1,60 @@
+{include file="/shopro/common/script" /}
+
+<div id="index" class="level-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">分销商等级</div>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    {if $auth->check('shopro/commission/level/add')}
+                    <el-button icon="Plus" type="primary" @click="onAdd">添加</el-button>
+                    {/if}
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe>
+                <el-table-column label="等级" min-width="90">
+                    <template #default="scope"> 等级{{ scope.row.level }} </template>
+                </el-table-column>
+                <el-table-column label="等级名称" min-width="150">
+                    <template #default="scope">
+                        {{ scope.row.name }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="等级徽章" min-width="120">
+                    <template #default="scope">
+                        <sa-image :url="scope.row.image" size="24"></sa-image>
+                    </template>
+                </el-table-column>
+                <el-table-column label="一级(自购)佣金比例" min-width="160">
+                    <template #default="scope"> {{ scope.row.commission_rules?.commission_1 }}% </template>
+                </el-table-column>
+                <el-table-column label="二级佣金比例" min-width="120">
+                    <template #default="scope"> {{ scope.row.commission_rules?.commission_2 }}% </template>
+                </el-table-column>
+                <el-table-column label="三级佣金比例" min-width="120">
+                    <template #default="scope"> {{ scope.row.commission_rules?.commission_3 }}% </template>
+                </el-table-column>
+                <el-table-column label="操作" min-width="120" fixed="right">
+                    <template #default="scope">
+                        {if $auth->check('shopro/commission/level/edit')}
+                        <el-button type="primary" link @click="onEdit(scope.row.level)">编辑</el-button>
+                        {/if}
+                        <el-popconfirm v-if="scope.row.level != 1" width="fit-content" confirm-button-text="确认"
+                            cancel-button-text="取消" title="确认删除这条记录?" @confirm="onDelete(scope.row.level)">
+                            <template #reference>
+                                {if $auth->check('shopro/commission/level/delete')}
+                                <el-button type="danger" link>删除</el-button>
+                                {/if}
+                            </template>
+                        </el-popconfirm>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+    </el-container>
+</div>

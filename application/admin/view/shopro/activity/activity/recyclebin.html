@@ -1,0 +1,20 @@
+{include file="/shopro/common/script" /}
+
+<div id="recyclebin" class="activity-recyclebin" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @sort-change="onChangeSort">
+                <el-table-column prop="id" label="ID" width="90" sortable="custom"></el-table-column>
+                <el-table-column label="名称" min-width="100">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">{{ scope.row.title || '-' }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="deletetime" label="删除时间" width="172" sortable="custom"></el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination class="is-ellipsis" v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+</div>

@@ -1,0 +1,29 @@
+{include file="/shopro/common/script" /}
+
+<div id="addEdit" class="area-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item label="上级行政区" prop="pid">
+                        <el-cascader class="sa-w-360" v-model="form.model.pid" :options="area.select" :props="{
+                          label: 'name',
+                          value: 'id',
+                          checkStrictly: true,
+                          emitPath: false,
+                        }" clearable placeholder="请选择上级行政区"></el-cascader>
+                    </el-form-item>
+                    <el-form-item label="行政区ID" prop="id">
+                        <el-input class="sa-w-360" v-model="form.model.id" placeholder="请输入行政区ID"></el-input>
+                    </el-form-item>
+                    <el-form-item label="名称" prop="name">
+                        <el-input class="sa-w-360" v-model="form.model.name" placeholder="请输入名称"></el-input>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

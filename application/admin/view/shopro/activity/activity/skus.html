@@ -1,0 +1,171 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .activity-skus .sku-table-wrap {
+        width: 100%;
+        overflow: auto;
+    }
+
+    .activity-skus .sku-table-wrap .sku-table {
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .activity-skus .sku-table-wrap .sku-table thead {
+        line-height: 40px;
+        background: var(--sa-table-header-bg);
+        color: var(--subtitle);
+    }
+
+    .activity-skus .sku-table-wrap .sku-table tbody {}
+
+    .activity-skus .sku-table-wrap .sku-table tbody tr {
+        line-height: 48px;
+        color: var(--sa-font);
+    }
+
+    .activity-skus .sku-table-wrap .sku-table tbody tr:nth-of-type(2n) {
+        background: var(--sa-table-striped);
+    }
+
+    .activity-skus .sku-table-wrap .sku-table th,
+    .activity-skus .sku-table-wrap .sku-table td {
+        padding: 0 16px;
+        text-align: left;
+    }
+
+    .activity-skus .sku-table-wrap .sku-item {
+        min-width: 100px;
+        flex-shrink: 0;
+    }
+</style>
+
+<div id="skus" class="activity-skus" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <div class="sku-table-wrap">
+                <table class="sku-table" rules="none">
+                    <thead>
+                        <tr>
+                            <th class="sku-item" v-for="ss in state.skus" :key="ss">
+                                {{ ss.name }}
+                            </th>
+                            <th class="sku-item">库存</th>
+                            <th class="sku-item">价格</th>
+                            <th class="sku-item">销量</th>
+                            <th class="sku-item">活动库存</th>
+                            <th v-if="['groupon', 'seckill'].includes(state.model.type)" class="sku-item">
+                                活动价格
+                            </th>
+                            <th class="sku-item" v-if="
+                          state.model.type == 'groupon' &&
+                          state.model.rules.is_leader_discount == 1
+                        ">
+                                团长价格
+                            </th>
+                            <template v-if="state.model.type == 'groupon_ladder'">
+                                <th class="sku-item">
+                                    {{ state.model.rules.ladders.ladder_one }}人团价格
+                                </th>
+                                <th class="sku-item" v-if="state.model.rules.is_leader_discount == 1">
+                                    {{ state.model.rules.ladders.ladder_one }}人团长价格
+                                </th>
+                                <th class="sku-item">
+                                    {{ state.model.rules.ladders.ladder_two }}人团价格
+                                </th>
+                                <th class="sku-item" v-if="state.model.rules.is_leader_discount == 1">
+                                    {{ state.model.rules.ladders.ladder_two }}人团长价格
+                                </th>
+                                <template v-if="Object.keys(state.model.rules.ladders).includes('ladder_three')">
+                                    <th class="sku-item">
+                                        {{ state.model.rules.ladders.ladder_three }}人团价格
+                                    </th>
+                                    <th class="sku-item" v-if="state.model.rules.is_leader_discount == 1">
+                                        {{ state.model.rules.ladders.ladder_three }}人团长价格
+                                    </th>
+                                </template>
+                            </template>
+                            <th class="sku-item">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(sp, spindex) in state.sku_prices" :key="sp">
+                            <td class="sku-item" v-for="st in sp.goods_sku_text" :key="st">
+                                {{ st }}
+                            </td>
+                            <td class="sku-item">{{ sp.stock }}</td>
+                            <td class="sku-item">{{ sp.price }}</td>
+                            <td class="sku-item">{{ sp.sales }}</td>
+                            <th class="sku-item">
+                                <el-input v-if="state.activity_sku_prices[spindex].status == 'up'" type="number"
+                                    v-model="state.activity_sku_prices[spindex].stock"></el-input>
+                            </th>
+                            <th v-if="['groupon', 'seckill'].includes(state.model.type)" class="sku-item">
+                                <el-input v-if="state.activity_sku_prices[spindex].status == 'up'" type="number"
+                                    v-model="state.activity_sku_prices[spindex].price" :disabled="state.activityStatus">
+                                </el-input>
+                            </th>
+                            <th class="sku-item" v-if="
+                          state.model.type == 'groupon' &&
+                          state.model.rules.is_leader_discount == 1
+                        ">
+                                <el-input v-if="state.activity_sku_prices[spindex].status == 'up'" type="number"
+                                    v-model="state.activity_sku_prices[spindex].leader_price"
+                                    :disabled="state.activityStatus"></el-input>
+                            </th>
+                            <template v-if="state.model.type == 'groupon_ladder'">
+                                <th class="sku-item">
+                                    <el-input v-if="state.activity_sku_prices[spindex].status == 'up'" type="number"
+                                        v-model="state.activity_sku_prices[spindex].ladder_one"
+                                        :disabled="state.activityStatus"></el-input>
+                                </th>
+                                <th class="sku-item" v-if="state.model.rules.is_leader_discount == 1">
+                                    <el-input v-if="state.activity_sku_prices[spindex].status == 'up'" type="number"
+                                        v-model="state.activity_sku_prices[spindex].ladder_one_leader"
+                                        :disabled="state.activityStatus"></el-input>
+                                </th>
+                                <th class="sku-item">
+                                    <el-input v-if="state.activity_sku_prices[spindex].status == 'up'" type="number"
+                                        v-model="state.activity_sku_prices[spindex].ladder_two"
+                                        :disabled="state.activityStatus"></el-input>
+                                </th>
+                                <th class="sku-item" v-if="state.model.rules.is_leader_discount == 1">
+                                    <el-input v-if="state.activity_sku_prices[spindex].status == 'up'" type="number"
+                                        v-model="state.activity_sku_prices[spindex].ladder_two_leader"
+                                        :disabled="state.activityStatus"></el-input>
+                                </th>
+                                <template v-if="Object.keys(state.model.rules.ladders).includes('ladder_three')">
+                                    <th class="sku-item">
+                                        <el-input type="number"
+                                            v-model="state.activity_sku_prices[spindex].ladder_three"
+                                            v-if="state.activity_sku_prices[spindex].status == 'up'"
+                                            :disabled="state.activityStatus"></el-input>
+                                    </th>
+                                    <th class="sku-item" v-if="state.model.rules.is_leader_discount == 1">
+                                        <el-input v-if="state.activity_sku_prices[spindex].status == 'up'" type="number"
+                                            v-model="state.activity_sku_prices[spindex].ladder_three_leader"
+                                            :disabled="state.activityStatus"></el-input>
+                                    </th>
+                                </template>
+                            </template>
+                            <th class="sku-item">
+                                <template v-if="!state.activityStatus">
+                                    <el-button v-if="state.activity_sku_prices[spindex].status == 'up'" class="is-link"
+                                        type="danger" @click="state.activity_sku_prices[spindex].status = 'down'">取消
+                                    </el-button>
+                                    <el-button v-if="state.activity_sku_prices[spindex].status == 'down'"
+                                        class="is-link" type="primary"
+                                        @click="state.activity_sku_prices[spindex].status = 'up'">参与</el-button>
+                                </template>
+                                <template v-if="state.activityStatus">-</template>
+                            </th>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

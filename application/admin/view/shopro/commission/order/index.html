@@ -1,0 +1,513 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .order-index .dashboard-content {
+        padding: 20px 20px 0;
+        background: var(--sa-table-header-bg);
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .order-index .dashboard-content .dashboard-item {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .order-index .dashboard-content .dashboard-item .top {
+        line-height: 24px;
+        font-size: 20px;
+        font-weight: 400;
+        color: var(--sa-subtitle);
+    }
+
+    .order-index .dashboard-content .dashboard-item .top .unit {
+        font-size: 12px;
+        margin-left: 4px;
+    }
+
+    .order-index .dashboard-content .dashboard-item .bottom {
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-font);
+    }
+
+    .order-index .order-content {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subtitle);
+    }
+
+    .order-index .goods-item .goods-title {
+        height: 14px;
+        line-height: 14px;
+        font-size: 12px;
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .order-index .goods-item .goods-title .goods-id {
+        color: var(--el-color-primary);
+        cursor: pointer;
+    }
+
+    .order-index .goods-item .goods-sku-text {
+        height: 14px;
+        line-height: 14px;
+        margin-bottom: 10px;
+    }
+
+    .order-index .sa-table-wrap {
+        height: 100%;
+        margin-left: -48px;
+        overflow: hidden;
+    }
+
+    .order-index .sa-table-wrap .sa-table .el-table__header-wrapper {
+        margin-bottom: 4px;
+    }
+
+    .order-index .sa-table-wrap .sa-table .el-table__row {
+        background: var(--sa-background-hex-hover);
+    }
+
+    .order-index .sa-table-wrap .sa-table .el-table__expanded-cell {
+        padding: 0;
+    }
+
+    .order-index .sa-table-wrap .sa-expand-table .el-table__header-wrapper {
+        margin-bottom: 0;
+        display: none;
+    }
+
+    .order-index .sa-table-wrap .sa-expand-table .el-table__row {
+        background: var(--el-table-tr-bg-color);
+    }
+
+    .order-index .rewards-item {
+        margin-right: 8px;
+    }
+
+    .order-index .rewards-item:last-of-type {
+        margin-right: 0;
+    }
+
+    .order-index .rewards-item .rewards-agent-id {
+        line-height: 32px;
+    }
+
+    .rewards-popover {
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-font);
+        margin-bottom: 4px;
+    }
+
+    .rewards-popover .nickname {
+        height: 20px;
+        line-height: 20px;
+    }
+
+    .rewards-popover .id {
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subfont);
+    }
+
+    .rewards-popover .rewards-status {
+        height: 16px;
+        overflow: hidden;
+    }
+
+    .rewards-popover .rewards-commission {
+        width: 80px;
+    }
+</style>
+
+<div id="index" class="order-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">分销订单</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                    {if $auth->check('shopro/commission/order/export')}
+                    <el-button :loading="exportLoading" :disabled="exportLoading" @click="onExport('export')">订单导出
+                    </el-button>
+                    {/if}
+                </div>
+            </div>
+            <el-row class="dashboard-content">
+                <el-col class="dashboard-item" :xs="8" :sm="8" :md="6" :lg="6" :xl="6">
+                    <div class="top"> {{ state.count.total }}<span class="unit">单</span> </div>
+                    <div class="bottom">商品总订单数</div>
+                </el-col>
+                <el-col class="dashboard-item" :xs="8" :sm="8" :md="3" :lg="3" :xl="3">
+                    <div class="top">
+                        {{ state.count.total_amount?.toFixed(2) }}<span class="unit">元</span>
+                    </div>
+                    <div class="bottom">商品结算总金额</div>
+                </el-col>
+                <el-col class="dashboard-item" :xs="8" :sm="8" :md="3" :lg="3" :xl="3">
+                    <div class="top">
+                        {{ state.count.total_commission?.toFixed(2) }}<span class="unit">元</span>
+                    </div>
+                    <div class="bottom">分佣总金额</div>
+                </el-col>
+                <el-col class="dashboard-item" :xs="8" :sm="8" :md="3" :lg="3" :xl="3">
+                    <div class="top">
+                        {{ state.count.total_commission_cancel?.toFixed(2) }}<span class="unit">元</span>
+                    </div>
+                    <div class="bottom">已取消佣金</div>
+                </el-col>
+                <el-col class="dashboard-item" :xs="8" :sm="8" :md="3" :lg="3" :xl="3">
+                    <div class="top">
+                        {{ state.count.total_commission_back?.toFixed(2) }}<span class="unit">元</span>
+                    </div>
+                    <div class="bottom">已退回佣金</div>
+                </el-col>
+                <el-col class="dashboard-item" :xs="8" :sm="8" :md="3" :lg="3" :xl="3">
+                    <div class="top">
+                        {{ state.count.total_commission_pending?.toFixed(2) }}<span class="unit">元</span>
+                    </div>
+                    <div class="bottom">未结算佣金</div>
+                </el-col>
+                <el-col class="dashboard-item" :xs="8" :sm="8" :md="3" :lg="3" :xl="3">
+                    <div class="top">
+                        {{ state.count.total_commission_accounted?.toFixed(2) }}<span class="unit">元</span>
+                    </div>
+                    <div class="bottom">已结算佣金</div>
+                </el-col>
+            </el-row>
+        </el-header>
+        <el-main class="sa-main">
+            <div class="sa-table-wrap">
+                <el-table height="100%" class="sa-table" :data="state.data" :span-method="arraySpanMethod"
+                    default-expand-all>
+                    <el-table-column type="expand">
+                        <template #default="props">
+                            <el-table class="sa-table sa-expand-table" :data="[props.row]">
+                                <el-table-column width="48"></el-table-column>
+                                <el-table-column min-width="300">
+                                    <template #default>
+                                        <div v-if="props.row.order_item" class="goods-item sa-flex">
+                                            <sa-image class="mr-2" :url="props.row.order_item.goods_image" size="58">
+                                            </sa-image>
+                                            <div>
+                                                <div class="goods-title sa-table-line-1">
+                                                    <span class="goods-id mr-1"
+                                                        @click="onOpenGoodsDetail(props.row.order_item.goods_id)">
+                                                        #{{props.row.order_item.goods_id }}
+                                                    </span>
+                                                    {{ props.row.order_item.goods_title }}
+                                                </div>
+                                                <div class="goods-sku-text sa-table-line-1">
+                                                    <span v-if="props.row.order_item.goods_sku_text">{{
+                                                        props.row.order_item.goods_sku_text
+                                                        }}</span>
+                                                </div>
+                                                <div class="sa-flex">
+                                                    <span class="goods-price mr-2">¥{{
+                                                        props.row.order_item.goods_price }}</span>
+                                                    <span class="goods-num">x{{
+                                                        props.row.order_item.goods_num }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div v-else>{{ props.row.order_item }}</div>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column min-width="100">
+                                    <template #default>
+                                        <!-- 0=未退款|1=申请退款|2=退款完成 -->
+                                        <span
+                                            :class="props.row.order_item?.refund_status==0?'sa-color--info':'sa-color--success'">
+                                            {{ props.row.order_item?.refund_status_text || '-' }}
+                                        </span>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column min-width="100" align="center">
+                                    <template #default>
+                                        <sa-user-profile :user="props.row.buyer" :id="props.row.buyer_id" mode="col">
+                                        </sa-user-profile>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column min-width="100" align="center">
+                                    <template #default>
+                                        <sa-user-profile :user="props.row.agent" :id="props.row.agent_id" mode="col">
+                                        </sa-user-profile>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column min-width="200" align="center">
+                                    <template #default>
+                                        <el-scrollbar>
+                                            <div class="sa-flex sa-row-center">
+                                                <template v-for="(rewards, index) in props.row.rewards" :key="rewards">
+                                                    <el-popover placement="top-start" :width="240" trigger="click">
+                                                        <div class="rewards-popover">
+                                                            <div class="mb-2">
+                                                                <div v-if="rewards.agent" class="sa-flex">
+                                                                    <sa-image :url="rewards.agent.avatar" size="32"
+                                                                        radius="16"></sa-image>
+                                                                    <div class="ml-2">
+                                                                        <div class="nickname sa-table-line-1">
+                                                                            {{ rewards.agent.nickname }}
+                                                                        </div>
+                                                                        <div class="id">#{{ rewards.agent.id }}</div>
+                                                                    </div>
+                                                                </div>
+                                                                <div v-else>#{{ rewards.agent_id }}</div>
+                                                            </div>
+                                                            <div>用户等级：等级{{ rewards.agent_level }}</div>
+                                                            <div> 用户层级：{{ rewards.commission_level }}级分销 </div>
+                                                            <div>
+                                                                比例/佣金：
+                                                                <template v-if="rewards.commission_rules">
+                                                                    <template v-if="rewards.commission_rules.rate">
+                                                                        {{ rewards.commission_rules.rate }}%
+                                                                    </template>
+                                                                    <template v-if="rewards.commission_rules.money">
+                                                                        {{ rewards.commission_rules.money }}元
+                                                                    </template>
+                                                                </template>
+                                                            </div>
+                                                            <div class="rewards-status sa-flex">
+                                                                佣金状态：
+                                                                <span class="mr-1">{{rewards.status_text}}</span>
+                                                                <template v-if="rewards.status == 0">
+                                                                    {if $auth->check('shopro/commission/order/confirm')}
+                                                                    <el-button type="primary" link size="small"
+                                                                        @click="onConfirm({commission_reward_id: rewards.id})">
+                                                                        手动结算</el-button>
+                                                                    {/if}
+                                                                    {if $auth->check('shopro/commission/order/cancel')}
+                                                                    <el-button class="ml-1" type="info" link
+                                                                        size="small"
+                                                                        @click="onCancel({commission_reward_id: rewards.id})">
+                                                                        取消
+                                                                    </el-button>
+                                                                    {/if}
+                                                                </template>
+                                                                <el-popconfirm v-if="rewards.status == 1"
+                                                                    width="fit-content" confirm-button-text="确认"
+                                                                    cancel-button-text="取消" title="确认?"
+                                                                    @confirm="onBack({commission_reward_id: rewards.id})">
+                                                                    <template #reference>
+                                                                        {if
+                                                                        $auth->check('shopro/commission/order/back')}
+                                                                        <el-button type="danger" link size="small">
+                                                                            手动退回
+                                                                        </el-button>
+                                                                        {/if}
+                                                                    </template>
+                                                                </el-popconfirm>
+                                                            </div>
+                                                            <div>入账方式：{{ rewards.type_text }}</div>
+                                                            <div class="sa-flex sa-col-top">
+                                                                <span class="sa-flex-0">佣金金额：</span>
+                                                                <div class="sa-flex sa-flex-wrap">
+                                                                    <template v-if="!rewardsPopover.flag[index]">
+                                                                        <span>{{ rewards.commission }}元</span>
+                                                                        {if
+                                                                        $auth->check('shopro/commission/order/edit')}
+                                                                        <el-button v-if="rewards.status == 0"
+                                                                            class="ml-1" type="primary" link
+                                                                            size="small"
+                                                                            @click="rewardsPopover.flag[index] = true">
+                                                                            修改
+                                                                        </el-button>
+                                                                        {/if}
+                                                                    </template>
+                                                                    <template v-if="rewardsPopover.flag[index]">
+                                                                        <el-input class="rewards-commission"
+                                                                            v-model="rewardsPopover.commission"
+                                                                            size="small">
+                                                                            <template #append>元</template>
+                                                                        </el-input>
+                                                                        <el-button class="ml-1" type="info" link
+                                                                            size="small"
+                                                                            @click="onCancelRewardsPopover(index)">取消
+                                                                        </el-button>
+                                                                        <el-button class="ml-1" type="primary" link
+                                                                            size="small"
+                                                                            @click="onConfirmRewardsPopover(index,rewards.id)">
+                                                                            确定</el-button>
+                                                                    </template>
+                                                                    <s v-if="rewards.original_commission != rewards.commission"
+                                                                        class="ml-1">
+                                                                        {{rewards.original_commission}}
+                                                                    </s>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <template #reference>
+                                                            <div class="rewards-item sa-flex sa-flex-col sa-row-center">
+                                                                <template v-if="rewards.agent">
+                                                                    <sa-image :url="rewards.agent.avatar" size="32"
+                                                                        radius="16" :ispreview="false"></sa-image>
+                                                                </template>
+                                                                <div v-if="!rewards.agent" class="rewards-agent-id">
+                                                                    {{ rewards.agent_id }}
+                                                                </div>
+                                                                <div class="commission mt-1"> {{ rewards.commission }}元
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </el-popover>
+                                                </template>
+                                            </div>
+                                        </el-scrollbar>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column min-width="80">
+                                    <template #default>
+                                        <!-- commission_reward_status -2=已退回|-1=已取消|0=未结算|1=已结算 -->
+                                        <span
+                                            :class="`sa-color--${state.statusStyle[props.row.commission_reward_status]}`">
+                                            {{ props.row.commission_reward_status_text }}
+                                        </span>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column min-width="172">
+                                    <template #default>
+                                        <div>{{ props.row.reward_event_text }}</div>
+                                        {{ props.row.commission_time }}
+                                    </template>
+                                </el-table-column>
+                                <el-table-column min-width="110">
+                                    <template #default>
+                                        <div>{{ props.row.reward_type_text }}</div>
+                                        {{ props.row.amount }}元
+                                    </template>
+                                </el-table-column>
+                                <el-table-column min-width="100">
+                                    <template #default>
+                                        <!-- commission_order_status -2=已扣除|-1=已取消|0=不计入|1=已计入 -->
+                                        <span
+                                            :class="`sa-color--${state.statusStyle[props.row.commission_order_status]}`">
+                                            {{ props.row.commission_order_status_text }}
+                                        </span>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column min-width="160">
+                                    <template #default>
+                                        {{ countRewards(props.row.rewards) }}
+                                    </template>
+                                </el-table-column>
+                                <el-table-column min-width="160">
+                                    <template #default>
+                                        <el-popover v-model:visible="commissionPopover.flag[props.$index]"
+                                            placement="top-start" :width="312" trigger="click">
+                                            <div class="commission-popover">
+                                                <div class="title sa-flex">
+                                                    <el-icon class="sa-color--warning mr-1">
+                                                        <question-filled />
+                                                    </el-icon>
+                                                    <template v-if="props.row.commission_reward_status == 0">
+                                                        <template v-if="commissionPopover.type == 'confirm'">
+                                                            手动提前结算，佣金将不再按结算方式自动执行。
+                                                        </template>
+                                                        <template v-if="commissionPopover.type == 'cancel'">
+                                                            取消结算，佣金将不再结算。
+                                                        </template>
+                                                    </template>
+                                                    <template v-if="props.row.commission_reward_status == 1">
+                                                        您确定要手动退回佣金？
+                                                    </template>
+                                                </div>
+                                                <div class="sa-flex sa-row-between">
+                                                    <div>
+                                                        <el-checkbox
+                                                            v-if="commissionPopover.type == 'back' || commissionPopover.type == 'cancel'"
+                                                            v-model="commissionPopover.isDelete" true-label="1"
+                                                            false-label="0">扣除推广分销商业绩
+                                                        </el-checkbox>
+                                                    </div>
+                                                    <div>
+                                                        <el-button type="info" link size="small"
+                                                            @click="onCancelCommissionPopover(props.$index)">
+                                                            取消</el-button>
+                                                        <el-button size="small" type="primary"
+                                                            @click="onConfirmCommissionPopover(props.$index,props.row.id)">
+                                                            确定</el-button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <template #reference>
+                                                <div class="sa-flex">
+                                                    <template v-if="props.row.commission_reward_status == 0">
+                                                        {if $auth->check('shopro/commission/order/confirm')}
+                                                        <el-button type="primary" link
+                                                            @click="commissionPopover.type = 'confirm'">手动结算</el-button>
+                                                        {/if}
+                                                        {if $auth->check('shopro/commission/order/cancel')}
+                                                        <el-button type="info" link
+                                                            @click="commissionPopover.type = 'cancel'">
+                                                            取消结算
+                                                        </el-button>
+                                                        {/if}
+                                                    </template>
+                                                    {if $auth->check('shopro/commission/order/back')}
+                                                    <el-button v-if="props.row.commission_reward_status == 1"
+                                                        type="danger" link @click="commissionPopover.type = 'back'">
+                                                        手动退回
+                                                    </el-button>
+                                                    {/if}
+                                                </div>
+                                            </template>
+                                        </el-popover>
+                                        <template v-if="props.row.commission_reward_status < 0">-</template>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="商品信息" min-width="300">
+                        <template #default="scope">
+                            <div class="order-content sa-flex">
+                                <div class="id mr-4">ID：{{ scope.row.id }}</div>
+                                <template v-if="scope.row.order">
+                                    <div class="order-sn sa-flex mr-4">
+                                        订单号：{{ scope.row.order.order_sn }}
+                                        <el-icon class="copy-document" @click="onClipboard(scope.row.order.order_sn)">
+                                            <copy-document />
+                                        </el-icon>
+                                    </div>
+                                    <div class="mr-4">下单时间：{{ scope.row.order.createtime }}</div>
+                                    <div class="mr-4">订单状态：{{ scope.row.order.status_text }}</div>
+                                </template>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="退款状态" min-width="100"></el-table-column>
+                    <el-table-column label="下单用户" min-width="100" align="center"></el-table-column>
+                    <el-table-column label="推广分销商" min-width="100" align="center"></el-table-column>
+                    <el-table-column label="佣金详情" min-width="200" align="center"></el-table-column>
+                    <el-table-column label="佣金状态" min-width="80"></el-table-column>
+                    <el-table-column label="结算方式/结算时间" min-width="172"></el-table-column>
+                    <el-table-column label="商品结算金额" min-width="110"> </el-table-column>
+                    <el-table-column label="分销商业绩" min-width="100"> </el-table-column>
+                    <el-table-column label="分销总金额/到账金额" min-width="160">
+                    </el-table-column>
+                    <el-table-column label="操作" min-width="160">
+                        <template #default="scope">
+                            <el-button type="primary" link @click="onOpenOrderDetail(scope.row.order_id)">订单详情
+                            </el-button>
+                        </template>
+                    </el-table-column>
+                </el-table>
+            </div>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

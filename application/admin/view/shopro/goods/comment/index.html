@@ -1,0 +1,178 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .comment-index .image {
+        margin-right: 4px;
+    }
+
+    .comment-index .goods-item .goods-image {
+        margin-right: 8px;
+    }
+
+    .comment-index .goods-item .goods-title {
+        color: var(--el-color-primary);
+        cursor: pointer;
+    }
+</style>
+
+<div id="index" class="comment-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">评价管理</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                    {if $auth->check('shopro/goods/comment/add')}
+                    <el-button plain @click="onAdd">添加虚拟评价</el-button>
+                    {/if}
+                    {if $auth->check('shopro/goods/comment/recyclebin')}
+                    <el-button type="danger" icon="Delete" plain @click="onRecyclebin">回收站</el-button>
+                    {/if}
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @selection-change="onChangeSelection">
+                <el-table-column type="selection" width="48"></el-table-column>
+                <el-table-column label="商品信息" min-width="310">
+                    <template #default="scope">
+                        <div v-if="scope.row.order_item" class="goods-item sa-flex">
+                            <sa-image class="goods-image" :url="scope.row.order_item.goods_image" size="40"></sa-image>
+                            <div class="right">
+                                <span class="goods-title sa-table-line-1"
+                                    @click="onOpenGoodsDetail(scope.row.order_item.goods_id)">
+                                    {{ scope.row.order_item.goods_title || '-' }}
+                                </span>
+                                <span v-if="scope.row.order" class="sa-table-line-1">
+                                    订单号：{{ scope.row.order.order_sn }}
+                                    <el-icon class="copy-document" @click="onClipboard(scope.row.order.order_sn)">
+                                        <copy-document />
+                                    </el-icon>
+                                </span>
+                                <span v-else>订单号：-</span>
+                            </div>
+                        </div>
+                        <div v-else-if="scope.row.goods" class="goods-item sa-flex">
+                            <sa-image class="goods-image" :url="scope.row.goods.image" size="40"></sa-image>
+                            <div class="right">
+                                <span class=" goods-title sa-table-line-1"
+                                    @click="onOpenGoodsDetail(scope.row.goods.id)">
+                                    {{ scope.row.goods.title || '-' }}
+                                </span>
+                                <span>虚拟评价</span>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="用户信息" min-width="96" align="center">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row.user" :id="scope.row.user_id" mode="col"
+                            :ishover="scope.row.user_type != 'fake_user'"></sa-user-profile>
+                    </template>
+                </el-table-column>
+                <el-table-column label="评价星级" min-width="146">
+                    <template #default="scope">
+                        <el-rate v-model="scope.row.level" disabled></el-rate>
+                    </template>
+                </el-table-column>
+                <el-table-column label="评价图片" width="200">
+                    <template #default="scope">
+                        <el-scrollbar>
+                            <div class="sa-flex">
+                                <template v-for="item in scope.row.images" :key="item">
+                                    <sa-image class="image" :url="item" size="30"></sa-image>
+                                </template>
+                            </div>
+                        </el-scrollbar>
+                    </template>
+                </el-table-column>
+                <el-table-column label="评价内容" min-width="162">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.content || '-' }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="评价时间" width="172">
+                    <template #default="scope">
+                        {{ scope.row.createtime || '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="显示状态" min-width="130">
+                    <template #default="scope">
+                        {if $auth->check('shopro/goods/comment/edit')}
+                        <el-dropdown @command="onCommand">
+                            <el-button link>
+                                <el-tag :type="scope.row.status == 'normal' ? 'success' : 'info'">
+                                    {{ scope.row.status_text }}
+                                    <el-icon>
+                                        <arrow-down />
+                                    </el-icon>
+                                </el-tag>
+                            </el-button>
+                            <template #dropdown>
+                                <el-dropdown-menu>
+                                    <el-dropdown-item :command="{
+                                            id: scope.row.id,
+                                            type: 'normal',
+                                        }">
+                                        <span class="status-normal">正常</span>
+                                    </el-dropdown-item>
+                                    <el-dropdown-item :command="{
+                                            id: scope.row.id,
+                                            type: 'hidden',
+                                        }">
+                                        <span class="status-hidden">隐藏</span>
+                                    </el-dropdown-item>
+                                </el-dropdown-menu>
+                            </template>
+                        </el-dropdown>
+                        {/if}
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="操作" min-width="120">
+                    <template #default="scope">
+                        {if $auth->check('shopro/goods/comment/edit')}
+                        <el-button type="primary" link @click="onEdit(scope.row.id)">编辑</el-button>
+                        {/if}
+                        <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                            title="确认删除这条记录?" @confirm="onDelete(scope.row.id)">
+                            <template #reference>
+                                {if $auth->check('shopro/goods/comment/delete')}
+                                <el-button type="danger" link>删除</el-button>
+                                {/if}
+                            </template>
+                        </el-popconfirm>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-between sa-flex-wrap">
+            <div class="sa-batch sa-flex">
+                <div class="tip">
+                    已选择 <span>{{batchHandle.data.length}}</span> 项</div>
+                <div class="sa-flex">
+                    {if $auth->check('shopro/goods/comment/delete')}
+                    <el-button type="danger" :disabled="!batchHandle.data.length" @click="onBatchHandle('delete')">删除
+                    </el-button>
+                    {/if}
+                    {if $auth->check('shopro/goods/comment/edit')}
+                    <el-button type="success" :disabled="!batchHandle.data.length" @click="onBatchHandle('normal')">正常
+                    </el-button>
+                    {/if}
+                    {if $auth->check('shopro/goods/comment/edit')}
+                    <el-button type="info" :disabled="!batchHandle.data.length" @click="onBatchHandle('hidden')">隐藏
+                    </el-button>
+                    {/if}
+                </div>
+            </div>
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

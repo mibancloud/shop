@@ -1,0 +1,601 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .agent-detail .agent-detail-scrollbar>.el-scrollbar__wrap {
+        overflow-x: hidden;
+    }
+
+    .agent-detail .agent-detail-scrollbar>.el-scrollbar__bar.is-horizontal {
+        display: none;
+    }
+
+    .agent-detail .agent-content {
+        height: 450px;
+        line-height: 1;
+        padding: 20px;
+        background: var(--sa-table-header-bg);
+        border-radius: 8px;
+        margin: 0 0 20px;
+    }
+
+    .agent-detail .user-content .refresh {
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-font);
+        cursor: pointer;
+    }
+
+    .agent-detail .user-content .refresh .el-icon {
+        font-size: 16px;
+        margin-right: 4px;
+    }
+
+    .agent-detail .user-content .nickname {
+        line-height: 22px;
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--sa-subtitle);
+    }
+
+    .agent-detail .user-content .status {
+        font-size: 12px;
+        font-weight: 400;
+        color: #999999;
+        cursor: pointer;
+    }
+
+    .agent-content .el-form-item--small {
+        margin-bottom: 8px;
+    }
+
+    .agent-detail .user-content .commission-item {
+        width: 30%;
+        line-height: 18px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .agent-detail .user-content .commission-item .title {
+        height: 24px;
+        line-height: 24px;
+        font-size: 12px;
+        font-weight: 400;
+        margin-bottom: 4px;
+    }
+
+    .agent-detail .apply-content .sa-image {
+        width: 140px;
+        height: 90px;
+    }
+
+    .agent-detail .dashboard-content {
+        height: fit-content;
+    }
+
+    .agent-detail .dashboard-content .title {
+        height: 18px;
+        line-height: 18px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--sa-title);
+        margin-bottom: 16px;
+    }
+
+    .agent-detail .dashboard-content>.el-col {
+        border-bottom: 1px dashed var(--sa-border);
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+    }
+
+    .agent-detail .dashboard-content>.el-col:last-of-type {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .agent-detail .dashboard-content .item {
+        margin-bottom: 16px;
+    }
+
+    .agent-detail .dashboard-content .left {
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subfont);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+    }
+
+    .agent-detail .dashboard-content .item {
+        line-height: 22px;
+        font-size: 18px;
+        font-weight: 500;
+        color: var(--sa-font);
+    }
+
+    .agent-detail .dashboard-content .unit {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-font);
+        margin-left: 4px;
+    }
+
+    .agent-detail .rewards-item {
+        margin-right: 8px;
+
+    }
+
+    .agent-detail .rewards-item:last-of-type {
+        margin-right: 0;
+    }
+</style>
+
+<div id="detail" class="agent-detail panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar class="agent-detail-scrollbar" height="100%">
+                <el-row :gutter="20">
+                    <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                        <div class="user-content agent-content">
+                            <div class="title sa-flex sa-row-between">
+                                <span>分销商信息</span>
+                                <span class="refresh sa-flex" @click="getDetail">
+                                    <el-icon>
+                                        <refresh-right />
+                                    </el-icon>
+                                    刷新
+                                </span>
+                            </div>
+                            <div v-if="state.data.user" class="sa-flex sa-row-center">
+                                <sa-image :url="state.data.user.avatar" size="80" radius="40">
+                                </sa-image>
+                            </div>
+                            <div class="nickname sa-flex sa-row-center mt-1">
+                                {{
+                                state.data.user
+                                ? state.data.user.nickname
+                                : state.data.user_id
+                                }}
+                            </div>
+                            <el-form size="small" label-position="right" label-width="76px">
+                                <el-form-item label="分销商状态:">
+                                    <el-dropdown popper-class="agent-popover" trigger="click" @command="onChangeStatus">
+                                        <span class="status" :style="{
+                                                color: statusStyle[state.data.status]?.color,
+                                            }">
+                                            {{ state.data.status_text }}
+                                            <el-icon>
+                                                <arrow-down />
+                                            </el-icon>
+                                        </span>
+                                        <template #dropdown>
+                                            {if $auth->check('shopro/commission/agent/edit')}
+                                            <el-dropdown-menu>
+                                                <el-dropdown-item class="status" :style="{
+                                      color: value.color,
+                                    }" v-for="(value, key) in statusStyle" :key="key" :command="key">{{ value.label }}
+                                                </el-dropdown-item>
+                                            </el-dropdown-menu>
+                                            {/if}
+                                        </template>
+                                    </el-dropdown>
+                                </el-form-item>
+                                <el-form-item label="分销等级:">
+                                    <template v-if="state.data.level_info">
+                                        <div>{{ state.data.level_info.name }}</div>
+                                        <div>(等级{{ state.data.level_info.level }})</div>
+                                    </template>
+                                    <template v-if="!state.data.level_info">
+                                        {{ state.data.level }}
+                                    </template>
+                                    {if $auth->check('shopro/commission/agent/edit')}
+                                    <el-button class="ml-2" type="primary" link @click="onChangeLevel">更换</el-button>
+                                    {/if}
+                                </el-form-item>
+                                <el-form-item v-if="state.data.level_status > 0" label="待升级等级:">
+                                    <div v-if="state.data.level_status_info">
+                                        {{ state.data.level_status_info.name }}
+                                    </div>
+                                    <div>(等级{{ state.data.level_status || '-' }})</div>
+                                    {if $auth->check('shopro/commission/agent/edit')}
+                                    <el-button class="ml-2" type="primary" link
+                                        @click="onEdit({level_status: state.data.level_status})">同意</el-button>
+                                    <el-button type="danger" link @click="onEdit({level_status: 0})">拒绝</el-button>
+                                    {/if}
+                                </el-form-item>
+                                <el-form-item label="上级分销商:">
+                                    <sa-user-profile type="agent" :user="state.data.user?.parent_user"
+                                        :id="state.data.user?.parent_user_id" :isavatar="false"></sa-user-profile>
+                                    <el-button class="ml-2" type="primary" link @click="onChangeParentUser">更换
+                                    </el-button>
+                                </el-form-item>
+                                <el-form-item label="佣金比例:">
+                                    <div class="commission-item">
+                                        <div class="title">一级(自购)</div>
+                                        <div>
+                                            {{
+                                            state.data.level_info
+                                            ? state.data.level_info.commission_rules.commission_1
+                                            : '0.00'
+                                            }}%
+                                        </div>
+                                    </div>
+                                    <div class="commission-item">
+                                        <div class="title">二级</div>
+                                        <div>
+                                            {{
+                                            state.data.level_info
+                                            ? state.data.level_info.commission_rules.commission_2
+                                            : '0.00'
+                                            }}%
+                                        </div>
+                                    </div>
+                                    <div class="commission-item">
+                                        <div class="title">三级</div>
+                                        <div>
+                                            {{
+                                            state.data.level_info
+                                            ? state.data.level_info.commission_rules.commission_3
+                                            : '0.00'
+                                            }}%
+                                        </div>
+                                    </div>
+                                </el-form-item>
+                                <el-form-item label="允许升级:">
+                                    {if $auth->check('shopro/commission/agent/edit')}
+                                    <el-switch v-model="state.data.upgrade_lock" :active-value="0" :inactive-value="1"
+                                        @change="state.data.user_id?onEdit({upgrade_lock: state.data.upgrade_lock}): ''">
+                                    </el-switch>
+                                    {/if}
+                                </el-form-item>
+                            </el-form>
+                        </div>
+                    </el-col>
+                    <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                        <div class="apply-content agent-content">
+                            <el-form size="small" label-position="right" label-width="76px">
+                                <div class="title sa-flex sa-row-between mb-4">
+                                    <span>申请信息</span>
+                                    <div>
+                                        {if $auth->check('shopro/commission/agent/edit')}
+                                        <el-button v-if="!applyInfo.flag" type="primary" link
+                                            @click="applyInfo.flag = true">编辑</el-button>
+                                        <div v-if="applyInfo.flag" class="sa-flex">
+                                            <el-button type="danger" link @click="onCancelApplyInfo">
+                                                取消
+                                            </el-button>
+                                            <el-button type="primary" link @click="onSaveApplyInfo">保存
+                                            </el-button>
+                                        </div>
+                                        {/if}
+                                    </div>
+                                </div>
+                                <template v-for="(item, index) in applyInfo.data" :key="item">
+                                    <el-form-item :label="`${item.name}:`">
+                                        <div class="sa-flex sa-col-top">
+                                            <template v-if="item.type == 'text' || item.type == 'number'">
+                                                <el-input v-if="applyInfo.flag" class="sa-w-140" v-model="item.value">
+                                                </el-input>
+                                                <template v-if="!applyInfo.flag">
+                                                    {{ item.value }}
+                                                </template>
+                                            </template>
+                                            <sa-image v-if="item.type == 'image'" :url="item.value"></sa-image>
+                                            <el-button v-if="applyInfo.flag" class="ml-2" type="danger" link
+                                                size="small" @click="onDeleteApplyInfo(index)">
+                                                删除
+                                            </el-button>
+                                        </div>
+                                    </el-form-item>
+                                </template>
+                            </el-form>
+                        </div>
+                    </el-col>
+                    <el-col class="sa-col-24" :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+                        <el-row class="dashboard-content agent-content">
+                            <el-col :span="24">
+                                <div class="title sa-flex">
+                                    <span>团队统计</span>
+                                    {if $auth->check('shopro/commission/agent/team')}
+                                    <el-button class="ml-2" type="primary" link @click="onTeam">查看团队</el-button>
+                                    {/if}
+                                </div>
+                                <el-row>
+                                    <el-col class="item" :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                        <div class="left">团队人数：</div>
+                                        <div class="right">
+                                            {{ state.data.child_user_count_all }}
+                                            <span class="unit">人</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                        <div class="left">一级团队人数：</div>
+                                        <div class="right">
+                                            {{ state.data.child_user_count_1 }}
+                                            <span class="unit">人</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                        <div class="left">二级团队人数：</div>
+                                        <div class="right">
+                                            {{ state.data.child_user_count_2 }}
+                                            <span class="unit">人</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                        <div class="left">
+                                            团队分销商人数：
+                                            <el-popover placement="top" trigger="hover">
+                                                <div v-for="(value, key) in state.data.child_agent_level_all"
+                                                    :key="key">
+                                                    等级{{ key }}：{{ value }}人
+                                                </div>
+                                                <template #reference>
+                                                    <div class="sa-flex">
+                                                        <el-icon v-if="state.data.child_agent_count_all"
+                                                            class="warning">
+                                                            <Warning />
+                                                        </el-icon>
+                                                    </div>
+                                                </template>
+                                            </el-popover>
+                                        </div>
+                                        <div class="right">
+                                            {{ state.data.child_agent_count_all }}
+                                            <span class="unit">人</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                        <div class="left">
+                                            一级分销商人数：
+                                            <el-popover placement="top" trigger="hover">
+                                                <div v-for="(value, key) in state.data.child_agent_level_1" :key="key">
+                                                    等级{{ key }}：{{ value }}人
+                                                </div>
+                                                <template #reference>
+                                                    <div class="sa-flex">
+                                                        <el-icon v-if="state.data.child_agent_count_1" class="warning">
+                                                            <Warning />
+                                                        </el-icon>
+                                                    </div>
+                                                </template>
+                                            </el-popover>
+                                        </div>
+                                        <div class="right">
+                                            {{ state.data.child_agent_count_1 }}
+                                            <span class="unit">人</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                        <div class="left">二级分销商人数：</div>
+                                        <div class="right">
+                                            {{ state.data.child_agent_count_2 }}
+                                            <span class="unit">人</span>
+                                        </div>
+                                    </el-col>
+                                </el-row>
+                            </el-col>
+                            <el-col :span="24">
+                                <div class="title sa-flex">
+                                    <span>业绩统计</span>
+                                </div>
+                                <el-row>
+                                    <el-col class="item" :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                        <div class="left">团队分销总金额：</div>
+                                        <div class="right">
+                                            {{ state.data.child_order_money_all }}
+                                            <span class="unit">元</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                        <div class="left">一级分销总金额：</div>
+                                        <div class="right">
+                                            {{ state.data.child_order_money_1 }}
+                                            <span class="unit">元</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                        <div class="left">二级分销总金额：</div>
+                                        <div class="right">
+                                            {{ state.data.child_order_money_2 }}
+                                            <span class="unit">元</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                        <div class="left">
+                                            自购分销总金额：
+                                            <el-popover popper-class="sa-popper" placement="top" trigger="hover"
+                                                content="分销商自购分销商品金额统计">
+                                                <template #reference>
+                                                    <div class="sa-flex">
+                                                        <el-icon class="warning">
+                                                            <Warning />
+                                                        </el-icon>
+                                                    </div>
+                                                </template>
+                                            </el-popover>
+                                        </div>
+                                        <div class="right">
+                                            {{ state.data.child_order_money_0 }}
+                                            <span class="unit">元</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                        <div class="left">团队分销订单：</div>
+                                        <div class="right">
+                                            {{ state.data.child_order_count_all }}
+                                            <span class="unit">单</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                        <div class="left">一级分销订单：</div>
+                                        <div class="right">
+                                            {{ state.data.child_order_count_1 }}
+                                            <span class="unit">单</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                        <div class="left">二级分销订单：</div>
+                                        <div class="right">
+                                            {{ state.data.child_order_count_2 }}
+                                            <span class="unit">单</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="6" :md="6" :lg="6" :xl="6">
+                                        <div class="left">
+                                            自购分销订单：
+                                            <el-popover popper-class="sa-popper" placement="top" trigger="hover"
+                                                content="分销商自购分销订单数量统计">
+                                                <template #reference>
+                                                    <div class="sa-flex">
+                                                        <el-icon class="warning">
+                                                            <Warning />
+                                                        </el-icon>
+                                                    </div>
+                                                </template>
+                                            </el-popover>
+                                        </div>
+                                        <div class="right">
+                                            {{ state.data.child_order_count_0 }}
+                                            <span class="unit">单</span>
+                                        </div>
+                                    </el-col>
+                                </el-row>
+                            </el-col>
+                            <el-col :span="24">
+                                <div class="title sa-flex">
+                                    <span>资产信息</span>
+                                </div>
+                                <el-row>
+                                    <el-col class="item" :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                        <div class="left">累计佣金：</div>
+                                        <div class="right">
+                                            {{ state.data.total_income }}
+                                            <span class="unit">元</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                        <div class="left">待入账佣金：</div>
+                                        <div class="right">
+                                            {{ state.data.pending_reward }}
+                                            <span class="unit">元</span>
+                                        </div>
+                                    </el-col>
+                                    <el-col class="item" :xs="12" :sm="8" :md="8" :lg="8" :xl="8">
+                                        <div class="left">消费金额：</div>
+                                        <div class="right">
+                                            {{ state.data.user?.total_consume || 0 }}
+                                            <span class="unit">元</span>
+                                        </div>
+                                    </el-col>
+                                </el-row>
+                            </el-col>
+                        </el-row>
+                    </el-col>
+                </el-row>
+                <el-tabs class="sa-tabs" v-model="log.tabActive" @tab-change="onChangeTab">
+                    <el-tab-pane label="分销动态" name="log"></el-tab-pane>
+                    <el-tab-pane label="分销订单" name="order"></el-tab-pane>
+                    <el-tab-pane label="佣金明细" name="reward"></el-tab-pane>
+                    </el-tab-pane>
+                </el-tabs>
+                <el-table v-if="log.tabActive=='log'" class="sa-table" :data="log.data" stripe>
+                    <el-table-column prop="id" label="ID" min-width="90"></el-table-column>
+                    <el-table-column label="分销商" min-width="160">
+                        <template #default="scope">
+                            <sa-user-profile :user="scope.row.agent" :id="scope.row.agent_id"></sa-user-profile>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="remark" label="内容" min-width="300"></el-table-column>
+                    <el-table-column label="操作人" min-width="160">
+                        <template #default="scope">
+                            <sa-user-profile type="oper" :user="scope.row.oper" :id="scope.row.oper_id">
+                            </sa-user-profile>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="createtime" label="动态时间" width="172"></el-table-column>
+                </el-table>
+                <el-table v-if="log.tabActive=='order'" class="sa-table" :data="log.data" stripe>
+                    <el-table-column prop="id" label="ID" min-width="90"></el-table-column>
+                    <el-table-column label="订单号" min-width="260">
+                        <template #default="scope">
+                            {{ scope.row.order?.order_sn || scope.row.order_id }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="下单用户" min-width="160">
+                        <template #default="scope">
+                            <sa-user-profile :user="scope.row.buyer" :id="scope.row.buyer_id"></sa-user-profile>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="分佣状态" min-width="100">
+                        <template #default="scope">
+                            <span :class="`sa-color--${log.status[scope.row.commission_reward_status]}`">
+                                {{ scope.row.commission_reward_status_text }}
+                            </span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="商品结算金额" min-width="160">
+                        <template #default="scope"> {{ scope.row.amount }}元 </template>
+                    </el-table-column>
+                    <el-table-column label="分销总金额/到账金额" min-width="160">
+                        <template #default="scope">
+                            {{ countCommission(scope.row.rewards) }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="佣金详情" min-width="200" align="center">
+                        <template #default="scope">
+                            <div class="sa-flex sa-row-center">
+                                <div class="rewards-item sa-flex sa-flex-col" v-for="rewards in scope.row.rewards"
+                                    :key="rewards">
+                                    <template v-if="rewards.agent">
+                                        <sa-image :url="rewards.agent.avatar" size="32" radius="16"></sa-image>
+                                    </template>
+                                    <template v-if="!rewards.agent">
+                                        {{ rewards.agent_id }}
+                                    </template>
+                                    <div class="commission sa-m-t-6">{{ rewards.commission }}元</div>
+                                </div>
+                            </div>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="commission_time" label="加入时间" width="172"></el-table-column>
+                </el-table>
+                <el-table v-if="log.tabActive=='reward'" class="sa-table" :data="log.data" stripe>
+                    <el-table-column prop="id" label="ID" min-width="90"></el-table-column>
+                    <el-table-column label="订单号" min-width="260">
+                        <template #default="scope">
+                            {{ scope.row.order?.order_sn || scope.row.order_id }}
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="下单用户" min-width="160">
+                        <template #default="scope">
+                            <sa-user-profile :user="scope.row.buyer" :id="scope.row.buyer_id"></sa-user-profile>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="分销用户" min-width="160">
+                        <template #default="scope">
+                            <sa-user-profile :user="scope.row.agent" :id="scope.row.agent_id"></sa-user-profile>
+                        </template>
+                    </el-table-column>
+                    <el-table-column label="分销金额" min-width="160">
+                        <template #default="scope"> {{ scope.row.commission }}元 </template>
+                    </el-table-column>
+                    <el-table-column label="入账状态" min-width="80">
+                        <template #default="scope">
+                            <span :class="`sa-color--${log.status[scope.row.status]}`">
+                                {{ scope.row.status_text }}
+                            </span>
+                        </template>
+                    </el-table-column>
+                    <el-table-column prop="type_text" label="入账方式" min-width="80"></el-table-column>
+                    <el-table-column prop="commission_time" label="分佣时间" width="172"></el-table-column>
+                </el-table>
+                <el-footer class="sa-footer sa-flex sa-row-right">
+                    <sa-pagination v-model="pagination" @pagination-change="getLog"></sa-pagination>
+                </el-footer>
+            </el-scrollbar>
+        </el-main>
+    </el-container>
+</div>

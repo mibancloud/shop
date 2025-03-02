@@ -1,0 +1,135 @@
+
+<el-dialog title="选择URL" :visible.sync="dialogSelecturl" width="60%" top="10vh" class="dialogClass">
+    <div style="height: 500px;overflow: hidden;">
+        <el-tabs v-model="currmenuidx">
+          <el-tab-pane v-for="(curItem, index) in dialogData" :label="curItem.name" :name="curItem.type"></el-tab-pane>
+        </el-tabs>
+        <div v-if="currmenuidx === 'Inlay' && dialogData">
+            <el-table :data="dialogData.Inlay.list" size="mini" height="450">
+                <el-table-column property="id" label="页面ID" ></el-table-column>
+                <el-table-column property="title" label="标题" ></el-table-column>
+                <el-table-column property="path" label="路径" ></el-table-column>
+                <el-table-column fixed="right" label="操作" width="120">
+                    <template slot-scope="scope">
+                        <el-button @click.native.prevent="fcall('Inlay',dialogData.Inlay.list[scope.$index])" size="mini" plain type="primary"> 选择</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </div>
+        <div v-if="currmenuidx === 'Phone' && dialogData" >
+            <div class="item-center">
+                <el-form ref="form" :model="dialogform">
+                    <el-form-item label="电话号码">
+                        <el-input v-model="dialogform.param1"></el-input>
+                    </el-form-item>
+                </el-form>
+                <el-button @click.native.prevent="fcall('Phone',dialogData.Phone)" type="primary">确 定</el-button>
+            </div>
+        </div>
+        <div v-if="currmenuidx === 'WXMp' && dialogData" >
+            <el-alert class="m-t-20"
+                title="说明"
+                type="success">
+                <div>
+                    <p>1. 支持平台：微信小程序</p>
+                    <p>2. 在本小程序打开其他小程序</p>
+                </div>
+          </el-alert>
+            <div class="item-center">
+                <el-form ref="form" :model="dialogform" label-width="120px">
+                    <el-form-item label="小程序APPID">
+                        <el-input v-model="dialogform.param1"></el-input>
+                    </el-form-item>
+                    <el-form-item label="小程序路径">
+                        <el-input v-model="dialogform.param2" type="textarea"></el-input>
+                    </el-form-item>
+                </el-form>
+                <el-button @click.native.prevent="fcall('WXMp',dialogData.WXMp)" type="primary">确 定</el-button>
+            </div>
+        </div>
+        <div v-if="currmenuidx === 'Custom' && dialogData">
+            <el-table :data="dialogData.Custom.list" size="mini" height="450">
+                <el-table-column property="title" label="标题" ></el-table-column>
+                <el-table-column property="path" label="路径" ></el-table-column>
+                <el-table-column fixed="right" label="操作" width="120">
+                    <template slot-scope="scope">
+                        <el-button @click.native.prevent="fcall('Custom',dialogData.Custom.list[scope.$index])" size="mini" plain type="primary"> 选择</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </div>
+        <div v-if="currmenuidx === 'Outside' && dialogData" >
+            <el-alert class="m-t-20"
+                title="说明"
+                type="success">
+                <div>
+                    <p>小程序端表现为复制链接，若认证商户小程序，请使用webview组件另做页面</p>
+                </div>
+          </el-alert>
+            <div class="item-center">
+                <el-input placeholder="请输入链接" v-model="dialogform.param2">
+                    <el-select v-model="dialogform.param1" slot="prepend" placeholder="请选择" style="padding: 0 20px;">
+                      <el-option label="Http://" value="Http://"></el-option>
+                      <el-option label="Https://" value="Https://"></el-option>
+                    </el-select>
+                  </el-input>
+                <el-button @click.native.prevent="fcall('Outside',dialogData.Outside)" type="primary" class="m-t-20">确 定</el-button>
+            </div>
+        </div>
+        <div v-if="currmenuidx === 'QQ' && dialogData" >
+            <el-alert class="m-t-20"
+                title="说明"
+                type="success">
+                <div>
+                    <p>1. 支持平台：APP</p>
+                    <p>2. APP中跳转到qq会话</p>
+                </div>
+          </el-alert>
+            <div class="item-center">
+                <el-form ref="form" :model="dialogform">
+                    <el-form-item label="QQ号码">
+                        <el-input v-model="dialogform.param1"></el-input>
+                    </el-form-item>
+                </el-form>
+                <el-button @click.native.prevent="fcall('QQ',dialogData.QQ)" type="primary">确 定</el-button>
+            </div>
+        </div>
+        <div v-if="currmenuidx === 'Copy' && dialogData" >
+            <div class="item-center">
+                <el-form ref="form" :model="dialogform">
+                    <el-form-item label="文本">
+                        <el-input v-model="dialogform.param1" type="textarea"></el-input>
+                    </el-form-item>
+                </el-form>
+                <el-button @click.native.prevent="fcall('Copy',dialogData.Copy)" type="primary">确 定</el-button>
+            </div>
+        </div>
+        
+        <div v-if="currmenuidx === 'notice' && dialogData" >
+            <el-alert class="m-t-20"
+                title="说明"
+                type="success">
+                <div>
+                    <p>1. 自定义事件，强烈推荐使用【 二开使用，非二开勿使用 】。</p>
+                    <p>2. 适用于自定义事件，无需修改插件代码，监听自己想要的业务。</p>
+                    <p>3. 点击事件会触发【uni.$emit(${以下填入的key},{data:${以下填入的value}})】抛出消息，在挂载页面监听出收到消息做处理。</p>
+                    <p>4. 特别注意，在页面挂载时监听后，页面卸载销毁是一定要【uni.$off(${以下填入的key})】移除。</p>
+                </div>
+          </el-alert>
+            <div class="item-center">
+                <el-form ref="form" :model="dialogform" label-width="120px">
+                    <el-form-item label="key">
+                        <el-input v-model="dialogform.param1"></el-input>
+                    </el-form-item>
+                    <el-form-item label="value">
+                        <el-input v-model="dialogform.param2" type="textarea"></el-input>
+                    </el-form-item>
+                </el-form>
+                <el-button @click.native.prevent="fcall('notice',dialogData.notice)" type="primary">确 定</el-button>
+            </div>
+        </div>
+    </div>
+    <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogSelecturl = false">取 消</el-button>
+    </div>
+</el-dialog>

@@ -1,0 +1,42 @@
+{include file="/shopro/common/script" /}
+
+<div id="addEdit" class="customer-service-form" v-cloak>
+  <el-container class="panel-block">
+    <el-main>
+      <el-scrollbar height="100%">
+        <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="120px">
+          <el-form-item label="客服分类" prop="room_id">
+            <el-cascader class="sa-w-360" v-model="form.model.room_id" :options="chat.config.default_rooms" :props="{
+              label: 'name',
+              value: 'value',
+              checkStrictly: true,
+              emitPath: false,
+            }" clearable placeholder="请选择客服分类" @change="getCustomerServiceSelect">
+            </el-cascader>
+          </el-form-item>
+          <el-form-item v-if="form.model.room_id" label="所属管理员" prop="auth_id">
+            <el-cascader class="sa-w-360" v-model="form.model.auth_id" :options="customerService.select" :props="{
+              label: 'nickname',
+              value: 'id',
+              checkStrictly: true,
+              emitPath: false,
+            }" clearable placeholder="请选择所属管理员">
+            </el-cascader>
+          </el-form-item>
+          <el-form-item label="客服名称" prop="name">
+            <el-input class="sa-w-360" v-model="form.model.name" placeholder="请输入客服名称"></el-input>
+          </el-form-item>
+          <el-form-item label="客服头像" prop="avatar">
+            <sa-uploader v-model="form.model.avatar"></sa-uploader>
+          </el-form-item>
+          <el-form-item label="最优接待人数">
+            <el-input class="sa-w-360" v-model="form.model.max_num" placeholder="请输入最优接待人数" type="number"></el-input>
+          </el-form-item>
+        </el-form>
+      </el-scrollbar>
+    </el-main>
+    <el-footer class="sa-footer--submit sa-flex sa-row-right">
+      <el-button type="primary" @click="onConfirm">确定</el-button>
+    </el-footer>
+  </el-container>
+</div>

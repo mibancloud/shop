@@ -1,0 +1,17 @@
+{include file="/shopro/common/script" /}
+
+<div id="action" class="order-action" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-table height="100%" class="sa-table" :data="state.data" stripe>
+                <el-table-column prop="remark" label="事件" min-width="250"></el-table-column>
+                <el-table-column label="操作人" min-width="120">
+                    <template #default="scope">
+                        <sa-user-profile type="oper" :user="scope.row.oper" :id="scope.row.oper_id"></sa-user-profile>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="createtime" label="时间" width="172" align="center"></el-table-column>
+            </el-table>
+        </el-main>
+    </el-container>
+</div>

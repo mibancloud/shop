@@ -1,0 +1,106 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .reply-index .reply-main {
+        --el-main-padding: 0 20px;
+    }
+
+    .reply-index .card-wrap {
+        padding: 12px;
+        line-height: 1;
+        box-shadow: 0 1px 6px #5959591f;
+        border-radius: 8px;
+        border: 1px solid var(--sa-space);
+        margin-bottom: 24px;
+    }
+
+    .reply-index .card-wrap:hover {
+        box-shadow: 0 3px 12px #59595933;
+        transform: translateY(-4px);
+    }
+
+    .reply-index .card-wrap .item-type-text {
+        font-size: 12px;
+        color: var(--sa-subfont);
+        margin-bottom: 12px;
+    }
+
+    .reply-index .card-wrap .item-content {
+        height: 40px;
+        line-height: 20px;
+        word-break: break-all;
+        font-size: 12px;
+        color: var(--sa-subfont);
+        margin-bottom: 12px;
+    }
+
+    .reply-index .card-wrap .item-keywords {
+        border: none;
+        border-radius: 12px;
+        margin-right: 4px;
+        margin-bottom: 12px;
+    }
+
+    .reply-index .card-wrap .item-keywords:last-of-type {
+        margin-right: 0;
+    }
+</style>
+
+<div id="index" class="reply-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-tabs class="sa-tabs" v-model="state.group" @tab-change="getData">
+                <el-tab-pane label="关键字回复" name="keywords"></el-tab-pane>
+                <el-tab-pane label="关注回复" name="subscribe"></el-tab-pane>
+                <el-tab-pane label="默认回复" name="default"></el-tab-pane>
+            </el-tabs>
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">自动回复</div>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    {if $auth->check('shopro/wechat/reply/add')}
+                    <el-button icon="Plus" type="primary" @click="onAdd">添加</el-button>
+                    {/if}
+                </div>
+            </div>
+        </el-header>
+        <el-main class="reply-main">
+            <el-row :gutter="16">
+                <el-col v-for="item in state.data" :key="item" :xs="12" :sm="8" :md="6" :lg="4" :xl="4">
+                    <div class="card-wrap">
+                        <div class="item-type-text">{{ item.type_text }}</div>
+                        <div class="item-content sa-line-2">{{ item.content }}</div>
+                        <el-scrollbar v-if="state.group=='keywords'">
+                            <div class="sa-flex">
+                                <el-tag class="item-keywords" v-for="keyword in item.keywords">{{keyword}}</el-tag>
+                            </div>
+                        </el-scrollbar>
+                        <div class="sa-flex sa-row-between">
+                            <el-tooltip effect="dark" :content="item.status_text" placement="top-start">
+                                {if $auth->check('shopro/wechat/reply/edit')}
+                                <el-switch v-model="item.status" active-value="enable" inactive-value="disabled"
+                                    @change="onChangeStatus(item)"></el-switch>
+                                {/if} 
+                            </el-tooltip>
+                            <div class="sa-flex">
+                                {if $auth->check('shopro/wechat/reply/edit')}
+                                <el-button type="primary" link @click="onEdit(item.id)">编辑</el-button>
+                                {/if}
+                                <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                                    title="确认删除这条记录?" @confirm="onDelete(item.id)">
+                                    <template #reference>
+                                        {if $auth->check('shopro/wechat/reply/delete')}
+                                        <el-button type="danger" link>删除</el-button>
+                                        {/if}
+                                    </template>
+                                </el-popconfirm>
+                            </div>
+                        </div>
+                    </div>
+                </el-col>
+            </el-row>
+        </el-main>
+    </el-container>
+</div>

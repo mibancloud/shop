@@ -1,0 +1,30 @@
+{include file="/shopro/common/script" /}
+
+<div id="changeFee" class="order-change-fee" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-alert class="mb-4" type="warning">
+                    <template #title>注意：改价订单不会影响原分佣金额</template>
+                </el-alert>
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="110px">
+                    <el-form-item label="当前订单总金额">
+                        ¥{{ state.pay_fee }}
+                    </el-form-item>
+                    <el-form-item label="修改价格" prop="pay_fee">
+                        <el-input v-model="form.model.pay_fee" placeholder="数值必须大于0" type="number">
+                            <template #append>元</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="改价原因" prop="change_msg">
+                        <el-input v-model="form.model.change_msg" autosize type="textarea" placeholder="请输入改价原因">
+                        </el-input>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

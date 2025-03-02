@@ -1,0 +1,210 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .coupon-form .w-120 {
+        width: 120px;
+    }
+
+    .coupon-form .el-form-item-inner {
+        --el-form-label-font-size: 12px;
+    }
+
+    .coupon-form .el-form-item-inner .el-form-item__label {
+        width: fit-content !important;
+    }
+
+    .coupon-form .key .el-form-item__content {
+        flex-wrap: nowrap;
+    }
+
+    .coupon-form .el-date-editor {
+        flex: none;
+    }
+</style>
+
+<div id="addEdit" class="coupon-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="110px">
+                    <el-form-item label="券名称" prop="name">
+                        <el-input class="sa-w-360" v-model="form.model.name" placeholder="例如：国庆优惠券"></el-input>
+                    </el-form-item>
+                    <el-form-item label="名称备注" prop="description">
+                        <el-input class="sa-w-360" v-model="form.model.description" placeholder="请输入名称备注"></el-input>
+                    </el-form-item>
+                    <el-form-item label="券类型" prop="type">
+                        <el-radio-group v-model="form.model.type" :disabled="state.type == 'edit'">
+                            <el-radio label="reduce">满减券</el-radio>
+                            <el-radio label="discount">折扣券</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <div class="el-form-item-inner">
+                        <el-form-item>
+                            <el-form-item label="消费满" prop="enough">
+                                <el-input class="w-120" type="number" v-model="form.model.enough" :min="0"
+                                    :disabled="state.type == 'edit'">
+                                    <template #append>元</template>
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item v-if="form.model.type == 'reduce'" class="is-no-asterisk ml-2" label="立减"
+                                prop="amount">
+                                <el-input class="w-120" type="number" v-model="form.model.amount" :min="0"
+                                    :disabled="state.type == 'edit'">
+                                    <template #append>元</template>
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item v-if="form.model.type == 'discount'" class="is-no-asterisk ml-2" label="打"
+                                prop="amount">
+                                <el-input class="w-120" type="number" v-model="form.model.amount" :min="0" :max="10"
+                                    :disabled="state.type == 'edit'">
+                                    <template #append>折</template>
+                                </el-input>
+                            </el-form-item>
+                        </el-form-item>
+                        <el-form-item v-if="form.model.type == 'discount'">
+                            <el-form-item label="最多优惠" prop="max_amount">
+                                <el-input class="w-120" type="number" v-model="form.model.max_amount" :min="0"
+                                    :disabled="state.type == 'edit'">
+                                    <template #append>元</template>
+                                </el-input>
+                            </el-form-item>
+                        </el-form-item>
+                    </div>
+                    <el-form-item label="发券总量" prop="stock">
+                        <el-input class="w-120" type="number" v-model="form.model.stock" :min="0">
+                            <template #append>张</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="每人限领次数">
+                        <el-input class="w-120" type="number" v-model="form.model.limit_num" :min="0">
+                            <template #append>张</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="领券时间" prop="get_time">
+                        <el-date-picker v-model="form.model.get_time" type="datetimerange"
+                            value-format="YYYY-MM-DD HH:mm:ss" format="YYYY-MM-DD HH:mm:ss"
+                            :default-time="[new Date(2000, 1, 1, 0, 0, 0), new Date(2000, 2, 1, 23, 59, 59)]"
+                            range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" prefix-icon="Calendar"
+                            :editable="false"></el-date-picker>
+                    </el-form-item>
+                    <el-form-item label="券有效期" prop="use_time_type">
+                        <el-radio-group v-model="form.model.use_time_type">
+                            <el-radio label="days">相对天数</el-radio>
+                            <el-radio label="range">固定区间</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <div class="el-form-item-inner">
+                        <el-form-item>
+                            <template v-if="form.model.use_time_type == 'days'">
+                                <el-form-item class="is-no-asterisk" label="领券" prop="start_days">
+                                    <el-input class="w-120" type="number" v-model="form.model.start_days" :min="0">
+                                        <template #append>天</template>
+                                    </el-input>
+                                </el-form-item>
+                                <el-form-item class="is-no-asterisk ml-2" label="后生效，有效期" prop="days">
+                                    <el-input class="w-120" type="number" v-model="form.model.days" :min="0">
+                                        <template #append>天</template>
+                                    </el-input>
+                                </el-form-item>
+                            </template>
+                            <el-form-item v-if="form.model.use_time_type == 'range'" class="is-no-asterisk" label="固定时间"
+                                prop="useTime">
+                                <el-date-picker v-model="form.model.use_time" type="datetimerange"
+                                    value-format="YYYY-MM-DD HH:mm:ss" format="YYYY-MM-DD HH:mm:ss"
+                                    :default-time="[new Date(2000, 1, 1, 0, 0, 0), new Date(2000, 2, 1, 23, 59, 59)]"
+                                    range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期"
+                                    prefix-icon="Calendar" :editable="false"></el-date-picker>
+                            </el-form-item>
+                        </el-form-item>
+                    </div>
+                    <el-form-item label="优惠叠加">
+                        <div>
+                            <div class="sa-flex">
+                                <el-switch v-model="form.model.is_double_discount" :active-value="1"
+                                    :inactive-value="0">
+                                </el-switch>
+                                <div class="ml-2" :class="form.model.is_double_discount == 1?'sa-color--primary':''">
+                                    {{form.model.is_double_discount == 1?'开启':'关闭'}}
+                                </div>
+                            </div>
+                            <div class="tip"> 开启优惠叠加，优惠券将可以和活动一起使用 </div>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="券状态" prop="status">
+                        <div>
+                            <el-radio-group v-model="form.model.status">
+                                <el-radio label="normal">公开发放</el-radio>
+                                <el-radio label="hidden">后台发放</el-radio>
+                                <el-radio label="disabled">禁止使用</el-radio>
+                            </el-radio-group>
+                            <div class="tip">
+                                后台发放状态改为别的状态，将导致满赠活动无法赠送该优惠券
+                            </div>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="可用范围" prop="use_scope">
+                        <el-radio-group v-model="form.model.use_scope" @change="form.model.items_value = []">
+                            <el-radio label="all_use">全场通用</el-radio>
+                            <el-radio label="goods">指定商品可用</el-radio>
+                            <el-radio label="disabled_goods">指定商品不可用</el-radio>
+                            <el-radio label="category">指定分类可用</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item>
+                        <el-button v-if="form.model.use_scope == 'goods' || form.model.use_scope == 'disabled_goods'"
+                            type="primary" link @click="onSelectGoods">选择商品</el-button>
+                        <el-button v-if="form.model.use_scope == 'category'" type="primary" link
+                            @click="onSelectCategory">选择分类
+                        </el-button>
+                    </el-form-item>
+                    <el-form-item>
+                        <div v-if="form.model.use_scope == 'goods' || form.model.use_scope == 'disabled_goods'"
+                            class="sa-template-wrap">
+                            <template v-if="form.model.items_value.length > 0">
+                                <div class="header sa-flex">
+                                    <div class="key">商品信息</div>
+                                    <div class="oper">操作</div>
+                                </div>
+                                <div class="item" v-for="(element, index) in form.model.items_value" :key="element">
+                                    <div class="key">
+                                        <sa-image class="mr-2" :url="element.image" size="40"></sa-image>
+                                        <div class="sa-table-line-1">
+                                            {{ element.title }}
+                                        </div>
+                                    </div>
+                                    <div class="oper">
+                                        <el-button type="danger" link @click="onDeleteGoods(index)">
+                                            移除
+                                        </el-button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <div v-if="form.model.use_scope == 'category'" class="sa-template-wrap">
+                            <template v-if="form.model.items_value.length > 0">
+                                <div class="header sa-flex">
+                                    <div class="key">分类信息</div>
+                                    <div class="oper">操作</div>
+                                </div>
+                                <div class="item" v-for="(element, index) in form.model.items_value" :key="element">
+                                    <div class="key">
+                                        <div class="goods-title sa-m-b-6">{{ element.name }}</div>
+                                    </div>
+                                    <div class="oper">
+                                        <el-button type="danger" link @click="onDeleteCategory(index)">
+                                            移除
+                                        </el-button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

@@ -1,0 +1,56 @@
+{include file="/shopro/common/script" /}
+
+<div id="index" class="log-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">分销动态</div>
+                    <div class="really-status sa-flex ml-4">
+                        实时动态
+                        <el-switch class="ml-2" v-model="really.reallyStatus" :active-value="1" :inactive-value="0"
+                            @change="onChangeReallyStatus"></el-switch>
+                        <span class="ml-1" :class="really.reallyStatus == 1?'sa-color--primary':''">
+                            {{ really.reallyStatus == 1 ? '开启' : '关闭' }}
+                        </span>
+                        <el-popover popper-class="sa-popper" trigger="hover" content="开启后，该页面将实时刷新">
+                            <template #reference>
+                                <el-icon class="sa-color--warning ml-1">
+                                    <Warning />
+                                </el-icon>
+                            </template>
+                        </el-popover>
+                    </div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe>
+                <el-table-column prop="id" label="ID" min-width="90"></el-table-column>
+                <el-table-column prop="event_text" label="动态筛选" min-width="120"></el-table-column>
+                <el-table-column label="分销商" min-width="160">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row.agent" :id="scope.row.agent_id"></sa-user-profile>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="remark" label="内容" min-width="300"></el-table-column>
+                <el-table-column label="操作人" min-width="160">
+                    <template #default="scope">
+                        <sa-user-profile type="oper" :user="scope.row.oper" :id="scope.row.oper_id"></sa-user-profile>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="createtime" label="动态时间" width="172"></el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

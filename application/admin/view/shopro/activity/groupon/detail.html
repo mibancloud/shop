@@ -1,0 +1,96 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .groupon-detail .goods-item .goods-title {
+        color: var(--el-color-primary);
+    }
+
+    .groupon-detail .goods-item .goods-num {
+        font-size: 12px;
+    }
+</style>
+
+<div id="detail" class="groupon-detail" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-table class="sa-table" :data="[{}]" stripe>
+                <el-table-column label="拼团商品" min-width="490">
+                    <template #default>
+                        <div v-if="state.data.goods" class="goods-item sa-flex">
+                            <sa-image class="mr-2" :url="state.data.goods.image" size="40"></sa-image>
+                            <div>
+                                <div class="goods-title sa-table-line-1"
+                                    @click="onOpenGoodsDetail(state.data.goods_id)">
+                                    {{ state.data.goods.title || '-' }}
+                                </div>
+                                <div class="goods-num"> 成团人数：{{ state.data.num }} </div>
+                            </div>
+                        </div>
+                        <div v-else>{{state.data.goods_id}}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="开团时间" width="172">
+                    <template #default>
+                        {{ state.data.createtime || '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="拼团状态" min-width="80">
+                    <template #default>
+                        <div :class="`sa-color--${state.statusClass[state.data.status]}`">
+                            {{ state.data.status_text || '-' }}
+                        </div>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-table class="sa-table" :data="state.data.groupon_logs" stripe>
+                <el-table-column label="身份" min-width="80">
+                    <template #default="scope">
+                        <span v-if="scope.row.is_leader == 1">团长</span>
+                        <span v-else>团员</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="头像" width="64">
+                    <template #default="scope">
+                        <sa-image :url="scope.row.avatar" size="32" radius="16"></sa-image>
+                    </template>
+                </el-table-column>
+                <el-table-column label="昵称" width="258">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row" :id="scope.row.user_id" :isavatar="false"
+                            :ishover="!scope.row.is_fictitious"></sa-user-profile>
+                    </template>
+                </el-table-column>
+                <el-table-column label="参团时间" width="172">
+                    <template #default="scope">
+                        {{ scope.row.createtime || '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" min-width="170">
+                    <template #default="scope">
+                        <template v-if="scope.row.is_temp">
+                            <el-button type="primary" link @click="onConfirm(scope.row)">确定
+                            </el-button>
+                            <el-button type="danger" link @click="onCancel(scope.$index)">取消
+                            </el-button>
+                        </template>
+                        <span v-if="scope.row.is_fictitious == 1 && !scope.row.is_temp">虚拟</span>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer v-if="state.data.status == 'ing'" class="sa-footer--submit sa-flex sa-row-between">
+            <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消" title="确定要解散拼团吗？"
+                @confirm="onInvalid">
+                <template #reference>
+                    {if $auth->check('shopro/activity/groupon/invalid')}
+                    <el-button>解散拼团</el-button>
+                    {/if}
+                </template>
+            </el-popconfirm>
+            {if $auth->check('shopro/activity/groupon/addUser')}
+            <el-button type="primary" :disabled="!(state.data.groupon_logs.length<state.data.num)" @click="onAddUser">
+                添加虚拟人数</el-button>
+            {/if}
+        </el-footer>
+    </el-container>
+</div>

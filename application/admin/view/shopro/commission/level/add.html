@@ -1,0 +1,187 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .level-form .title {
+        height: 32px;
+        line-height: 32px;
+        background: var(--sa-background-hex-hover);
+        padding: 0 16px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subtitle);
+        border-radius: 4px;
+        margin-bottom: 16px;
+    }
+
+    .level-form .sa-title.is-line {
+        margin-bottom: 20px;
+    }
+
+    .level-form .w-120 {
+        width: 120px;
+    }
+
+    .level-form .item {
+        height: 32px;
+        padding: 0 16px;
+        font-size: 14px;
+        border: 1px solid var(--sa-border);
+        border-radius: 4px;
+        margin: 0 16px 16px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+    }
+
+    .level-form .item:last-of-type {
+        margin: 0 0 16px 0;
+    }
+
+    .level-form .item.is-disabled {
+        background: var(--sa-background-hex-active);
+        color: #fff;
+        border: 1px solid var(--sa-background-hex-active);
+        cursor: not-allowed;
+    }
+
+    .level-form .item.is-active {
+        background: var(--el-color-primary);
+        color: #fff;
+        border: 1px solid var(--el-color-primary);
+
+    }
+
+    .level-form .item.is-active.is-none {
+        display: flex;
+    }
+
+    .level-form .item.is-none {
+        display: none;
+    }
+
+    .level-form .condition-group .condition-item {
+        padding: 0 12px;
+    }
+</style>
+
+<div id="addEdit" class="level-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-alert class="mb-4" type="warning">
+                    <template #title>
+                        新增或编辑等级后，请及时在分销商品中完善对应的佣金规则
+                    </template>
+                </el-alert>
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="150px">
+                    <div class="sa-title is-line">等级佣金比例</div>
+                    <el-form-item label="等级权重" prop="level">
+                        <div :class="[
+                            'item',
+                            item.level == form.model.level ? 'is-active' : '',
+                            level.existLevel.includes(item.level) ? 'is-disabled' : '',
+                            form.model.level == 1 ? 'is-none' : '',
+                        ]" v-for="item in level.data" :key="item" @click="onSelectLevel(item.level)">
+                            {{ item.name }}
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="等级名称" prop="name">
+                        <el-input class="sa-w-360" v-model="form.model.name" placeholder="请输入等级名称"></el-input>
+                    </el-form-item>
+                    <el-form-item label="等级徽章" prop="image">
+                        <sa-uploader v-model="form.model.image"></sa-uploader>
+                    </el-form-item>
+                    <el-form-item label="一级(自购)佣金比例" prop="commission_rules.commission_1"
+                        :rules="form.rules.commission_rules.commission">
+                        <el-input class="sa-w-360" v-model="form.model.commission_rules.commission_1" type="number">
+                            <template #append>%</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="二级佣金比例" prop="commission_rules.commission_2"
+                        :rules="form.rules.commission_rules.commission">
+                        <el-input class="sa-w-360" v-model="form.model.commission_rules.commission_2" type="number">
+                            <template #append>%</template>
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="三级佣金比例" prop="commission_rules.commission_3"
+                        :rules="form.rules.commission_rules.commission">
+                        <el-input class="sa-w-360" v-model="form.model.commission_rules.commission_3" type="number">
+                            <template #append>%</template>
+                        </el-input>
+                    </el-form-item>
+                    <template v-if="form.model.level != 1">
+                        <div class="sa-title is-line">添加升级条件</div>
+                        <el-form-item label="升级方式" prop="upgrade_rules">
+                            <div>
+                                <el-radio-group class="mb-2" v-model="form.model.upgrade_type">
+                                    <el-radio :label="0">满足以下任意条件</el-radio>
+                                    <el-radio :label="1">满足以下全部条件</el-radio>
+                                </el-radio-group>
+                                <div>
+                                    <div class="sa-flex sa-flex-wrap condition-group" v-for="group in upgradeCondition"
+                                        :key="group">
+                                        <div :class="[
+                                            'item',
+                                            'condition-item',
+                                            Object.keys(form.model.upgrade_rules).includes(key) ? 'is-active' : '',
+                                        ]" v-for="(item, key) in group" :key="item"
+                                            @click="onSelectUpgradeCondition(key)">
+                                            {{ item.name }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-form-item>
+                        <template v-for="(group, gkey) in upgradeCondition" :key="group">
+                            <template v-for="(item, key) in group" :key="item">
+                                <el-form-item :label="item.name"
+                                    v-if="Object.keys(form.model.upgrade_rules).includes(key)"
+                                    :prop="`upgrade_rules.${key}`" :rules="form.rules.upgrade_rules_inner.rules">
+                                    <template v-if="gkey != 'agent_level'">
+                                        <el-input class="w-120" v-model="form.model.upgrade_rules[key]" type="number">
+                                            <template #append> {{ initUnit(key) }}</template>
+                                        </el-input>
+                                        <el-button class="delete" type="danger" link @click="onDeleteRules(key)">
+                                            删除
+                                        </el-button>
+                                    </template>
+                                    <div v-if="gkey == 'agent_level'">
+                                        <div class="sa-flex sa-flex-wrap mb-4"
+                                            v-for="(al, index) in form.model.upgrade_rules[key]" :key="al">
+                                            <el-form-item :prop="`upgrade_rules.${key}.${index}.level`"
+                                                :rules="form.rules.upgrade_rules_inner.level">
+                                                <el-select class="w-120" v-model="al.level" placeholder="请选择分销商等级">
+                                                    <template v-for="item in level.select" :key="item">
+                                                        <el-option v-if="item.level < form.model.level"
+                                                            :label="item.name" :value="item.level+''"></el-option>
+                                                    </template>
+                                                </el-select>
+                                                <span class="ml-2 mr-2">满</span>
+                                            </el-form-item>
+                                            <el-form-item :prop="`upgrade_rules.${key}.${index}.count`"
+                                                :rules="form.rules.upgrade_rules_inner.rules">
+                                                <el-input class="w-120" v-model="al.count" type="number">
+                                                    <template #append>人</template>
+                                                </el-input>
+                                                <el-button class="delete" type="danger" link
+                                                    @click="onDeleteRules(key, index)">
+                                                    删除
+                                                </el-button>
+                                            </el-form-item>
+                                        </div>
+                                        <el-button type="primary" link size="small" @click="onAddUpgradeRules(key)">
+                                            + 添加</el-button>
+                                    </div>
+                                </el-form-item>
+                            </template>
+                        </template>
+                    </template>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

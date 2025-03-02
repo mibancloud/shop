@@ -1,0 +1,60 @@
+{include file="/shopro/common/script" /}
+
+<div id="index" class="stock-warning-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-tabs class="sa-tabs" v-model="state.filter.data.stock_type" @tab-change="onChangeTab">
+                <el-tab-pane v-for="(value, key) in type.data.stock_type" :key="key"
+                    :label="`${value.name}${value.num ? '(' + value.num + ')' : ''}`" :name="key"></el-tab-pane>
+            </el-tabs>
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">库存预警</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                    {if $auth->check('shopro/goods/stock_warning/recyclebin')}
+                    <el-button type="danger" plain @click="onRecyclebin">历史记录</el-button>
+                    {/if}
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @sort-change="onChangeSort">
+                <el-table-column prop="id" label="ID" min-width="90" sortable="custom"> </el-table-column>
+                <el-table-column label="商品" min-width="440">
+                    <template #default="scope">
+                        <div v-if="scope.row.goods" class="sa-goods-item sa-flex sa-col-top">
+                            <sa-image class="goods-image" :url="scope.row.goods.image" size="48"></sa-image>
+                            <div>
+                                <div class="goods-title sa-table-line-1">{{scope.row.goods.title}}</div>
+                                <div v-if="scope.row.goods_sku_text" class="goods-sku-text">{{scope.row.goods_sku_text}}
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else>{{scope.row.goods_id}}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="stock" label="库存" min-width="100"></el-table-column>
+                <el-table-column prop="stock_warning" label="预警库存" min-width="100"></el-table-column>
+                <el-table-column label="更新时间" width="172">
+                    <template #default="scope">{{ scope.row.createtime || '-' }}</template>
+                </el-table-column>
+                <el-table-column label="操作" min-width="100" fixed="right">
+                    <template #default="scope">
+                        {if $auth->check('shopro/goods/stock_warning/addStock')}
+                        <el-button type="primary" link @click="onAddStock(scope.row)">补货</el-button>
+                        {/if}
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

@@ -1,0 +1,181 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .config-platform .el-select {
+        flex: 1;
+    }
+
+    .config-platform .title {
+        width: 100%;
+        padding: 10px 0 10px 16px;
+        background: var(--sa-background-hex-hover);
+        font-weight: 500;
+        font-size: 14px;
+        color: var(--sa-subtitle);
+        margin: 0 0 16px;
+        display: flex;
+        align-items: center;
+    }
+
+    .config-platform .title-h5 {
+        margin-left: 20px;
+    }
+
+    .config-platform .pay-tip {
+        font-weight: 400;
+        font-size: 14px;
+        line-height: 20px;
+        color: var(--sa-subtitle);
+        margin-left: 16px;
+    }
+</style>
+
+<div id="platform" class="config-platform" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form ref="formRef" :model="form.model" :rules="form.rules" label-width="100px">
+                    <div class="title">状态</div>
+                    <el-form-item label="状态">
+                        <el-switch v-model="form.model.status" :active-value="1" :inactive-value="0"></el-switch>
+                        <span class="label-tip" :class="form.model.status == 1 ? 'sa-color--primary' : ''">
+                            {{form.model.status == 0 ? '关闭' : '开启'}}</span>
+                    </el-form-item>
+                    <div class="title">支付配置<span class="pay-tip">启用货到付款后，请自行安排合作快递完成收款和结算</span> </div>
+                    <el-form-item label="支付方式">
+                        <el-checkbox-group v-model="form.model.payment.methods">
+                            <el-checkbox label="wechat">微信</el-checkbox>
+                            <el-checkbox label="alipay">支付宝</el-checkbox>
+                            <el-checkbox label="money">余额</el-checkbox>
+                            <el-checkbox label="offline">货到付款</el-checkbox>
+                        </el-checkbox-group>
+                    </el-form-item>
+                    <el-form-item v-if="form.model.payment.methods.includes('wechat')" label="微信" prop="payment.wechat">
+                        <div class="sa-w-360">
+                            <el-select v-model="form.model.payment.wechat" placeholder="请选择">
+                                <el-option v-for="item in payConfig.select.wechat" :key="item.id" :label="item.name"
+                                    :value="item.id">
+                                </el-option>
+                            </el-select>
+                            <el-button class="label-tip" type="primary" link @click="onAddPayConfig"> 添加支付方式
+                            </el-button>
+                        </div>
+                    </el-form-item>
+                    <el-form-item v-if="form.model.payment.methods.includes('alipay')" label="支付宝"
+                        prop="payment.alipay">
+                        <div class="sa-w-360">
+                            <el-select v-model="form.model.payment.alipay" placeholder="请选择">
+                                <el-option v-for="item in payConfig.select.alipay" :key="item.id" :label="item.name"
+                                    :value="item.id">
+                                </el-option>
+                            </el-select>
+                            <el-button class="label-tip" type="primary" link @click="onAddPayConfig"> 添加支付方式
+                            </el-button>
+                        </div>
+                    </el-form-item>
+                    <div class="title">
+                        {{state.platform == 'H5' ? '微信H5' : state.label}}平台设置
+                        <div v-if="state.platform == 'H5'" class="title-h5">
+                            如使用微信支付，请在此输入已开通微信H5支付的Appid
+                        </div>
+                    </div>
+                    <el-form-item label="Appid" prop="app_id">
+                        <div class="sa-w-360">
+                            <el-input v-model="form.model.app_id" placeholder="请输入Appid"></el-input>
+                            <el-button v-if="state.platform=='H5' || state.platform=='App'" class="label-tip"
+                                type="primary" link @click="onConfiguration">查看配置引导</el-button>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="AppSecret" prop="secret" v-if="state.platform != 'H5'">
+                        <el-input class="sa-w-360" v-model="form.model.secret" placeholder="请输入AppSecret"></el-input>
+                    </el-form-item>
+                    <div v-if="state.platform != 'H5'">
+                        <div class="title">微信登录设置</div>
+                        <el-form-item v-if="state.platform != 'App'" label="自动登录">
+                            <div class="sa-flex">
+                                <el-switch v-model="form.model.auto_login" :active-value="1" :inactive-value="0">
+                                </el-switch>
+                                <span class="label-tip" :class="form.model.auto_login == 1 ? 'sa-color--primary' : ''">
+                                    {{form.model.status == 0 ? '关闭' : '开启'}}</span>
+                                <div class="tip label-tip"> 进入应用后立即自动发起授权登录 </div>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="绑定手机号">
+                            <div class="sa-flex">
+                                <el-switch v-model="form.model.bind_mobile" :active-value="1" :inactive-value="0">
+                                </el-switch>
+                                <span class="label-tip" :class="form.model.bind_mobile == 1 ? 'sa-color--primary' : ''">
+                                    {{form.model.status == 0 ? '关闭' : '开启'}}</span>
+                                <div class="tip label-tip"> 授权登录后立即提醒绑定手机号 </div>
+                            </div>
+                        </el-form-item>
+                    </div>
+                    <div v-if="state.platform == 'App'">
+                        <div class="title">APP下载</div>
+                        <el-form-item label="Android地址">
+                            <el-input class="sa-w-360" v-model="form.model.download.android"
+                                placeholder="请输入Android下载地址"></el-input>
+                        </el-form-item>
+                        <el-form-item label="IOS地址">
+                            <el-input class="sa-w-360" v-model="form.model.download.ios" placeholder="请输入IOS下载地址">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="本地地址">
+                            <el-input class="sa-w-360" v-model="form.model.download.local" placeholder="请输入本地地址">
+                            </el-input>
+                        </el-form-item>
+                    </div>
+                    <template v-if="form.model.share">
+                        <div class="title">分享设置</div>
+                        <el-form-item label="分享方式">
+                            <el-checkbox-group v-model="form.model.share.methods">
+                                <el-checkbox label="forward" disabled>直接转发</el-checkbox>
+                                <el-checkbox label="poster">分享海报</el-checkbox>
+                                <el-checkbox label="link">复制链接</el-checkbox>
+                            </el-checkbox-group>
+                        </el-form-item>
+                        <template v-if="form.model.share.methods.includes('forward')">
+                            <el-form-item label="标题">
+                                <el-input class="sa-w-360" v-model="form.model.share.forwardInfo.title"
+                                    placeholder="请输入分享标题"></el-input>
+                            </el-form-item>
+                            <el-form-item label="副标题">
+                                <el-input class="sa-w-360" v-model="form.model.share.forwardInfo.subtitle"
+                                    placeholder="请输入分享副标题">
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="分享图片">
+                                <sa-uploader v-model="form.model.share.forwardInfo.image">
+                                </sa-uploader>
+                            </el-form-item>
+                        </template>
+                        <template v-if="form.model.share.methods.includes('poster')">
+                            <el-form-item label="用户海报">
+                                <sa-uploader v-model="form.model.share.posterInfo.user_bg">
+                                </sa-uploader>
+                            </el-form-item>
+                            <el-form-item label="商品海报">
+                                <sa-uploader v-model="form.model.share.posterInfo.goods_bg">
+                                </sa-uploader>
+                            </el-form-item>
+                            <el-form-item label="拼团海报">
+                                <sa-uploader v-model="form.model.share.posterInfo.groupon_bg">
+                                </sa-uploader>
+                            </el-form-item>
+                        </template>
+                        <el-form-item label="分享Url">
+                            <div class="sa-form-wrap">
+                                <el-input class="sa-w-360" v-model="form.model.share.linkAddress"
+                                    placeholder="请输入分享Url"></el-input>
+                                <div class="tip">分享链接的默认域名</div>
+                            </div>
+                        </el-form-item>
+                    </template>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

@@ -1,0 +1,91 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .reply-form .keywords {
+        border: none;
+        border-radius: 12px;
+        margin-right: 12px;
+        margin-top: 12px;
+    }
+
+    .reply-form .keywords:last-of-type {
+        margin-right: 0;
+    }
+
+    .material-select .title {
+        width: 100px;
+        flex-shrink: 0;
+    }
+
+    .material-select .media_id {
+        flex: 1;
+    }
+</style>
+
+<div id="addEdit" class="reply-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item v-if="form.model.group == 'keywords'" label="关键字" prop="keywords">
+                        <div>
+                            <el-input class="sa-w-360" v-model="keywords" placeholder="请输入关键字、空格确认"
+                                @keyup.space="onAddKeywords(keywords)">
+                            </el-input>
+                            <el-scrollbar>
+                                <div class="sa-flex">
+                                    <el-tag class="keywords" v-for="(tag,index) in form.model.keywords" :key="tag"
+                                        closable :disable-transitions="false" @close="onDeleteKeywords(index)">{{ tag }}
+                                    </el-tag>
+                                </div>
+                            </el-scrollbar>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="类型" required>
+                        <el-radio-group v-model="form.model.type" @change="onChangeType">
+                            <el-radio label="news">图文消息</el-radio>
+                            <el-radio label="image">图片</el-radio>
+                            <el-radio label="video">视频</el-radio>
+                            <el-radio label="voice">语音</el-radio>
+                            <el-radio label="text">文本</el-radio>
+                            <el-radio label="link">链接</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="回复内容" prop="content">
+                        <el-select popper-class="material-select" v-model="form.model.content">
+                            <el-option v-for="item in material.select" :key="item.media_id" :label="item.title"
+                                :value="item.media_id + ''">
+                                <div class="sa-flex">
+                                    <sa-image v-if="
+                                  item.type == 'news' ||
+                                  item.type == 'image' ||
+                                  item.type == 'video' ||
+                                  item.type == 'link'
+                                " :url="item.thumb_url" size="30"></sa-image>
+                                    <div class="title ml-2 sa-table-line-1">
+                                        {{ item.title }}
+                                    </div>
+                                    <div class="media_id ml-2 sa-table-line-1">
+                                        {{ item.media_id }}
+                                    </div>
+                                </div>
+                            </el-option>
+                            <sa-pagination class="is-ellipsis" v-model="material.pagination"
+                                @pagination-change="getMaterialSelect">
+                            </sa-pagination>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="状态" required>
+                        <el-radio-group v-model="form.model.status">
+                            <el-radio label="enable">启用</el-radio>
+                            <el-radio label="disabled">禁用</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

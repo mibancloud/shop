@@ -1,0 +1,109 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .user-index .auth-id {
+        color: var(--sa-subfont);
+    }
+</style>
+
+<div id="index" class="user-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">会话管理</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @selection-change="onChangeSelection"
+                @sort-change="onChangeSort">
+                <el-table-column type="selection" width="48"></el-table-column>
+                <el-table-column prop="id" label="ID" min-width="90" sortable="custom"> </el-table-column>
+                <el-table-column label="用户信息" min-width="160">
+                    <template #default="scope">
+                        <div class="sa-flex sa-col-center">
+                            <el-avatar class="mr-2" :size="32" :src="Fast.api.cdnurl(scope.row.avatar)">
+                                <img src="/assets/addons/shopro/img/default-avatar.png" />
+                            </el-avatar>
+                            <div>
+                                <div class="sa-table-line-1">
+                                    {{ scope.row.nickname || '-' }}
+                                </div>
+                                <div class="auth-id">
+                                    {{ scope.row.auth_id ? '用户' : '游客' }}
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="手机号" min-width="120">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.user?.mobile || '-' }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="最后会话客服" min-width="160">
+                    <template #default="scope">
+                        <div v-if="scope.row.customer_service" class="sa-flex sa-col-center">
+                            <el-avatar class="mr-2" :size="32"
+                                :src="Fast.api.cdnurl(scope.row.customer_service.avatar)">
+                                <img src="/assets/addons/shopro/img/default-avatar.png" />
+                            </el-avatar>
+                            <div>
+                                <div class="sa-table-line-1">
+                                    {{ scope.row.customer_service.name || '-' }}
+                                </div>
+                                <div class="auth-id">
+                                    {{ scope.row.customer_service.room_name }}
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else>{{scope.row.customer_service_id}}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="最后会话时间" width="172">
+                    <template #default="scope">
+                        {{ scope.row.last_time || '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="操作" min-width="120">
+                    <template #default="scope">
+                        {if $auth->check('shopro/chat/record/index')}
+                        <el-button type="primary" link @click="onRecord(scope.row)">查看</el-button>
+                        {/if}
+                        <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                            title="此操作会删除当前会话所有聊天记录，是否确定？" @confirm="onDelete(scope.row.id)">
+                            <template #reference>
+                                {if $auth->check('shopro/chat/user/delete')}
+                                <el-button type="danger" link>删除</el-button>
+                                {/if}
+                            </template>
+                        </el-popconfirm>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-between sa-flex-wrap">
+            <div class="sa-batch sa-flex">
+                <div class="tip">
+                    已选择 <span>{{batchHandle.data.length}}</span> 项</div>
+                <div class="sa-flex">
+                    {if $auth->check('shopro/chat/user/delete')}
+                    <el-button type="danger" :disabled="!batchHandle.data.length" @click="onBatchHandle('delete')">删除
+                    </el-button>
+                    {/if}
+                </div>
+            </div>
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

@@ -1,0 +1,98 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .order-dispatch-list .code-0 {
+        color: #ff4d4f;
+    }
+
+    .order-dispatch-list .code-1 {
+        color: #70c140;
+    }
+
+    .order-dispatch-list .code-nosend {
+        color: #999;
+    }
+
+    .order-dispatch-list .el-progress__text {
+        display: none;
+    }
+</style>
+
+<div id="dispatchList" class="order-dispatch-list" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-tabs class="sa-tabs" v-model="state.status">
+                <el-tab-pane v-for="(sl, key) in state.statusList" :key="sl" :label="`${sl.label}${
+                  state[key] && state[key].length > 0 ? '(' + state[key].length + ')' : ''
+                }`" :name="key"></el-tab-pane>
+            </el-tabs>
+            <template v-if="
+                (state.status == 'all' || state.status == 'nosend') &&
+                loop.index < state[state.status].length
+              ">
+                <div class="sa-flex sa-row-center mt-3">
+                    已完成：{{ (loop.index / state[state.status].length) * 100 }}%
+                </div>
+                <el-progress class="mt-2" :percentage="`${(loop.index / state[state.status].length) * 100}`" />
+                <div class="mt-3">
+                    当前发货：{{ loop.item.province_name }}{{ loop.item.city_name }}{{ loop.item.area_name
+                    }}{{ loop.item.address }}
+                </div>
+            </template>
+        </el-header>
+        <el-main>
+            <el-table height="100%" class="sa-table" :data="state[state.status]" stripe>
+                <template #empty>
+                    <sa-empty />
+                </template>
+                <el-table-column prop="order_id" label="ID" min-width="80"></el-table-column>
+                <el-table-column label="订单号" width="260">
+                    <template #default="scope">
+                        <div>
+                            {{ scope.row.order_sn }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="子订单" width="100">
+                    <template #default="scope">
+                        <div>共{{ scope.row.order_item_ids?.length }}单</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="发货状态" min-width="200">
+                    <template #default="scope">
+                        <div v-if="scope.row.dispatch_status || scope.row.dispatch_status == 0"
+                            :class="['sa-flex', `code-${scope.row.dispatch_status}`]">
+                            <el-icon v-if="scope.row.dispatch_status != 1" class="mr-2"
+                                @click="onAloneDispatch(scope.$index)">
+                                <Refresh />
+                            </el-icon>
+                            {{ scope.row.dispatch_status_text }}
+                        </div>
+                        <div v-else class="code-nosend">待发货</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="快递单号" min-width="260">
+                    <template #default="scope">
+                        <div>
+                            {{ scope.row.express ? scope.row.express.no : '-' }}
+                        </div>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <template v-if="state.status == 'all' && loop.index < state.all.length">
+                <el-button @click="onStartDispatch">
+                    <sa-svg class="sa-m-r-4" :name="`sa-shop-order-${loop.index == 0 ? 'start' : 'continue'}`"></sa-svg>
+                    {{ loop.index == 0 ? '开始' : '继续' }}
+                </el-button>
+                <el-button v-if="loop.index != 0" @click="onSuspendDispatch">
+                    <sa-svg class="sa-m-r-4" name="sa-shop-order-pause"></sa-svg>
+                    暂停
+                </el-button>
+            </template>
+            <el-button v-if="state.status == 'error'" type="primary" icon="Refresh" @click="onAgainDispatch">重新发货
+            </el-button>
+        </el-footer>
+    </el-container>
+</div>

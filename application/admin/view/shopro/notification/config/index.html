@@ -1,0 +1,286 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .notification-config-index .icon {
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+    }
+
+    .notification-config-index .edit-button {
+        border-radius: 4px 0 0 4px;
+        color: var(--sa-background-assist);
+    }
+
+    .notification-config-index .num {
+        width: 140px;
+        height: 32px;
+        border-radius: 0 4px 4px 0;
+        margin-right: 8px;
+    }
+
+    .notification-config-index .num.WechatOfficialAccount {
+        background: rgba(7, 193, 96, .1);
+        color: #07c160;
+    }
+
+    .notification-config-index .num.WechatMiniProgram {
+        background: rgba(111, 116, 233, .1);
+        color: #6f74e9;
+    }
+
+    .notification-config-index .num.Sms {
+        background: rgba(128, 106, 246, .1);
+        color: #806af6;
+    }
+
+    .notification-config-index .num.Email {
+        background: rgba(64, 158, 255, .1);
+        color: #409eff;
+    }
+
+    .notification-config-index .tip {
+        margin-left: 8px;
+    }
+
+    .notification-config-index .tip.is-active {
+        color: var(--el-color-primary);
+    }
+
+    .qrcode-popover{
+        width: fit-content !important;
+        min-width: unset !important;
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 16px;
+        color: #595959;
+    }
+
+    .qrcode-mask{
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 80px;
+        height: 80px;
+        background: rgba(253, 253, 253, 0.8);
+        backdrop-filter: blur(2px);
+    }
+
+    .qrcode-popover #qrcode {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 4px;
+    }
+
+    .qrcode-popover #qrcode img {
+        width: 100%;
+        height: 100%;
+    }
+
+</style>
+
+<div id="index" class="notification-config-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-tabs class="sa-tabs" v-model="state.receiver_type" @tab-change="getData">
+                <el-tab-pane label="通知用户" name="user"></el-tab-pane>
+                <el-tab-pane label="通知管理员" name="admin"></el-tab-pane>
+            </el-tabs>
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">消息配置</div>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                </div>
+            </div>
+            <el-alert class="mb-4" type="warning">
+                <template #title>
+                    <div>
+                        1、消息通知仅用于向用户发送重要的服务通知，只能用于符合其要求的服务场景如：拼团成功通知、商品发货通知等。不支持广告等营销类消息以及其它所有可能对用户造成骚扰的消息；
+                    </div>
+                    <div>
+                        2、小程序和公众号需要选择 生活服务/百货/超市/便利店 类目；
+                    </div>
+                    <div>3、公众号和小程序必须选择上面对应的类目才可以自动获取模板。</div>
+                    <div>4、目前公众号类目模板库有待完善，部分模板无法自动获取，请自行在公众号后台->模板消息->挑选模板，并在商城后台->消息通知->对应消息的自定义配置处配置</div>
+                </template>
+            </el-alert>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" row-key="id" stripe>
+                <el-table-column label="消息类别" min-width="160" align="center">
+                    <template #default="scope">
+                        <span class="sa-table-line-1">
+                            {{ scope.row.name || '-' }}
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column min-width="344">
+                    <template #header>
+                        <div class="sa-flex sa-row-center">
+                            <img class="icon" src="/assets/addons/shopro/img/notification/officialAccount.png" />
+                            <div>公众号模版通知</div>
+                            <el-popover ref="qrcodePopoverRef" popper-class="qrcode-popover" placement="bottom-start" trigger="click" :show-after="200" @hide="onHideQrcode">
+                                <image v-if="state.qrcodeUrl" id="qrcode" :src="state.qrcodeUrl"></image>
+                                <div v-if="state.scanStatus === 'expired'" class="qrcode-mask"></div>
+                                <div v-if="state.scanStatus === 'pending'" class="sa-flex sa-row-center">等待扫码</div>
+                                <div v-if="state.scanStatus === 'scanned'" class="sa-flex sa-row-center">已扫码</div>
+                                <div v-if="state.scanStatus === 'expired'" class="sa-flex sa-row-center">已过期</div>
+                                <div v-if="state.scanStatus === 'binded'" class="sa-flex">
+                                    <span>{{state.oauthInfo.openid}}</span>
+                                    <el-button class="ml-1" type="danger" link @click="onUnbind">解除绑定</el-button>
+                                </div>
+                                <template #reference>
+                                    <el-button v-if="state.receiver_type=='admin'" class="ml-1" type="primary" link @click="onQrcode">绑定微信</el-button>
+                                </template>
+                            </el-popover>
+                        </div>
+                    </template>
+                    <template #default="scope">
+                        <div class="sa-flex sa-row-center">
+                            {if $auth->check('shopro/notification/config/edit')}
+                            <div v-if="scope.row.channels">
+                                <el-button class="edit-button" type="primary" color="#07C160"
+                                    :disabled="!scope.row.channels.includes('WechatOfficialAccount')"
+                                    @click="onEdit(scope.row.event, 'WechatOfficialAccount')">编辑配置</el-button>
+                            </div>
+                            {/if}
+                            <div v-if="scope.row.configs" class="sa-flex">
+                                <div class="num WechatOfficialAccount sa-flex sa-row-center">
+                                    已发送{{ scope.row.configs.WechatOfficialAccount?.send_num || 0 }}次
+                                </div>
+                                {if $auth->check('shopro/notification/config/setStatus')}
+                                <el-button link>
+                                    <el-switch v-if="scope.row.channels.includes('WechatOfficialAccount')"
+                                        v-model="scope.row.configs.WechatOfficialAccount.status" active-value="enable"
+                                        inactive-value="disabled"
+                                        @change="onSetStatus($event,scope.row.event, 'WechatOfficialAccount')">
+                                    </el-switch>
+                                    <el-switch v-else model-value="false" disabled></el-switch>
+                                    <span class="tip"
+                                        :class="scope.row.configs.WechatOfficialAccount?.status == 'enable' && 'is-active'">
+                                        {{scope.row.configs.WechatOfficialAccount?.status == 'enable'? '开启': '关闭'}}
+                                    </span>
+                                </el-button>
+                                {/if}
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column min-width="344">
+                    <template #header>
+                        <div class="sa-flex sa-row-center">
+                            <img class="icon" src="/assets/addons/shopro/img/notification/miniProgram.png" />
+                            <div>微信小程序通知</div>
+                        </div>
+                    </template>
+                    <template #default="scope">
+                        <div class="sa-flex sa-row-center">
+                            {if $auth->check('shopro/notification/config/edit')}
+                            <div v-if="scope.row.channels">
+                                <el-button class="edit-btn" type="primary" color="#6F74E9"
+                                    :disabled="!scope.row.channels.includes('WechatMiniProgram')"
+                                    @click="onEdit(scope.row.event, 'WechatMiniProgram')">编辑配置</el-button>
+                            </div>
+                            {/if}
+                            <div v-if="scope.row.configs" class="sa-flex">
+                                <div class="num WechatMiniProgram sa-flex sa-row-center">
+                                    已发送{{ scope.row.configs.WechatMiniProgram?.send_num || 0 }}次
+                                </div>
+                                {if $auth->check('shopro/notification/config/setStatus')}
+                                <el-button link>
+                                    <el-switch v-if="scope.row.channels.includes('WechatMiniProgram')"
+                                        v-model="scope.row.configs.WechatMiniProgram.status" active-value="enable"
+                                        inactive-value="disabled"
+                                        @change="onSetStatus($event,scope.row.event, 'WechatMiniProgram')">
+                                    </el-switch>
+                                    <el-switch v-else model-value="false" disabled></el-switch>
+                                    <span class="tip"
+                                        :class="scope.row.configs.WechatMiniProgram?.status == 'enable' && 'is-active'">
+                                        {{scope.row.configs.WechatMiniProgram?.status == 'enable' ? '开启' : '关闭'}}
+                                    </span>
+                                </el-button>
+                                {/if}
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column min-width="344">
+                    <template #header>
+                        <div class="sa-flex sa-row-center">
+                            <img class="icon" src="/assets/addons/shopro/img/notification/sms.png" />
+                            <div>短信通知</div>
+                        </div>
+                    </template>
+                    <template #default="scope">
+                        <div class="sa-flex sa-row-center">
+                            {if $auth->check('shopro/notification/config/edit')}
+                            <div v-if="scope.row.channels">
+                                <el-button class="edit-button" type="primary" color="#806AF6"
+                                    :disabled="!scope.row.channels.includes('Sms')"
+                                    @click="onEdit(scope.row.event, 'Sms')">编辑配置</el-button>
+                            </div>
+                            {/if}
+                            <div v-if="scope.row.configs" class="sa-flex">
+                                <div class="num Sms sa-flex sa-row-center">
+                                    已发送{{ scope.row.configs.Sms?.send_num || 0 }}次
+                                </div>
+                                {if $auth->check('shopro/notification/config/setStatus')}
+                                <el-button link>
+                                    <el-switch v-if="scope.row.channels.includes('Sms')"
+                                        v-model="scope.row.configs.Sms.status" active-value="enable"
+                                        inactive-value="disabled" @change="onSetStatus($event,scope.row.event, 'Sms')">
+                                    </el-switch>
+                                    <el-switch v-else model-value="false" disabled></el-switch>
+                                    <span class="tip" :class="scope.row.configs.Sms?.status == 'enable' && 'is-active'">
+                                        {{ scope.row.configs.Sms?.status == 'enable' ? '开启' : '关闭' }}
+                                    </span>
+                                </el-button>
+                                {/if}
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column min-width="344">
+                    <template #header>
+                        <div class="sa-flex sa-row-center">
+                            <img class="icon" src="/assets/addons/shopro/img/notification/email.png" />
+                            <div>邮件通知</div>
+                        </div>
+                    </template>
+                    <template #default="scope">
+                        <div class="sa-flex sa-row-center">
+                            {if $auth->check('shopro/notification/config/edit')}
+                            <div v-if="scope.row.channels">
+                                <el-button class="edit-button" type="primary" color="#409EFF"
+                                    :disabled="!scope.row.channels.includes('Email')"
+                                    @click="onEdit(scope.row.event, 'Email')">编辑配置</el-button>
+                            </div>
+                            {/if}
+                            <div v-if="scope.row.configs" class="sa-flex">
+                                <div class="num Email sa-flex sa-row-center">
+                                    已发送{{ scope.row.configs.Email?.send_num || 0 }}次
+                                </div>
+                                {if $auth->check('shopro/notification/config/setStatus')}
+                                <el-button link>
+                                    <el-switch v-if="scope.row.channels.includes('Email')"
+                                        v-model="scope.row.configs.Email.status" active-value="enable"
+                                        inactive-value="disabled"
+                                        @change="onSetStatus($event,scope.row.event, 'Email')">
+                                    </el-switch>
+                                    <el-switch v-else model-value="false" disabled></el-switch>
+                                    <span class="tip"
+                                        :class="scope.row.configs.Email?.status == 'enable' && 'is-active'">
+                                        {{scope.row.configs.Email?.status == 'enable' ? '开启' : '关闭' }}
+                                    </span>
+                                </el-button>
+                                {/if}
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+    </el-container>
+</div>

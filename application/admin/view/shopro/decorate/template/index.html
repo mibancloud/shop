@@ -1,0 +1,167 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .tempalte-index .template-item {
+        width: 246px;
+        height: 480px;
+        border: 1px solid var(--sa-space);
+        box-shadow: 0 0 4px #59595933;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        margin-right: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tempalte-index .template-item img {
+        width: 100%;
+    }
+
+    .tempalte-index .template-item:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 16px rgba(89, 89, 89, 0.24);
+    }
+
+    .tempalte-index .template-item:hover .template-footer {
+        opacity: 1;
+    }
+
+    .tempalte-index .template-footer {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: fit-content;
+        background: var(--sa-background-assist);
+        padding: 10px;
+        transition: all 0.5s;
+        opacity: 0;
+    }
+
+    .tempalte-index .template-footer .name {
+        font-size: 16px;
+        color: var(--sa-title);
+        margin-bottom: 4px;
+    }
+
+    .tempalte-index .template-footer.platform {
+        font-size: 14px;
+        color: var(--sa-subtitle);
+        margin-bottom: 4px;
+    }
+
+    .tempalte-index .template-footer.platform .iconfont {
+        font-size: 20px;
+    }
+
+    .tempalte-index .template-footer .memo,
+    .tempalte-index .template-footer .update-time {
+        font-size: 12px;
+        color: var(--sa-subfont);
+        margin-bottom: 4px;
+    }
+
+    .tempalte-index .template-footer .left {
+        flex-shrink: 0;
+    }
+
+    .tempalte-index .template-footer .oper .el-button+.el-button {
+        margin-left: 8px;
+    }
+</style>
+
+<div id="index" class="tempalte-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-tabs class="sa-tabs" v-model="state.filter.data.type" @tab-change="getData">
+                <el-tab-pane v-for="item in type.data.type" :key="item" :label="item.name" :name="item.type">
+                </el-tab-pane>
+            </el-tabs>
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">模板管理</div>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    {if $auth->check('shopro/decorate/template/add')}
+                    <el-button icon="Plus" type="primary" @click="onAdd">添加</el-button>
+                    {/if}
+                    {if $auth->check('shopro/decorate/template/recyclebin')}
+                    <el-button type="danger" icon="Delete" plain @click="onRecyclebin">回收站</el-button>
+                    {/if}
+                </div>
+            </div>
+        </el-header>
+        <el-main>
+            <el-scrollbar>
+                <div class="sa-flex sa-flex-wrap">
+                    <div class="template-item" v-for="item in state.data">
+                        <el-carousel trigger="click" height="480px" :autoplay="false" :loop="false"
+                            indicator-position="none">
+                            <el-carousel-item v-for="page in item.page" :key="page">
+                                <img :src="page.image" />
+                            </el-carousel-item>
+                        </el-carousel>
+                        <div class="template-footer">
+                            <div class="name">{{ item.name }}</div>
+                            <template v-if="state.filter.data.type == 'template'">
+                                <div class="platform sa-flex">
+                                    <div class="left">支持平台：</div>
+                                    <div v-if="item.platform">
+                                        <i :class="`iconfont icon${pl} mr-1`" v-for="pl in item.platform" :style="{
+                                            color: platformList.find((pf) => {
+                                              return pf.type == pl;
+                                            })?.color,
+                                          }"></i>
+                                    </div>
+                                </div>
+                            </template>
+                            <div class="memo sa-flex">
+                                <div class="left">备注：</div>
+                                <div>{{ item.memo }}</div>
+                            </div>
+                            <div class="update-time sa-flex">
+                                <div class="left">更新时间：</div>
+                                <div>{{ item.updatetime }}</div>
+                            </div>
+                            <div class="oper sa-flex sa-row-between">
+                                {if $auth->check('shopro/decorate/page/index')}
+                                <el-button type="primary" link size="small" @click="onDecorate(item.id)">
+                                    装修
+                                </el-button>
+                                {/if}
+                                <div class="sa-flex">
+                                    {if $auth->check('shopro/decorate/template/edit')}
+                                    <el-button type="primary" link size="small" @click="onEdit(item.id)">
+                                        编辑
+                                    </el-button>
+                                    {/if}
+                                    <template v-if="state.filter.data.type == 'template'">
+                                        {if $auth->check('shopro/decorate/template/copy')}
+                                        <el-button type="info" link size="small" @click="onCopy(item.id)">
+                                            复制
+                                        </el-button>
+                                        {/if}
+                                        {if $auth->check('shopro/decorate/template/status')}
+                                        <el-button :type="item.status == 'enable' ? 'success' : 'info'" link
+                                            size="small" @click="onChangeStatus(item)">
+                                            {{ item.status_text }}
+                                        </el-button>
+                                        {/if}
+                                    </template>
+                                    <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                                        title="确认删除这条记录?" @confirm="onDelete(item.id)">
+                                        <template #reference>
+                                            {if $auth->check('shopro/decorate/template/delete')}
+                                            <el-button type="danger" link size="small">删除</el-button>
+                                            {/if}
+                                        </template>
+                                    </el-popconfirm>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </el-scrollbar>
+        </el-main>
+    </el-container>
+</div>

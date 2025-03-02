@@ -1,0 +1,154 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .template-id-popover .question-filled {
+        color: var(--el-color-warning);
+        margin-right: 8px;
+    }
+
+    .notification-config-form .field .el-form-item__content {
+        display: block;
+        border: 1px solid var(--sa-border);
+        max-width: 360px;
+        background: var(--sa-background-hex-hover);
+        border-radius: 4px;
+        padding: 6px 0 2px 12px;
+        color: var(--sa-place);
+    }
+
+    .notification-config-form .field-item {
+        margin-bottom: 18px;
+    }
+
+    .notification-config-form .field-item .field-name {
+        flex-shrink: 0;
+        width: 100px;
+        height: 32px;
+        padding-right: 12px;
+    }
+
+    .notification-config-form .field-item .el-input {
+        flex: 1;
+    }
+
+    .notification-config-form .field-item .el-input {
+        flex: 1;
+    }
+
+    .notification-config-form .field-item .field-delete {
+        margin-left: 8px;
+    }
+
+    .notification-config-form .field-tip {
+        color: #ff5959;
+        margin-bottom: 12px;
+    }
+</style>
+
+<div id="addEdit" class="notification-config-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item v-if="
+                        state.channel == 'WechatOfficialAccount' ||
+                        state.channel == 'WechatMiniProgram'
+                      " label="模板类型">
+                        <el-radio-group v-model="form.model.type">
+                            <el-radio label="default">默认配置</el-radio>
+                            <el-radio label="custom">自定义配置</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <template v-if="
+                        (form.model.type == 'default' &&
+                          state.channel == 'WechatOfficialAccount') ||
+                        (form.model.type == 'default' && state.channel == 'WechatMiniProgram')
+                      ">
+                        <el-form-item label="通知标题">
+                            <el-input v-model="form.model.name" placeholder="注册完成给上级发送" disabled></el-input>
+                        </el-form-item>
+                        <el-form-item label="模板编号" v-if="state.channel != 'WechatMiniProgram'">
+                            <el-input v-model="form.model.wechat.temp_no" placeholder="" disabled></el-input>
+                        </el-form-item>
+                        <el-form-item label="模板Id">
+                            <el-input v-model="form.model.content.template_id" disabled>
+                                <template #append>
+                                    <span v-if="!form.model.content.template_id" class="cursor-pointer"
+                                        @click="getTemplateId('0')">立即获取</span>
+                                    <el-popover v-if="form.model.content.template_id" popper-class="template-id-popover"
+                                        v-model:visible="templateIdPopover.flag" :width="250" trigger="click">
+                                        <div class="sa-flex mb-2">
+                                            <el-icon class="question-filled">
+                                                <question-filled />
+                                            </el-icon>
+                                            <div>确定要重新获取模板Id吗？</div>
+                                        </div>
+                                        <div class="sa-flex">
+                                            <el-checkbox v-model="templateIdPopover.is_delete" label="删除旧模板"
+                                                class="mr-4" true-label="1" false-label="0"></el-checkbox>
+                                            <el-button size="small" @click="templateIdPopover.flag = false">取消
+                                            </el-button>
+                                            <el-button size="small" type="primary"
+                                                @click="getTemplateId(templateIdPopover.is_delete)">确定
+                                            </el-button>
+                                        </div>
+                                        <template #reference>
+                                            {if $auth->check('shopro/notification/config/getTemplateId')}
+                                            <span class="cursor-pointer">重新获取</span>
+                                            {/if}
+                                        </template>
+                                    </el-popover>
+                                </template>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="模板" class="field">
+                            <div v-for="i in form.model.wechat.fields" :key="i" class="sa-flex">
+                                <div v-if="i.name">{{ i.name }}：</div>
+                                <div>{{ `{{${i.template_field}.DATA` }}}}</div>
+                            </div>
+                        </el-form-item>
+                    </template>
+                    <template v-if="form.model.type == 'custom' || state.channel == 'Sms'">
+                        <template v-if="form.model.content">
+                            <el-form-item label="模板消息Id">
+                                <el-input v-model="form.model.content.template_id" placeholder="请输入模版消息Id"></el-input>
+                            </el-form-item>
+                            <div class="field-item sa-flex" v-for="(item, index) in form.model.content.fields"
+                                :key="item">
+                                <div class="field-name sa-flex sa-row-right">
+                                    <span v-if="item.field">{{ item.name }}</span>
+                                    <el-input v-else v-model="item.name" placeholder="请输入名称"></el-input>
+                                </div>
+                                <el-input class="mr-4" v-model="item.template_field" placeholder="请输入模版名称">
+                                </el-input>
+                                <el-input v-model="item.value" placeholder="请输入默认值"></el-input>
+                                <el-button v-if="!item.field" class="field-delete" type="danger" link
+                                    @click="onDeleteField(index)">
+                                    删除
+                                </el-button>
+                            </div>
+                            <el-form-item>
+                                <el-button icon="Plus" @click="onAddField">添加</el-button>
+                            </el-form-item>
+                        </template>
+                    </template>
+                    <template v-if="state.channel == 'Email'">
+                        <div class="field-item sa-flex" v-for="item in fieldList.data.fields" :key="item">
+                            <div class="field-name sa-flex sa-row-right">
+                                <span v-if="item.field">{{ item.name }}</span>
+                            </div>
+                            <el-input v-model="item.field" placeholder="请输入模版名称" disabled></el-input>
+                        </div>
+                        <div class="field-tip"> 请按照如下格式在文档中插入要显示的字段 p:{字段名} </div>
+                        <form role="form">
+                            <textarea id="emailContent" class="editor"></textarea>
+                        </form>
+                    </template>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

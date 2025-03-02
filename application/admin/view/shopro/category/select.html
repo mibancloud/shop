@@ -1,0 +1,21 @@
+{include file="/shopro/common/script" /}
+
+<div id="select" class="category-select" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-cascader-panel ref="categoryRef" v-model="state.selectedIds" :options="state.data" :props="{
+                    multiple: state.multiple,
+                    checkStrictly: true,
+                    emitPath: false,
+                    label: 'name',
+                    value: 'id',
+                }">
+                </el-cascader-panel>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

@@ -1,0 +1,204 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .agent-index .status-text {
+        margin-right: 12px;
+    }
+</style>
+
+<div id="index" class="agent-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-tabs class="sa-tabs" v-model="state.filter.data.tabActive" @tab-change="onChangeTab">
+                <el-tab-pane v-for="item in type.data.status" :key="item" :label="item.name" :name="item.type">
+                </el-tab-pane>
+            </el-tabs>
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">分销商</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table v-if="state.filter.data.tabActive=='all'" height="100%" class="sa-table" :data="state.data"
+                stripe>
+                <el-table-column prop="user_id" label="ID" min-width="90">
+                </el-table-column>
+                <el-table-column label="分销商信息" min-width="150">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row.user" :id="scope.row.user_id"></sa-user-profile>
+                    </template>
+                </el-table-column>
+                <el-table-column label="等级" min-width="120">
+                    <template #default="scope">
+                        <template v-if="scope.row.level_info">
+                            <div>{{ scope.row.level_info.name }}</div>
+                            <div>(等级{{ scope.row.level_info.level }})</div>
+                        </template>
+                        <template v-else>{{ scope.row.level }}</template>
+                    </template>
+                </el-table-column>
+                <el-table-column label="累计佣金" min-width="120">
+                    <template #default="scope"> {{ scope.row.total_income }}元 </template>
+                </el-table-column>
+                <el-table-column label="消费金额" min-width="120">
+                    <template #default="scope"> {{ scope.row.user?.total_consume || 0 }}元 </template>
+                </el-table-column>
+                <el-table-column label="自购分销业绩" min-width="120">
+                    <template #default="scope">
+                        <div>{{ scope.row.child_order_count_0 }}单</div>
+                        <div>{{ scope.row.child_order_money_0 }}元</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="上级分销商" min-width="120" align="center">
+                    <template #default="scope">
+                        <sa-user-profile type="agent" :user="scope.row.user?.parent_user"
+                            :id="scope.row.user?.parent_user_id" mode="col"></sa-user-profile>
+                    </template>
+                </el-table-column>
+                <el-table-column label="一级用户人数" min-width="120">
+                    <template #default="scope"> {{ scope.row.child_user_count_1 }}人 </template>
+                </el-table-column>
+                <el-table-column label="一级分销商人数" min-width="160">
+                    <template #default="scope">
+                        <div>{{ scope.row.child_agent_count_1 }}人</div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="createtime" label="创建时间" width="172"></el-table-column>
+                <el-table-column label="操作" min-width="140" fixed="right">
+                    <template #default="scope">
+                        <div class="sa-flex">
+                            <span class="mr-2" :style="{
+                                    color: statusStyle[scope.row.status]?.color,
+                                }">
+                                {{ scope.row.status_text }}
+                            </span>
+                            {if $auth->check('shopro/commission/agent/detail')}
+                            <el-button type="primary" link @click="onDetail(scope.row.user_id)">查看</el-button>
+                            {/if}
+                        </div>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-table v-if="state.filter.data.tabActive=='pending'" height="100%" class="sa-table" :data="state.data"
+                stripe>
+                <el-table-column prop="user_id" label="ID" min-width="90">
+                </el-table-column>
+                <el-table-column label="分销商信息" min-width="150">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row.user" :id="scope.row.user_id" />
+                    </template>
+                </el-table-column>
+                <el-table-column label="等级" min-width="120">
+                    <template #default="scope">
+                        <template v-if="scope.row.level_info">
+                            <div>{{ scope.row.level_info.name }}</div>
+                            <div>(等级{{ scope.row.level_info.level }})</div>
+                        </template>
+                        <template v-else>{{ scope.row.level }}</template>
+                    </template>
+                </el-table-column>
+                <el-table-column label="上级分销商" min-width="120" align="center">
+                    <template #default="scope">
+                        <sa-user-profile type="agent" :user="scope.row.user?.parent_user"
+                            :id="scope.row.user?.parent_user_id" mode="col" />
+                    </template>
+                </el-table-column>
+                <el-table-column label="消费金额" min-width="120">
+                    <template #default="scope"> {{ scope.row.user?.total_consume || 0 }}元 </template>
+                </el-table-column>
+                <el-table-column label="推广人数" min-width="120">
+                    <template #default="scope"> {{ scope.row.child_user_count_1 }}人 </template>
+                </el-table-column>
+                <el-table-column label="提交次数" min-width="120">
+                    <template #default="scope"> {{ scope.row.apply_num }}次</template>
+                </el-table-column>
+                <el-table-column prop="createtime" label="创建时间" min-width="172"></el-table-column>
+                <el-table-column label="操作" min-width="160" fixed="right">
+                    <template #default="scope">
+                        <div class="sa-flex">
+                            {if $auth->check('shopro/commission/agent/edit')}
+                            <el-button type="success" link @click="onEdit(scope.row.user_id, {status:'normal'})">
+                                同意
+                            </el-button>
+                            {/if}
+                            {if $auth->check('shopro/commission/agent/edit')}
+                            <el-button type="warning" link @click="onEdit(scope.row.user_id,{status:'reject'} )">
+                                驳回
+                            </el-button>
+                            {/if}
+                            {if $auth->check('shopro/commission/agent/detail')}
+                            <el-button type="primary" link @click="onDetail(scope.row.user_id)">查看</el-button>
+                            {/if}
+                        </div>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-table v-if="state.filter.data.tabActive==0" height="100%" class="sa-table" :data="state.data" stripe>
+                <el-table-column prop="user_id" label="ID" min-width="90"></el-table-column>
+                <el-table-column label="分销商信息" min-width="150">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row.user" :id="scope.row.user_id" />
+                    </template>
+                </el-table-column>
+                <el-table-column label="等级" min-width="120">
+                    <template #default="scope">
+                        <template v-if="scope.row.level_info">
+                            <div>{{ scope.row.level_info.name }}</div>
+                            <div>(等级{{ scope.row.level_info.level }})</div>
+                        </template>
+                        <template v-else>{{ scope.row.level }}</template>
+                    </template>
+                </el-table-column>
+                <el-table-column label="消费金额" min-width="120">
+                    <template #default="scope"> {{ scope.row.user?.total_consume || 0 }}元 </template>
+                </el-table-column>
+                <el-table-column label="推广人数" min-width="120">
+                    <template #default="scope"> {{ scope.row.child_user_count_1 }}人 </template>
+                </el-table-column>
+                <el-table-column label="升级之后的等级" min-width="200">
+                    <template #default="scope">
+                        <div v-if="scope.row.level_status_info">
+                            {{ scope.row.level_status_info.name }}
+                        </div>
+                        <div>等级{{ scope.row.level_status }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="createtime" label="创建时间" min-width="172"></el-table-column>
+                <el-table-column label="操作" min-width="200" fixed="right">
+                    <template #default="scope">
+                        <div class="sa-flex">
+                            <span class="sa-color--info mr-2" v-if="!scope.row.level_status_info">
+                                未找到等级
+                            </span>
+                            <template v-if="scope.row.level_status_info">
+                                {if $auth->check('shopro/commission/agent/edit')}
+                                <el-button type="success" link
+                                    @click=" onEdit(scope.row.user_id, {level_status: scope.row.level_status})">
+                                    同意
+                                </el-button>
+                                <el-button type="danger" link @click="onEdit(scope.row.user_id, { level_status: 0 })">
+                                    拒绝
+                                </el-button>
+                                {/if}
+                            </template>
+                            {if $auth->check('shopro/commission/agent/detail')}
+                            <el-button type="primary" link @click="onDetail(scope.row.user_id)">查看</el-button>
+                            {/if}
+                        </div>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

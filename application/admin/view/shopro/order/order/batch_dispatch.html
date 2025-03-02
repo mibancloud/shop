@@ -1,0 +1,91 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .order-batch-dispatch .batch-dispatch-card {
+        background: var(--sa-table-header-bg);
+        border-radius: 4px;
+        padding: 20px;
+    }
+
+    .order-batch-dispatch .batch-dispatch-card .select-append {
+        padding: 0 16px;
+        line-height: 30px;
+        background: var(--sa-table-header-bg);
+        border: 1px solid var(--sa-border);
+        box-sizing: border-box;
+        border-left: none;
+        border-radius: 0 4px 4px 0;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-font);
+        cursor: pointer;
+    }
+
+    .order-batch-dispatch .el-upload__input {
+        display: none !important;
+    }
+
+    .order-batch-dispatch .el-form-item-file .el-form-item__content {
+        justify-content: center;
+    }
+
+    .order-batch-dispatch .el-form-item-file .el-form-item__error {
+        left: unset;
+    }
+</style>
+
+<div id="batchDispatch" class="order-batch-dispatch" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <div class="batch-dispatch-card mb-4">
+                    <div class="title mb-4"> 方法一：如使用导入订单，需完善发货表单物流信息后再上传 </div>
+                    <div class="order-content sa-flex sa-flex-col">
+                        <el-form ref="expressRef" :model="express.form.model" :rules="express.form.rules">
+                            <el-form-item class="el-form-item-file" label="" prop="file">
+                                <div class="sa-flex sa-flex-col">
+                                    <div v-if="express.form.model.file" class="sa-table-line-1 mb-2">
+                                        <span>{{ express.form.model.file.name }}</span>
+                                    </div>
+                                    <el-upload :auto-upload="false" :show-file-list="false" accept=".xlsx,.xls"
+                                        :on-change="onSelectFile">
+                                        <template #trigger>
+                                            <el-button v-if="!express.form.model.file">导入发货单</el-button>
+                                            <el-button v-if="express.form.model.file" type="primary" link>重新导入发货单
+                                            </el-button>
+                                        </template>
+                                    </el-upload>
+                                </div>
+                            </el-form-item>
+                            <el-form-item label="快递公司" prop="code">
+                                <el-select v-model="express.form.model.code" placeholder="请选择快递公司"
+                                    @change="onChangeExpressCode" filterable remote reserve-keyword
+                                    :remote-method="remoteMethod" :loading="deliverCompany.loading" autocomplete="none">
+                                    <el-option v-for="dc in deliverCompany.select" :key="dc" :label="dc.name"
+                                        :value="dc.code" :ref="`express-${dc.code}`" :data-name="dc.name">{{
+                                        dc.name
+                                        }}&nbsp;({{ dc.code }})</el-option>
+                                    <sa-pagination class="is-ellipsis" v-model="deliverCompany.pagination"
+                                        @pagination-change="getExpressSelect">
+                                    </sa-pagination>
+                                </el-select>
+                                <div class="select-append" @click="onBatchDispatch">发货</div>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                </div>
+                <div class="batch-dispatch-card">
+                    <div class="title mb-4">
+                        方法二：如使用批量发货，需确认
+                        <el-button type="primary" link> &nbsp;商城配置-第三方服务&nbsp; </el-button>
+                        中快递鸟配置完成
+                    </div>
+                    <div class="sa-flex sa-row-center">
+                        <el-button type="primary" :disabled="state.order_ids.length == 0" @click="onDispatchList">批量发货
+                        </el-button>
+                    </div>
+                </div>
+            </el-scrollbar>
+        </el-main>
+    </el-container>
+</div>

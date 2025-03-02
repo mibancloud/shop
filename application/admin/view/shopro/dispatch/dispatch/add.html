@@ -1,0 +1,178 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .dispatch-form .sa-template-wrap {
+        width: 100%;
+        max-width: unset;
+    }
+
+    .dispatch-form .sa-template-wrap .item {
+        align-items: flex-start;
+    }
+
+    .dispatch-form .sa-template-wrap .el-form-item .el-form-item__content {
+        margin-left: 0 !important;
+    }
+
+    .dispatch-form .sa-template-wrap .express {
+        flex: unset !important;
+        width: 110px;
+    }
+</style>
+
+<div id="addEdit" class="dispatch-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item label="模板名称" prop="name">
+                        <el-input class="sa-w-360" v-model="form.model.name" placeholder="请输入模板名称"></el-input>
+                    </el-form-item>
+                    <template v-if="form.model.type=='express'">
+                        <el-form-item label="计价方式">
+                            <el-radio-group v-model="state.priceType">
+                                <el-radio label="number">按件数</el-radio>
+                                <el-radio label="weight">按重量</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <div class="sa-template-wrap">
+                            <div class="header sa-flex">
+                                <div class="key area">可配送区域</div>
+                                <div v-if="state.priceType == 'number'" class="express key">首件</div>
+                                <div v-if="state.priceType == 'weight'" class="express key">首重(kg)</div>
+                                <div class="express key">运费(元)</div>
+                                <div v-if="state.priceType == 'number'" class="express key">续件</div>
+                                <div v-if="state.priceType == 'weight'" class="express key">续重(kg)</div>
+                                <div class="express key">续费(元)</div>
+                                <div class="oper">操作</div>
+                            </div>
+                            <draggable v-model="form.model.express" :animation="300" handle=".sortable-drag"
+                                item-key="element">
+                                <template #item="{ element, index }">
+                                    <div class="item">
+                                        <el-form-item class="key area" :prop="'express.' + index + '.district_text'"
+                                            :rules="form.rules.express.district_text">
+                                            <el-button v-if="!element.district_text" type="primary"
+                                                @click="onSelectArea(index)">选择地址</el-button>
+                                            <div v-if="element.district_text" class="sa-flex sa-row-between area-edit">
+                                                <div>{{ element.district_text }}</div>
+                                                <el-button class="ml-1" type="primary" link
+                                                    @click="onSelectArea(index)">选择
+                                                </el-button>
+                                            </div>
+                                        </el-form-item>
+                                        <el-form-item v-if="state.priceType == 'number'" class="express key"
+                                            :prop="'express.' + index + '.first_num'"
+                                            :rules="form.rules.express.first_num">
+                                            <el-input placeholder="请输入首件" type="number" min="0"
+                                                v-model="element.first_num">
+                                            </el-input>
+                                        </el-form-item>
+                                        <el-form-item v-if="state.priceType == 'weight'" class="express key"
+                                            :prop="'express.' + index + '.first_num'"
+                                            :rules="form.rules.express.first_num">
+                                            <el-input placeholder="请输入首重" type="number" min="0"
+                                                v-model="element.first_num">
+                                            </el-input>
+                                        </el-form-item>
+                                        <el-form-item class="express key" :prop="'express.' + index + '.first_price'"
+                                            :rules="form.rules.express.first_price">
+                                            <el-input placeholder="请输入运费" type="number" min="0" :step="0.01"
+                                                v-model="element.first_price">
+                                            </el-input>
+                                        </el-form-item>
+                                        <el-form-item v-if="state.priceType == 'number'" class="express key"
+                                            :prop="'express.' + index + '.additional_num'"
+                                            :rules="form.rules.express.additional_num">
+                                            <el-input placeholder="请输入续件" type="number" min="0"
+                                                v-model="element.additional_num">
+                                            </el-input>
+                                        </el-form-item>
+                                        <el-form-item v-if="state.priceType == 'weight'" class="express key"
+                                            :prop="'express.' + index + '.additional_num'"
+                                            :rules="form.rules.express.additional_num">
+                                            <el-input placeholder="请输入续重" type="number" min="0"
+                                                v-model="element.additional_num">
+                                            </el-input>
+                                        </el-form-item>
+                                        <el-form-item class="express key"
+                                            :prop="'express.' + index + '.additional_price'"
+                                            :rules="form.rules.express.additional_price">
+                                            <el-input placeholder="请输入续费" type="number" min="0" :step="0.01"
+                                                v-model="element.additional_price">
+                                            </el-input>
+                                        </el-form-item>
+                                        <el-form-item class="oper">
+                                            <el-popconfirm width="fit-content" confirm-button-text="确认"
+                                                cancel-button-text="取消" title="确认删除这条记录?"
+                                                @confirm="onDeleteTemplate(index)">
+                                                <template #reference>
+                                                    <el-button type="danger" link @click.stop>删除
+                                                    </el-button>
+                                                </template>
+                                            </el-popconfirm>
+                                            <i class="iconfont iconmove sortable-drag"></i>
+                                        </el-form-item>
+                                    </div>
+                                </template>
+                            </draggable>
+                            <el-button class="add-params" type="primary" plain icon="Plus" @click="onAddTemplate">添加
+                            </el-button>
+                        </div>
+                    </template>
+                    <template v-if="form.model.type=='autosend'">
+                        <el-form-item label="发货类型：">
+                            <el-radio-group v-model="form.model.autosend.type" @change="onChangeAutosendType">
+                                <el-radio label="text">固定内容</el-radio>
+                                <el-radio label="params">自定义内容</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item v-if="form.model.autosend.type=='text'" label="发货内容：">
+                            <el-input v-model="form.model.autosend.content" placeholder="请输入自动发货内容"></el-input>
+                        </el-form-item>
+                        <el-form-item v-if="form.model.autosend.type=='params'" label="发货内容：">
+                            <div class="sa-template-wrap">
+                                <div class="header sa-flex">
+                                    <div class="key">参数名称</div>
+                                    <div class="key">内容</div>
+                                    <div class="oper">操作</div>
+                                </div>
+                                <draggable v-model="form.model.autosend.content" :animation="300"
+                                    handle=".sortable-drag" item-key="element">
+                                    <template #item="{ element, index }">
+                                        <div class="item">
+                                            <el-form-item class="key">
+                                                <el-input placeholder="请输入" v-model="element.title">
+                                                </el-input>
+                                            </el-form-item>
+                                            <el-form-item class="key">
+                                                <el-input placeholder="请输入" v-model="element.content">
+                                                </el-input>
+                                            </el-form-item>
+                                            <el-form-item class="oper">
+                                                <el-popconfirm width="fit-content" confirm-button-text="确认"
+                                                    cancel-button-text="取消" title="确认删除这条记录?"
+                                                    @confirm="onDeleteContent(index)">
+                                                    <template #reference>
+                                                        <el-button type="danger" link @click.stop>删除
+                                                        </el-button>
+                                                    </template>
+                                                </el-popconfirm>
+                                                <i class="iconfont iconmove sortable-drag"></i>
+                                            </el-form-item>
+                                        </div>
+                                    </template>
+                                </draggable>
+                                <el-button class="add-params" type="primary" plain icon="Plus" @click="onAddContent">添加
+                                </el-button>
+                            </div>
+                        </el-form-item>
+                    </template>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

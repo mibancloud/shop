@@ -1,0 +1,1118 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .config-index .el-select:not(.num-unit) {
+        max-width: 360px;
+        width: 100%;
+    }
+
+    .config-index .sa-title.is-line {
+        margin-bottom: 16px;
+    }
+
+    .config-index .pay-config-main {
+        --el-main-padding: 0;
+    }
+
+    .config-index .platform-item {
+        width: 180px;
+        height: 240px;
+        box-shadow: 0 4px 8px #00000014, 0 8px 16px 2px #00000005;
+        border-radius: 8px;
+        font-size: 14px;
+        line-height: 1;
+        background: var(--sa-background-assist);
+        position: relative;
+        margin-right: 24px;
+    }
+
+    .config-index .platform-item .bg {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 128px;
+        height: 128px;
+    }
+
+    .config-index .platform-item .iconfont {
+        font-size: 64px;
+        margin-bottom: 8px;
+    }
+
+    .config-index .platform-item .title {
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 22px;
+    }
+
+    .config-index .platform-item .status {
+        margin: 12px 0 20px;
+    }
+
+    .config-index .num-unit {
+        width: 80px;
+    }
+
+    .config-index .goods-item {
+        line-height: 1;
+    }
+
+    .config-index .goods-item .goods-image {
+        margin-right: 8px;
+    }
+
+    .config-index .goods-item .goods-title {
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--sa-font);
+        margin-bottom: 6px;
+    }
+
+    .config-index .goods-item .goods-price {
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--el-color-danger);
+    }
+
+    .el-dialog.configis-upgrade-dialog {
+        width: 900px;
+    }
+
+    .el-overlay{
+        background: rgba(43, 43, 43, 0.05);
+        backdrop-filter: blur(2px);
+    }
+
+    .configis-upgrade-image {
+        width: 900px;
+        height: 580px;
+        background: #FFFFFF;
+        border-radius: 4px;
+        position: relative;
+    }
+
+    .configis-upgrade-image img {
+        width: 100%;
+        height: 100%;
+    }
+
+    .el-dialog.configis-upgrade-dialog .el-dialog__body {
+        padding: 0;
+    }
+
+    .el-dialog.configis-upgrade-dialog .el-dialog__header {
+        height: 0;
+        padding: 0;
+    }
+
+    .configis-upgrade-button {
+        position: absolute;
+        bottom: 162px;
+        right: 360px;
+    }
+
+    .configis-upgrade-button-upgrade {
+        width: 110px;
+        height: 34px;
+        background: #8322FF;
+        border-radius: 2px;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 12px;
+        color: #FFFFFF;
+        margin-left: 42px;
+        cursor: pointer;
+    }
+
+    .configis-upgrade-button-upgrade .icon-right {
+        margin-left: 12px;
+        width: 18px;
+        height: 18px;
+    }
+
+    .configis-upgrade-button-refresh {
+        color: #86818E;
+        font-size: 12px;
+        cursor: pointer;
+    }
+
+    .configis-upgrade-button-refresh .refresh-right {
+        margin-right: 6px;
+        font-size: 14px;
+    }
+
+    .configis-upgrade-close {
+        position: absolute;
+        top: 53px;
+        right: 58px;
+        font-size: 20px;
+        color: #7F7A87;
+        cursor: pointer;
+    }
+</style>
+
+<div id="index" class="config-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-tabs class="sa-tabs" v-model="state.tabActive" @tab-change="getData">
+                <el-tab-pane v-for="item in type.data.api" :label="item.label" :name="item.name">
+                </el-tab-pane>
+            </el-tabs>
+        </el-header>
+        <el-main v-if="state.tabActive != 'shopro/pay_config'">
+            <el-scrollbar height="100%">
+                <el-form ref="formRef" :model="form.model" :rules="form.rules" label-width="160px">
+
+                    <!-- 基本信息 -->
+                    <template v-if="state.tabActive=='shopro/config/basic'">
+                        <el-form-item label="Logo" prop="logo">
+                            <sa-uploader v-model="form.model.logo"></sa-uploader>
+                        </el-form-item>
+                        <el-form-item label="商城名称" prop="name">
+                            <el-input class="sa-w-360" v-model="form.model.name" placeholder="请输入商城名称"></el-input>
+                        </el-form-item>
+                        <el-form-item label="商城域名" prop="domain">
+                            <div class="sa-w-360">
+                                <el-input v-model="form.model.domain" placeholder="请输入商城域名"></el-input>
+                                <el-popover :width="240" trigger="click">
+                                    <div>
+                                        <div>1.此地址用于您的店铺装修预览、H5分享链接等场景</div>
+                                        <div>2.请完整输入您的H5商城入口链接，如 http://m.shopro.top/</div>
+                                        <div>3.开启SSL并使用hash部署方式，则填写如 https://m.shopro.top/#/</div>
+                                    </div>
+                                    <template #reference>
+                                        <el-icon class="warning">
+                                            <warning />
+                                        </el-icon>
+                                    </template>
+                                </el-popover>
+                            </div>
+                        </el-form-item>
+                        <el-form-item v-if="form.model.user_protocol" label="用户协议" prop="user_protocol">
+                            <el-input class="sa-w-360" v-model="form.model.user_protocol.title" placeholder="请选择">
+                                <template #append>
+                                    <div class="cursor-pointer" @click="onSelectRichtext('user_protocol')">选择富文本</div>
+                                </template>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item v-if="form.model.privacy_protocol" label="隐私协议" prop="privacy_protocol">
+                            <el-input class="sa-w-360" v-model="form.model.privacy_protocol.title" placeholder="请选择">
+                                <template #append>
+                                    <div class="cursor-pointer" @click="onSelectRichtext('privacy_protocol')">选择富文本
+                                    </div>
+                                </template>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item v-if="form.model.about_us" label="关于我们" prop="about_us">
+                            <el-input class="sa-w-360" v-model="form.model.about_us.title" placeholder="请选择">
+                                <template #append>
+                                    <div class="cursor-pointer" @click="onSelectRichtext('about_us')">选择富文本</div>
+                                </template>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="版本号" prop="version">
+                            <el-input class="sa-w-360" v-model="form.model.version" placeholder="请输入版本号"></el-input>
+                        </el-form-item>
+                        <el-form-item label="版权信息">
+                            <div class="sa-w-360">
+                                <el-row :gutter="20">
+                                    <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+                                        <el-input v-model="form.model.copyright" placeholder="请输入版权信息">
+                                        </el-input>
+                                    </el-col>
+                                    <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+                                        <el-input v-model="form.model.copytime" placeholder="请输入版权信息"></el-input>
+                                    </el-col>
+                                </el-row>
+                            </div>
+                        </el-form-item>
+                    </template>
+
+                    <!-- 用户配置 -->
+                    <template v-if="state.tabActive=='shopro/config/user'">
+                        <el-form-item label="默认头像" prop="avatar">
+                            <sa-uploader v-model="form.model.avatar"></sa-uploader>
+                        </el-form-item>
+                        <el-form-item label="默认昵称" prop="nickname">
+                            <el-input class="sa-w-360" placeholder="请输入默认昵称" v-model="form.model.nickname"></el-input>
+                        </el-form-item>
+                        <el-form-item label="默认用户组" prop="nickname">
+                            <el-select v-model="form.model.group_id" placeholder="选择次数">
+                                <el-option v-for="item in group.select" :label="item.name" :value="item.id+''">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </template>
+
+                    <!-- 平台配置 -->
+                    <template v-if="state.tabActive=='shopro/config/platform'">
+                        <div class="sa-flex sa-flex-wrap">
+                            <template v-for="item in platform.data" :key="item">
+                                <div class="platform-item sa-flex-col sa-row-center sa-col-center" :class="item.value">
+                                    <img class="bg" :src="`/assets/addons/shopro/img/config/${item.value}BG.png`" />
+                                    <i :class="`iconfont icon${item.value}`" :style="{color:item.color}"></i>
+                                    <div class="title" :style="{color:item.color}">{{ item.label }}</div>
+                                    <div class="status" :class="platform.status[item.value]?'sa-color--success':'sa-color--info'">
+                                        {{platform.status[item.value]? '已开启' : '已关闭'}}
+                                    </div>
+                                    <el-button type="primary" @click="onEditPlatform(item)">立即配置</el-button>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- 订单配置 -->
+                    <template v-if="state.tabActive=='shopro/config/order'">
+                        <div class="sa-title is-line">订单配置</div>
+                        <el-form-item label="自动关闭时间" prop="auto_close">
+                            <div>
+                                <el-input class="sa-w-360" v-model="form.model.auto_close" placeholder="请输入自动关闭时间"
+                                    type="number">
+                                    <template #append>分钟</template>
+                                </el-input>
+                                <div class="tip">
+                                    订单创建后,用户如在设定时间内未支付,将自动关闭,建议设置为10~15分钟,0为不限制
+                                </div>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="自动收货时间" prop="auto_confirm">
+                            <div>
+                                <el-input class="sa-w-360" v-model="form.model.auto_confirm" placeholder="请输入自动收货时间"
+                                    type="number">
+                                    <template #append>天</template>
+                                </el-input>
+                                <div class="tip">
+                                    商品发货后,用户需自行点击确认收货,如在设定时间内无操作,系统将默认收货,0为关闭自动收货
+                                </div>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="自动评价时间" prop="auto_comment">
+                            <div>
+                                <el-input class="sa-w-360" v-model="form.model.auto_comment" placeholder="请输入自动评价时间"
+                                    type="number">
+                                    <template #append>天</template>
+                                </el-input>
+                                <div class="tip">
+                                    商品确认收货后,用户需发布商品评价,如在设定时间内无操作,系统将默认5星好评,0为关闭自动评价
+                                </div>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="评价内容" prop="auto_comment_content">
+                            <el-input class="sa-w-360" v-model="form.model.auto_comment_content"
+                                placeholder="请输入自动评价内容">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="评价内容审核">
+                            <div>
+                                <el-radio-group v-model="form.model.comment_check">
+                                    <el-radio :label="1">审核后展示</el-radio>
+                                    <el-radio :label="0">直接展示 </el-radio>
+                                </el-radio-group>
+                                <div class="tip">
+                                    建议用户评价内容在后台审核后展示,选择直接展示将跳过审核直接发布
+                                </div>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="自动退款审核">
+                            <div>
+                                <div class="sa-flex">
+                                    <el-switch v-model="form.model.auto_refund" class="sa-m-r-8" :active-value="1"
+                                        :inactive-value="0"></el-switch>
+                                    <div class="label-tip" :class="form.model.auto_refund == 1?'sa-color--primary':''">
+                                        {{form.model.auto_refund == 1?'开启':'关闭'}}
+                                    </div>
+                                </div>
+                                <div class="tip">
+                                    未发货订单,用户申请退款后将自动原路退款,并且恢复库存和销量
+                                </div>
+                            </div>
+                        </el-form-item>
+                        <template v-if="form.model.invoice">
+                            <div class="sa-title is-line">发票配置</div>
+                            <el-form-item label="自助申请发票">
+                                <el-switch v-model="form.model.invoice.status" class="sa-m-r-8" :active-value="1"
+                                    :inactive-value="0"></el-switch>
+                                <div class="label-tip" :class="form.model.invoice.status == 1?'sa-color--primary':''">
+                                    {{form.model.invoice.status == 1?'开启':'关闭'}}
+                                </div>
+                            </el-form-item>
+                            <el-form-item label="票面金额">
+                                <el-radio-group v-model="form.model.invoice.amount_type">
+                                    <el-radio label="pay_fee">实际支付金额</el-radio>
+                                    <el-radio label="goods_amount">商品金额</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                        </template>
+                    </template>
+
+                    <!-- 物流配置 -->
+                    <template v-if="state.tabActive=='shopro/config/dispatch'">
+                        <div class="sa-title is-line">物流接口</div>
+                        <el-form-item label="驱动选择">
+                            <el-radio-group v-model="form.model.driver">
+                                <el-radio label="kdniao">快递鸟</el-radio>
+                                <el-radio label="thinkapi">ThinkApi</el-radio>
+                                <el-button type="primary" link @click="onThinkApi">查看</el-button>
+                            </el-radio-group>
+                        </el-form-item>
+                        <div v-if="form.model.driver == 'kdniao'">
+                            <el-form-item label="快递鸟套餐">
+                                <div>
+                                    <el-radio-group v-model="form.model.kdniao.type">
+                                        <el-radio label="free">免费版</el-radio>
+                                        <el-radio label="vip">标准版</el-radio>
+                                    </el-radio-group>
+                                    <div class="tip sa-flex">
+                                        <div>标准版本支持电子面单接口</div>
+                                        <a class="label-tip" href="http://www.kdniao.com/reg?from=wzlxpxx"
+                                            target="_blank">申请快递鸟商户</a>
+                                    </div>
+                                </div>
+                            </el-form-item>
+                            <el-form-item label="用户ID" prop="ebusiness_id">
+                                <el-input class="sa-w-360" v-model="form.model.kdniao.ebusiness_id" type="number"
+                                    placeholder="请输入用户ID"></el-input>
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="AppKey" prop="app_key">
+                                <el-input class="sa-w-360" v-model="form.model.kdniao.app_key" placeholder="请输入AppKey">
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="京东青龙编码" prop="jd_code">
+                                <div class="sa-form-wrap">
+                                    <el-input class="sa-w-360" v-model="form.model.kdniao.jd_code"
+                                        placeholder="请输入京东青龙编码"></el-input>
+                                    <div class="tip">
+                                        使用京东时需要配置
+                                    </div>
+                                </div>
+                            </el-form-item>
+                            <el-form-item label="回调地址">
+                                <div class="sa-form-wrap">
+                                    <el-input class="sa-w-360" v-model="form.model.callback" disabled>
+                                        <template #append>
+                                            <span @click="onClipboard(form.model.callback)"
+                                                class="cursor-pointer">复制</span>
+                                        </template>
+                                    </el-input>
+                                    <div class="tip">
+                                        请在快递鸟后台配置此回调地址
+                                    </div>
+                                </div>
+                            </el-form-item>
+                            <div v-if="form.model.kdniao.type == 'vip'">
+                                <el-form-item label="客户号" prop="customer_name">
+                                    <el-input class="sa-w-360" v-model="form.model.kdniao.customer_name"
+                                        placeholder="请输入客户号"></el-input>
+                                </el-form-item>
+                                <el-form-item label="客户密码" prop="customer_pwd">
+                                    <el-input class="sa-w-360" v-model="form.model.kdniao.customer_pwd"
+                                        placeholder="请输入客户密码"></el-input>
+                                </el-form-item>
+                                <el-form-item label="支付方式" prop="pay_type">
+                                    <el-radio-group v-model="form.model.kdniao.pay_type">
+                                        <el-radio label="1">现付</el-radio>
+                                        <el-radio label="2">到付</el-radio>
+                                        <el-radio label="3">月结</el-radio>
+                                        <el-radio label="4">第三方支付（仅SF支持）</el-radio>
+                                    </el-radio-group>
+                                </el-form-item>
+                                <el-form-item label="签约快递">
+                                    <el-select v-model="express.form.model.code" placeholder="请选择快递公司"
+                                        @change="onChangeExpressCode" filterable remote reserve-keyword
+                                        :remote-method="remoteMethod" :loading="deliverCompany.loading"
+                                        autocomplete="none">
+                                        <el-option v-for="dc in deliverCompany.select" :key="dc" :label="dc.name"
+                                            :value="dc.code" :ref="`express-${dc.code}`" :data-name="dc.name">{{
+                                            dc.name
+                                            }}&nbsp;({{ dc.code }})</el-option>
+                                        <sa-pagination class="is-ellipsis" v-model="deliverCompany.pagination"
+                                            @pagination-change="getExpressSelect">
+                                        </sa-pagination>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="快递类型" prop="exp_type">
+                                    <div class="sa-form-wrap">
+                                        <el-input class="sa-w-360" v-model="form.model.kdniao.exp_type"
+                                            placeholder="请输入快递类型"></el-input>
+                                        <div class="tip sa-flex">
+                                            <div class="sa-m-r-8">详细快递类型请下载</div>
+                                            <a class="label-tip"
+                                                href="http://www.kdniao.com/file/%E5%BF%AB%E9%80%92%E5%85%AC%E5%8F%B8%E5%BF%AB%E9%80%92%E4%B8%9A%E5%8A%A1%E7%B1%BB%E5%9E%8B.xlsx"
+                                                target="_blank">快递业务类型</a>
+                                        </div>
+                                    </div>
+                                </el-form-item>
+                            </div>
+                        </div>
+                        <el-form-item v-if="form.model.driver == 'thinkapi'" label="app_code" prop="app_code">
+                            <el-input class="sa-w-360" v-model="form.model.thinkapi.app_code" placeholder="请输入app_code">
+                            </el-input>
+                        </el-form-item>
+                        <template v-if="form.model.sender">
+                            <div class="sa-title is-line">默认发货人信息</div>
+                            <el-form-item label="发件人">
+                                <el-input class="sa-w-360" v-model="form.model.sender.name" placeholder="请输入发件人">
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="手机号" prop="mobile">
+                                <el-input class="sa-w-360" v-model="form.model.sender.mobile" placeholder="请输入手机号"
+                                    type="number">
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="省/市/区" prop="provinces">
+                                <el-cascader class="sa-w-360" v-model="form.model.sender.area_arr"
+                                    :options="area.select" :props="{
+                                    label: 'name',
+                                    value: 'name',
+                                  }" clearable placeholder="请选择"></el-cascader>
+                            </el-form-item>
+                            <el-form-item label="详细地址" prop="address">
+                                <el-input class="sa-w-360" v-model="form.model.sender.address" placeholder="请输入详细地址">
+                                </el-input>
+                            </el-form-item>
+                        </template>
+                    </template>
+
+                    <!-- 充值提现 -->
+                    <template v-if="state.tabActive == 'shopro/config/rechargewithdraw'">
+                        <template v-if="form.model.recharge">
+                            <div class="sa-title is-line">充值配置</div>
+                            <el-form-item label="开启充值">
+                                <div>
+                                    <div class="sa-flex">
+                                        <el-switch v-model="form.model.recharge.status" :active-value="1"
+                                            :inactive-value="0"></el-switch>
+                                        <div class="label-tip"
+                                            :class="form.model.recharge.status == 1?'sa-color--primary':''">
+                                            {{form.model.recharge.status == 1?'开启':'关闭'}}
+                                        </div>
+                                    </div>
+                                    <div class="tip">
+                                        <div> 请确保支付方式的支付参数配置好，并且在对应的应用平台开启 </div>
+                                    </div>
+                                </div>
+                            </el-form-item>
+                            <el-form-item label="充值方式">
+                                <el-checkbox-group v-model="form.model.recharge.methods">
+                                    <el-checkbox label="wechat">微信支付</el-checkbox>
+                                    <el-checkbox label="alipay">支付宝</el-checkbox>
+                                </el-checkbox-group>
+                            </el-form-item>
+                            <el-form-item label="自定义充值">
+                                <el-radio-group v-model="form.model.recharge.custom_status">
+                                    <el-radio :label="1">显示</el-radio>
+                                    <el-radio :label="0">隐藏</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                            <el-form-item label="赠送类型">
+                                <el-radio-group v-model="form.model.recharge.gift_type">
+                                    <el-radio label="money">余额</el-radio>
+                                    <el-radio label="score">积分</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                            <el-form-item label="快捷充值金额">
+                                <div class="sa-template-wrap">
+                                    <div class="header">
+                                        <div class="key">充值金额</div>
+                                        <div class="key">
+                                            {{ form.model.recharge.gift_type == 'money' ? '赠送金额' : '赠送积分' }}
+                                        </div>
+                                        <div class="oper">操作</div>
+                                    </div>
+                                    <template v-if="form.model.recharge.quick_amounts.length>0">
+                                        <draggable v-model="form.model.recharge.quick_amounts" :animation="300"
+                                            handle=".sortable-drag" item-key="element">
+                                            <template #item="{ element, index }">
+                                                <div class="item">
+                                                    <el-form-item class="key"
+                                                        :prop="`recharge.quick_amounts.${index}.money`"
+                                                        :rules="form.rules.rechargewithdraw.recharge.quick_amounts.money">
+                                                        <el-input v-model="element.money" type="number" :min="0"
+                                                            placeholder="请输入金额"></el-input>
+                                                    </el-form-item>
+                                                    <el-form-item class="key"
+                                                        :prop="`recharge.quick_amounts.${index}.gift`"
+                                                        :rules="form.rules.rechargewithdraw.recharge.quick_amounts.gift">
+                                                        <el-input v-model="element.gift" type="number" :min="0"
+                                                            placeholder="请输入金额"></el-input>
+                                                    </el-form-item>
+                                                    <div class="oper">
+                                                        <el-button type="danger" link @click="onDeleteTemplate(index)">
+                                                            移除
+                                                        </el-button>
+                                                        <i class="iconfont iconmove sortable-drag"></i>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </draggable>
+                                    </template>
+                                    <el-button class="add-params" icon="Plus" @click="onAddTemplate">追加</el-button>
+                                </div>
+                            </el-form-item>
+                        </template>
+                        <template v-if="form.model.withdraw">
+                            <div class="sa-title is-line">提现配置</div>
+                            <el-form-item label="提现方式">
+                                <el-checkbox-group v-model="form.model.withdraw.methods">
+                                    <el-checkbox label="wechat">到微信零钱</el-checkbox>
+                                    <el-checkbox label="alipay">到支付宝账户</el-checkbox>
+                                    <el-checkbox label="bank">银行卡转账/线下打款</el-checkbox>
+                                </el-checkbox-group>
+                            </el-form-item>
+                            <el-form-item label="自动到账">
+                                <div>
+                                    <div class="sa-flex">
+                                        <el-switch v-model="form.model.withdraw.auto_arrival" class="sa-m-r-8"
+                                            :active-value="1" :inactive-value="0"></el-switch>
+                                        <div class="label-tip"
+                                            :class="form.model.withdraw.auto_arrival == 1?'sa-color--primary':''">
+                                            {{form.model.withdraw.auto_arrival== 1?'开启':'关闭'}}
+                                        </div>
+                                    </div>
+                                    <div class="tip">
+                                        开启后用户提现到<strong>微信零钱/支付宝</strong>将自动审核通过并且自动打款，手动打款不受开关影响
+                                    </div>
+                                </div>
+                            </el-form-item>
+                            <el-form-item label="手续费" prop="withdraw.charge_rate">
+                                <el-input class="sa-w-360" v-model="form.model.withdraw.charge_rate" type="number"
+                                    :min="0" placeholder="请输入手续费">
+                                    <template #append>%</template>
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="单次最小提现金额" prop="withdraw.min_amount">
+                                <el-input class="sa-w-360" v-model="form.model.withdraw.min_amount"
+                                    placeholder="请输入单次最小提现金额" type="number">
+                                    <template #append>元</template>
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="单次最大提现金额" prop="withdraw.max_amount">
+                                <el-input class="sa-w-360" v-model="form.model.withdraw.max_amount"
+                                    placeholder="请输入单次最大提现金额" type="number">
+                                    <template #append>元</template>
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="最多提现次数" prop="withdraw.max_num">
+                                <el-input class="sa-w-360" v-model="form.model.withdraw.max_num" placeholder="请输入最多提现次数"
+                                    type="number">
+                                    <template #prepend>
+                                        <el-select class="num-unit" v-model="form.model.withdraw.num_unit"
+                                            placeholder="选择次数">
+                                            <el-option label="每日" value="day"></el-option>
+                                            <el-option label="每月" value="month"></el-option>
+                                        </el-select>
+                                    </template>
+                                    <template #append>次</template>
+                                </el-input>
+                            </el-form-item>
+                        </template>
+                    </template>
+
+                    <!-- 分销配置 -->
+                    <template v-if="state.tabActive == 'shopro/config/commission'">
+                        <el-alert class="mb-4">
+                            <template #title>
+                                设置分销时，请先了解
+                                <a class="shopro-form-group-title-href"
+                                    href="https://www.spp.gov.cn/flfg/gfwj/201311/t20131122_64638.shtml" target="_blank"
+                                    rel="noopener noreferrer">《关于办理组织领导传销活动刑事案件适用法律若干问题的意见》</a>
+                            </template>
+                        </el-alert>
+                        <div class="sa-title is-line">分销设置</div>
+                        <el-form-item label="分销层级">
+                            <div>
+                                <el-radio-group v-model="form.model.level">
+                                    <el-radio :label="0">关闭</el-radio>
+                                    <el-radio :label="1">一级</el-radio>
+                                    <el-radio :label="2">二级</el-radio>
+                                    <el-radio :label="3">三级</el-radio>
+                                </el-radio-group>
+                                <div class="tip">默认佣金比例请到 分销商等级 进行设置</div>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="分销自购">
+                            <div>
+                                <el-radio-group v-model="form.model.self_buy">
+                                    <el-radio :label="0">关闭</el-radio>
+                                    <el-radio :label="1">开启</el-radio>
+                                </el-radio-group>
+                                <div class="tip"> 自购优惠开启后，分销商自己购买时，下单可以给自己返佣 </div>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="锁定下级条件">
+                            <el-radio-group v-model="form.model.invite_lock">
+                                <el-radio label="share">首次通过分享进入</el-radio>
+                                <el-radio label="pay" :disabled="form.model.become_agent?.type === 'user'">首次付款
+                                </el-radio>
+                                <el-radio label="agent" :disabled="form.model.become_agent?.type === 'user'">成为子分销商
+                                </el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="分销商审核">
+                            <el-radio-group v-model="form.model.agent_check">
+                                <el-radio :label="0">不需要</el-radio>
+                                <el-radio :label="1">需要</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="越级升级">
+                            <el-radio-group v-model="form.model.upgrade_jump">
+                                <el-radio :label="0">不允许</el-radio>
+                                <el-radio :label="1">允许</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="升级审核">
+                            <el-radio-group v-model="form.model.upgrade_check">
+                                <el-radio :label="0">自动升级</el-radio>
+                                <el-radio :label="1">审核后升级</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <div class="sa-title is-line">分销商设置</div>
+                        <!-- <el-form-item label="分销中心背景图" prop="background_image">
+                              <sa-uploader v-model="form.model.background_image"></sa-uploader>
+                            </el-form-item> -->
+                        <template v-if="form.model.become_agent">
+                            <el-form-item label="成为分销商条件">
+                                <div>
+                                    <el-radio-group v-model="form.model.become_agent.type"
+                                        @change="onChangeBecomeAgentType">
+                                        <el-radio label="user">新会员注册</el-radio>
+                                        <el-radio label="apply">自助申请</el-radio>
+                                        <el-radio label="goods">购买任意商品</el-radio>
+                                        <el-radio label="consume">消费累计</el-radio>
+                                    </el-radio-group>
+                                    <div v-if="form.model.become_agent.type == 'user'" class="tip">
+                                        新会员注册后将直接成为分销商,锁定下级条件会自动设置为[首次通过分享进入]
+                                    </div>
+                                    <div v-if="form.model.become_agent.type == 'apply'" class="tip">
+                                        会员必须进入分销中心手动完善资料并提交后可成为分销商
+                                    </div>
+                                    <div v-if="form.model.become_agent.type == 'goods'" class="tip">
+                                        会员必须购买下方选定的任意其中一款商品可成为分销商
+                                    </div>
+                                    <div v-if="form.model.become_agent.type == 'consume'" class="tip">
+                                        会员在商城的总计消费达到设定的金额后可成为分销商
+                                    </div>
+                                </div>
+                            </el-form-item>
+                            <template v-if="form.model.become_agent.type == 'goods'">
+                                <el-form-item>
+                                    <el-button type="primary" link @click="onSelectGoods">+ 添加商品
+                                    </el-button>
+                                </el-form-item>
+                                <el-form-item>
+                                    <div class="sa-template-wrap">
+                                        <template v-if="tempGoods.list.length > 0">
+                                            <div class="header">
+                                                <div class="key">商品信息</div>
+                                                <div class="oper">操作</div>
+                                            </div>
+                                            <div class="item" v-for="(item, index) in tempGoods.list" :key="item">
+                                                <div class="goods-item key">
+                                                    <sa-image class="goods-image" :url="item.image" size="40">
+                                                    </sa-image>
+                                                    <div>
+                                                        <div class="goods-title sa-table-line-1">{{ item.title }}</div>
+                                                        <div class="goods-price">¥{{ item.price.join('~') }}</div>
+                                                    </div>
+                                                </div>
+                                                <div class="oper">
+                                                    <el-button type="danger" link @click="onDeleteGoods(index)">移除
+                                                    </el-button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </el-form-item>
+                            </template>
+                            <el-form-item v-if="form.model.become_agent.type == 'consume'">
+                                <el-input class="sa-w-360" v-model="form.model.become_agent.value">
+                                    <template #append>元</template>
+                                </el-input>
+                            </el-form-item>
+                            <template v-if="form.model.become_agent.type != 'user'">
+                                <template v-if="form.model.agent_form">
+                                    <el-form-item label="完善资料">
+                                        <el-radio-group v-model="form.model.agent_form.status">
+                                            <el-radio label="0" :disabled="form.model.become_agent.type == 'apply'">不需要
+                                            </el-radio>
+                                            <el-radio label="1">需要</el-radio>
+                                        </el-radio-group>
+                                    </el-form-item>
+                                    <template v-if="form.model.agent_form.status == '1'">
+                                        <el-form-item label="表单背景图" prop="agent_form.background_image">
+                                            <sa-uploader v-model="form.model.agent_form.background_image"></sa-uploader>
+                                        </el-form-item>
+                                        <el-form-item label="表单内容">
+                                            <div class="sa-template-wrap">
+                                                <template v-if="form.model.agent_form.content.length>0">
+                                                    <div class="header">
+                                                        <div class="key">表单类型</div>
+                                                        <div class="key">表单名称</div>
+                                                        <div class="oper">操作</div>
+                                                    </div>
+                                                    <draggable v-model="form.model.agent_form.content" :animation="300"
+                                                        handle=".sortable-drag" item-key="element">
+                                                        <template #item="{ element, index }">
+                                                            <div class="item">
+                                                                <el-form-item class="key"
+                                                                    :prop="`agent_form.content.${index}.type`"
+                                                                    :rules="form.rules.commission.agent_form.content.type">
+                                                                    <el-select v-model="element.type"
+                                                                        placeholder="表单类型">
+                                                                        <template v-for="br in become_register_options"
+                                                                            :key="br">
+                                                                            <el-option :label="br.label"
+                                                                                :value="br.value" />
+                                                                        </template>
+                                                                    </el-select>
+                                                                </el-form-item>
+                                                                <el-form-item class="key"
+                                                                    :prop="`agent_form.content.${index}.name`"
+                                                                    :rules="form.rules.commission.agent_form.content.name">
+                                                                    <el-input v-model="element.name" placeholder="表单名称">
+                                                                    </el-input>
+                                                                </el-form-item>
+                                                                <div class="oper">
+                                                                    <el-button type="danger" link
+                                                                        @click="onDeleteContent(index)">移除</el-button>
+                                                                    <i class="iconfont iconmove sortable-drag"></i>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </draggable>
+                                                </template>
+                                                <el-button class="add-params" icon="Plus" @click="onAddContent">追加
+                                                </el-button>
+                                            </div>
+                                        </el-form-item>
+                                    </template>
+                                </template>
+                                <template v-if="form.model.apply_protocol">
+                                    <el-form-item label="申请协议">
+                                        <el-radio-group v-model="form.model.apply_protocol.status">
+                                            <el-radio label="0">不显示</el-radio>
+                                            <el-radio label="1">显示</el-radio>
+                                        </el-radio-group>
+                                    </el-form-item>
+                                    <el-form-item v-if="form.model.apply_protocol.status == '1'" label="协议内容">
+                                        <el-input class="sa-w-360" v-model="form.model.apply_protocol.title"
+                                            placeholder="请选择协议内容">
+                                            <template #append>
+                                                <span class="cursor-pointer"
+                                                    @click="onSelectRichtext('apply_protocol')">选择富文本</span>
+                                            </template>
+                                        </el-input>
+                                    </el-form-item>
+                                </template>
+                            </template>
+                        </template>
+                        <div class="sa-title is-line">结算条件</div>
+                        <el-form-item label="商品结算方式">
+                            <div>
+                                <el-radio-group v-model="form.model.reward_type">
+                                    <el-radio label="goods_price">商品价</el-radio>
+                                    <el-radio label="pay_price">实际支付价</el-radio>
+                                </el-radio-group>
+                                <div class="tip"> 商品价: 商品实际售价/规格价，实际支付价: 实际支付的费用(不含运费) </div>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="佣金结算方式">
+                            <el-radio-group v-model="form.model.reward_event">
+                                <el-radio label="paid">支付后结算</el-radio>
+                                <el-radio label="confirm">确认收货结算</el-radio>
+                                <el-radio label="finish">订单完成结算</el-radio>
+                                <el-radio label="admin">手动打款</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="分销佣金">
+                            <el-radio-group v-model="form.model.refund_commission_reward">
+                                <el-radio :label="0">退款不扣除</el-radio>
+                                <el-radio :label="1">退款扣除</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        <el-form-item label="分销业绩">
+                            <el-radio-group v-model="form.model.refund_commission_order">
+                                <el-radio :label="0">退款不扣除</el-radio>
+                                <el-radio :label="1">退款扣除</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                    </template>
+
+                    <!-- 商品配置 -->
+                    <template v-if="state.tabActive == 'shopro/config/goods'">
+                        <div class="sa-title is-line">库存预警配置</div>
+                        <el-form-item label="库存预警阈值">
+                            <el-input class="sa-w-360" v-model="form.model.stock_warning" type="number" :min="0"
+                                placeholder="请输入库存预警阈值">
+                                <template #append> 件 </template>
+                            </el-input>
+                        </el-form-item>
+                    </template>
+
+                    <!-- 客服配置 -->
+                    <template v-if="state.tabActive == 'shopro/config/chat'">
+                        <div class="sa-title is-line">基础配置</div>
+                        <template v-if="form.model.basic">
+                            <el-form-item label="客服分配方式" prop="allocate">
+                                <div>
+                                    <el-radio-group v-model="form.model.basic.allocate">
+                                        <el-radio label="busy">忙碌程度</el-radio>
+                                        <el-radio label="turns">轮流</el-radio>
+                                        <el-radio label="random">随机</el-radio>
+                                    </el-radio-group>
+                                    <div class="tip">
+                                        <span v-if="form.model.basic.allocate == 'busy'">
+                                            忙碌程度：根据客服最优接待人数，和当前已接待人数，计算客服忙碌度
+                                        </span>
+                                        <span v-if="form.model.basic.allocate == 'turns'">
+                                            轮流：根据最后接入时间正序排列，取最后接入时间最小的客服接入
+                                        </span>
+                                        <span v-if="form.model.basic.allocate == 'random'">
+                                            随机：随机取出一个在线客服接入
+                                        </span>
+                                    </div>
+                                </div>
+                            </el-form-item>
+                            <el-form-item label="自动分配客服" prop="auto_customer_service">
+                                <el-switch v-model="form.model.basic.auto_customer_service" :active-value="1"
+                                    :inactive-value="0"></el-switch>
+                            </el-form-item>
+                            <el-form-item v-if="form.model.basic.auto_customer_service == 1" label="默认上次客服"
+                                prop="last_customer_service">
+                                <el-switch v-model="form.model.basic.last_customer_service" :active-value="1"
+                                    :inactive-value="0"></el-switch>
+                            </el-form-item>
+                        </template>
+                        <div class="sa-title is-line">系统配置</div>
+                        <template v-if="form.model.system">
+                            <el-alert class="mb-4" type="warning">
+                                <template #title>修改完下面配置，请一定重启客服进程</template>
+                            </el-alert>
+                            <el-form-item label="内部通讯地址" prop="inside_host">
+                                <el-input class="sa-w-360" placeholder="请输入内部通讯地址"
+                                    v-model="form.model.system.inside_host">
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="内部通讯端口" prop="inside_port">
+                                <el-input class="sa-w-360" placeholder="请输入内部通讯端口" type="number"
+                                    v-model="form.model.system.inside_port">
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="外部服务端口" prop="port">
+                                <el-input class="sa-w-360" placeholder="请输入外部服务端口" type="number"
+                                    v-model="form.model.system.port">
+                                </el-input>
+                            </el-form-item>
+                            <el-form-item label="证书模式" prop="ssl">
+                                <div>
+                                    <el-radio-group v-model="form.model.system.ssl">
+                                        <el-radio label="none">不开启</el-radio>
+                                        <el-radio label="cert">证书</el-radio>
+                                        <el-radio label="reverse_proxy">反向代理</el-radio>
+                                    </el-radio-group>
+                                    <div class="tip">
+                                        <span v-if="form.model.system.ssl == 'cert'">
+                                            证书：请先配置好 https，下面输入框配置 https 的证书文件绝对路径
+                                        </span>
+                                        <span v-if="form.model.system.ssl == 'reverse_proxy'">
+                                            反向代理：请先配置好https，使用 nginx 反向代理 wss
+                                        </span>
+                                    </div>
+                                </div>
+                            </el-form-item>
+                            <template v-if="form.model.system.ssl == 'cert'">
+                                <el-form-item label="ssl证书" prop="ssl_cert">
+                                    <el-input class="sa-w-360" placeholder="请输入ssl证书(绝对地址)"
+                                        v-model="form.model.system.ssl_cert">
+                                    </el-input>
+                                </el-form-item>
+                                <el-form-item label="ssl key" prop="ssl_key">
+                                    <el-input class="sa-w-360" placeholder="请输入ssl key(绝对地址)"
+                                        v-model="form.model.system.ssl_key">
+                                    </el-input>
+                                </el-form-item>
+                            </template>
+                        </template>
+                        <div class="sa-title is-line">应用配置</div>
+                        <template v-if="form.model.application">
+                            <template v-if="form.model.application.shop">
+                                <!-- <div class="sa-title is-line">商城客服</div> -->
+                                <el-form-item label="选择客服分类">
+                                    <div>
+                                        <el-select v-model="form.model.application.shop.room_id" placeholder="请选择客服分类">
+                                            <el-option v-for="item in chat.config.default_rooms" :key="item.value"
+                                                :label="item.name" :value="item.value"></el-option>
+                                        </el-select>
+                                        <div class="tip"> 顾客只能和添加到同样分类的客服进行连接 </div>
+                                    </div>
+                                </el-form-item>
+                            </template>
+                        </template>
+                    </template>
+
+                    <!-- Redis配置 -->
+                    <template v-if="state.tabActive == 'shopro/config/redis'">
+                        <el-alert class="mb-4" type="warning">
+                            <template #title>
+                                <div>1、站点配置好之后，请不要随意修改 redis 配置，否则可能导致重要缓存数据和队列数据丢失</div>
+                                <div>2、队列驱动为 redis 时，默认读取本配置，也可在 application/extra/queue.php 文件中配置相同参数覆盖本配置</div>
+                                <div>3、DB 数据库建议指定 1-15 中的一个数字 (redis 默认16个库 0-15)，服务器有多个站点时，不可与其他站点的 DB 数据库
+                                    相同，以免数据错乱，导致系统异常</div>
+                            </template>
+                        </el-alert>
+                        <el-form-item label="主机地址" prop="host">
+                            <el-input class="sa-w-360" placeholder="请输入主机地址" v-model="form.model.host">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="使用空密码" prop="empty_password">
+                            <el-switch v-model="form.model.empty_password" :active-value="1" :inactive-value="0">
+                            </el-switch>
+                        </el-form-item>
+                        <el-form-item v-if="!form.model.empty_password" label="密码" prop="password">
+                            <el-input class="sa-w-360" placeholder="不修改则留空" v-model="form.model.password">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="端口" prop="port">
+                            <el-input class="sa-w-360" placeholder="请输入端口" v-model="form.model.port">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="DB数据库" prop="select">
+                            <div class="sa-flex-col sa-flex-1">
+                                <el-input class="sa-w-360" placeholder="请输入DB数据库" v-model="form.model.select">
+                                </el-input>
+                                <div class="tip">建议显示指定 1-15 的数字</div>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="超时时间" prop="timeout">
+                            <el-input class="sa-w-360" placeholder="请输入超时时间" v-model="form.model.timeout">
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="连接持续性" prop="persistent">
+                            <el-switch v-model="form.model.persistent" :active-value="true" :inactive-value="false">
+                            </el-switch>
+                        </el-form-item>
+                    </template>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <!-- 支付配置 -->
+        <el-main v-if="state.tabActive == 'shopro/pay_config'" class="pay-config-main">
+            <el-container>
+                <el-header>
+                    <div class="sa-title sa-flex sa-row-between">
+                        <div>支付配置</div>
+                        <div>
+                            <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                            {if $auth->check('shopro/pay_config/add')}
+                            <el-button icon="Plus" type="primary" @click="onAddPayConfig">添加</el-button>
+                            {/if}
+                            {if $auth->check('shopro/pay_config/recyclebin')}
+                            <el-button type="danger" icon="Delete" plain @click="onRecyclebinPayConfig">回收站</el-butt0on>
+                                {/if}
+                        </div>
+                    </div>
+                </el-header>
+                <el-main class="sa-main">
+                    <el-table height="100%" class="sa-table" :data="payConfig.data" stripe>
+                        <el-table-column label="名称" min-width="280">
+                            <template #default="scope">
+                                <span class="sa-table-line-1">
+                                    {{ scope.row.name || '-' }}
+                                </span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="支付类型" min-width="120">
+                            <template #default="scope">
+                                <div class="sa-table-line-1">
+                                    {{ scope.row.type_text || '-' }}
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="状态" min-width="130">
+                            <template #default="scope">
+                                {if $auth->check('shopro/pay_config/edit')}
+                                <el-dropdown trigger="click" @command="onCommandPayConfig">
+                                    <el-button link>
+                                        <el-tag :type="scope.row.status == 'normal'?'success':'info'">
+                                            {{ scope.row.status_text }}
+                                            <el-icon>
+                                                <arrow-down />
+                                            </el-icon>
+                                        </el-tag>
+                                    </el-button>
+                                    <template #dropdown>
+                                        <el-dropdown-menu>
+                                            <el-dropdown-item :command="{
+                                                id: scope.row.id,
+                                                type: 'normal',
+                                            }">
+                                                <span class="status-normal">正常</span>
+                                            </el-dropdown-item>
+                                            <el-dropdown-item :command="{
+                                                id: scope.row.id,
+                                                type: 'disabled',
+                                            }">
+                                                <span class="status-hidden">禁用</span>
+                                            </el-dropdown-item>
+                                        </el-dropdown-menu>
+                                    </template>
+                                </el-dropdown>
+                                {/if}
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="创建时间" width="172">
+                            <template #default="scope">
+                                {{ scope.row.createtime || '-' }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column fixed="right" label="操作" min-width="120">
+                            <template #default="scope">
+                                {if $auth->check('shopro/pay_config/edit')}
+                                <el-button type="primary" link @click="onEditPayConfig(scope.row.id)">编辑</el-button>
+                                {/if}
+                                <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                                    title="确认删除这条记录?" @confirm="onDeletePayConfig(scope.row.id)">
+                                    <template #reference>
+                                        {if $auth->check('shopro/pay_config/delete')}
+                                        <el-button type="danger" link>删除</el-button>
+                                        {/if}
+                                    </template>
+                                </el-popconfirm>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-main>
+            </el-container>
+        </el-main>
+        <el-footer v-if="state.tabActive!='shopro/config/platform' && state.tabActive != 'shopro/pay_config'"
+            class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+        <el-footer v-if="state.tabActive == 'shopro/pay_config'" class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <el-dialog class="configis-upgrade-dialog" :close-on-click-modal="false" v-model="state.configis_upgrade">
+        <div class="configis-upgrade-image">
+            <img src="/assets/addons/shopro/img/commission/upgrade-config.png">
+            <div class="configis-upgrade-close" @click="onOper('close')">
+                <el-icon><circle-close-filled /></el-icon>
+            </div>
+            <div class="configis-upgrade-button sa-flex">
+                <div class="configis-upgrade-button-refresh sa-flex" @click="onOper('refresh')">
+                    <el-icon class="refresh-right">
+                        <refresh-right />
+                    </el-icon>
+                    刷新
+                </div>
+                <div class="configis-upgrade-button-upgrade sa-flex" @click="onOper('upgrade')">去升级
+                    <img class="icon-right" src="/assets/addons/shopro/img/commission/icon-right.png">
+                </div>
+            </div>
+        </div>
+    </el-dialog>
+</div>

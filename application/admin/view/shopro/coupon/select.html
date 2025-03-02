@@ -1,0 +1,79 @@
+{include file="/shopro/common/script" /}
+
+<div id="select" class="coupon-select" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-table class="sa-table" :data="state.data" stripe @selection-change="onChangeSelection">
+                <el-table-column v-if="state.multiple" type="selection"></el-table-column>
+                <el-table-column label="优惠券名称" min-width="128">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.name }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="类型" min-width="74">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.type_text }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="可用范围" min-width="88">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.use_scope_text }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="优惠内容" min-width="154">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.amount_text }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="领取状态" min-width="80">
+                    <template #default="scope">
+                        <el-popover popper-class="sa-popper" placement="bottom" title="优惠券有效期" trigger="hover">
+                            <div v-if="scope.row.use_time_type == 'days'">
+                                领取{{ scope.row.start_days }}天后生效，有效期{{ scope.row.days }}天
+                            </div>
+                            <div v-if="scope.row.use_time_type == 'range'">
+                                <div>开始时间：{{ scope.row.use_start_time }}</div>
+                                <div>结束时间：{{ scope.row.use_end_time }}</div>
+                            </div>
+                            <template #reference>
+                                <div class="sa-table-line-1 get-time-text" :class="
+                              scope.row.get_time_status == 'ing'
+                                ? 'sa-color--success'
+                                : scope.row.get_time_status == 'ended'
+                                ? 'sa-color--danger'
+                                : 'sa-color--info'
+                            ">
+                                    {{ scope.row.get_time_text }}
+                                </div>
+                            </template>
+                        </el-popover>
+                    </template>
+                </el-table-column>
+                <el-table-column label="剩余" min-width="88">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.stock }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column v-if="!state.multiple" label="操作" min-width="88">
+                    <template #default="scope">
+                        <el-button type="primary" link @click="onSelect(scope.row)">选择</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-flex" :class="state.multiple ? 'sa-row-between' : 'sa-row-right'">
+            <sa-pagination class="is-ellipsis" v-model="pagination" @pagination-change="getData"></sa-pagination>
+            <el-button v-if="state.multiple" type="primary" @click="onConfirm">确 定</el-button>
+        </el-footer>
+    </el-container>
+</div>

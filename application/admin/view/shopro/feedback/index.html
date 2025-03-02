@@ -1,0 +1,123 @@
+{include file="/shopro/common/script" /}
+
+<div id="index" class="feedback-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">意见反馈</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @selection-change="onChangeSelection"
+                @sort-change="onChangeSort">
+                <el-table-column type="selection" width="48"> </el-table-column>
+                <el-table-column prop="id" label="ID" min-width="90" sortable="custom"> </el-table-column>
+                <el-table-column label="反馈用户" min-width="180">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row.user" :id="scope.row.user_id"></sa-user-profile>
+                    </template>
+                </el-table-column>
+                <el-table-column label="反馈类型" min-width="140">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.type || '-' }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="content" label="反馈内容" min-width="260">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.content || '-' }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="截图" min-width="146">
+                    <template #default="scope">
+                        <el-scrollbar>
+                            <div class="sa-flex">
+                                <sa-image class="mr-1" v-for="item in scope.row.images" :url="item" size="30">
+                                </sa-image>
+                            </div>
+                        </el-scrollbar>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="phone" label="联系电话" min-width="160">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.phone || '-' }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="status" label="处理状态" min-width="100">
+                    <template #default="scope">
+                        <el-tag :type="scope.row.status == '1' ? 'success' : 'info'">
+                            {{ scope.row.status_text }}
+                        </el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="remark" label="系统备注" min-width="260">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.remark || '-' }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="创建时间" width="172">
+                    <template #default="scope">
+                        {{ scope.row.createtime || '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="更新时间" width="172">
+                    <template #default="scope">
+                        {{ scope.row.updatetime || '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="操作" min-width="120">
+                    <template #default="scope">
+                        {if $auth->check('shopro/feedback/detail')}
+                        <el-button type="primary" link @click="onDetail(scope.row.id)">查看</el-button>
+                        {/if}
+                        <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                            title="确认删除这条记录?" @confirm="onDelete(scope.row.id)">
+                            <template #reference>
+                                {if $auth->check('shopro/feedback/delete')}
+                                <el-button type="danger" link>删除</el-button>
+                                {/if}
+                            </template>
+                        </el-popconfirm>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-between sa-flex-wrap">
+            <div class="sa-batch sa-flex">
+                <div class="tip">
+                    已选择 <span>{{batchHandle.data.length}}</span> 项</div>
+                <div class="sa-flex">
+                    {if $auth->check('shopro/feedback/delete')}
+                    <el-button type="danger" :disabled="!batchHandle.data.length" @click="onBatchHandle('delete')">删除
+                    </el-button>
+                    {/if}
+                    {if $auth->check('shopro/feedback/edit')}
+                    <el-button type="success" :disabled="!batchHandle.data.length" @click="onBatchHandle('1')">已处理
+                    </el-button>
+                    {/if}
+                    {if $auth->check('shopro/feedback/edit')}
+                    <el-button type="info" :disabled="!batchHandle.data.length" @click="onBatchHandle('0')">未处理
+                    </el-button>
+                    {/if}
+                </div>
+            </div>
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

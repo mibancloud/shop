@@ -1,0 +1,642 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .order-index .sa-table .el-table__row {
+        background: var(--sa-background-hex-hover);
+    }
+
+    .order-index .sa-table .el-table__header-wrapper {
+        margin-bottom: 4px;
+    }
+
+    .order-index .sa-expand-table .el-table__row {
+        background: var(--el-table-tr-bg-color);
+    }
+
+    .order-index .sa-expand-table .el-table__header-wrapper {
+        display: none;
+    }
+
+    .order-index .sa-expand-table tr:hover>td.el-table__cell {
+        background-color: var(--el-table-tr-bg-color) !important;
+    }
+
+    .order-index .goods-item .goods-image {
+        margin-right: 12px;
+    }
+
+    .order-index .goods-item .goods-id {
+        color: var(--el-color-primary);
+    }
+
+    .order-index .goods-item .goods-title {
+        height: 14px;
+        line-height: 14px;
+        font-size: 12px;
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .order-index .goods-item .goods-sku-text {
+        height: 14px;
+        line-height: 14px;
+        margin-bottom: 10px;
+    }
+
+    .order-index .goods-item .goods-price {
+        margin-right: 8px;
+    }
+
+    .order-index .goods-item .goods-num {
+        margin-right: 12px;
+    }
+
+    .order-index .dispatch-status {
+        height: 18px;
+        line-height: 18px;
+        padding: 0 6px;
+        border-radius: 9px;
+        font-size: 12px;
+    }
+
+    .order-index .dispatch-status.dispatch--1 {
+        color: #FF4D4F;
+        background: rgba(255, 77, 79, 0.16);
+    }
+
+    .order-index .dispatch-status.dispatch-0 {
+        color: #999;
+        background: rgba(153, 153, 153, .16);
+    }
+
+    .order-index .dispatch-status.dispatch-1 {
+        color: #faad14;
+        background: rgba(250, 173, 20, .16);
+    }
+
+    .order-index .dispatch-status.dispatch-2 {
+        color: #52c41a;
+        background: rgba(82, 196, 26, .16);
+    }
+
+    .order-index .status.el-button {
+        width: fit-content;
+        height: 26px;
+        padding: 0 12px;
+        font-size: 12px;
+        font-weight: 400;
+        border-radius: 13px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+    }
+
+    .order-index .status.status-primary {
+        color: var(--el-color-primary);
+        /* background: var(--sa-background-hex-active); */
+    }
+
+    .order-index .status.status-success {
+        color: #52c41a;
+        /* background: rgba(82, 196, 26, 0.16); */
+    }
+
+    .order-index .status.status-warning {
+        color: #faad14;
+        /* background: rgba(250, 173, 20, 0.16); */
+    }
+
+    .order-index .status.status-danger {
+        color: #ff4d4f;
+        /* background: rgba(255, 77, 79, 0.16); */
+    }
+
+    .order-index .status.status-info {
+        color: #999999;
+        /* background: rgba(153, 153, 153, 0.16); */
+    }
+
+    .order-index .address-item .consignee {
+        line-height: 14px;
+        color: var(--sa-font);
+        font-size: 12px;
+        text-align: left;
+        margin-bottom: 6px;
+    }
+
+    .order-index .address-item .name {
+        line-height: 16px;
+        font-size: 14px;
+        color: var(--sa-subtitle);
+        text-align: left;
+        margin-bottom: 6px;
+    }
+
+    .order-index .address-item .address {
+        height: 14px;
+        line-height: 14px;
+        font-size: 12px;
+        color: var(--sa-subfont);
+    }
+
+    .order-index .activity-type-text {
+        width: fit-content;
+        height: 20px;
+        padding: 0 5px;
+        border-radius: 2px;
+        font-weight: 400;
+        font-size: 12px;
+        line-height: 20px;
+        text-align: center;
+    }
+
+    .order-index .activity-type-text.groupon,
+    .order-index .activity-type-text.groupon_ladder {
+        background: var(--t-bg-active);
+        color: var(--el-color-primary);
+    }
+
+    .order-index .activity-type-text.seckill {
+        background: rgba(255, 77, 79, 0.16);
+        color: #ff4d4f;
+    }
+
+    .order-index .refund-status {
+        font-size: 12px;
+        font-weight: 400;
+        color: #52c41a;
+        margin-left: 4px;
+    }
+
+    .order-index .discount-fee {
+        line-height: 14px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-font);
+        text-decoration-line: underline;
+    }
+
+    .discount-fee-popover .promo-type-text {
+        width: fit-content;
+        height: 20px;
+        padding: 0 8px;
+        background: rgba(250, 173, 20, 0.16);
+        border-radius: 10px;
+        font-weight: 400;
+        font-size: 12px;
+        color: #faad14;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .order-index .apply-refund {
+        margin-right: 12px;
+    }
+
+    .refund-popover .title,
+    .confirm-popover .title {
+        line-height: 20px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-font);
+        margin-bottom: 16px;
+    }
+
+    .refund-popover .title .el-icon,
+    .confirm-popover .title .el-icon {
+        font-size: 14px;
+        color: #faad14;
+        margin-right: 8px;
+    }
+
+    .refund-popover .tip,
+    .confirm-popover .tip {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subfont);
+    }
+
+    .order-index .pay-fee-reference {
+        width: fit-content;
+        color: var(--el-color-primary);
+        border-bottom: 1px dashed var(--el-color-primary);
+        cursor: pointer;
+    }
+
+    .pay-fee-popover .pay-fee-item {
+        line-height: 16px;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .pay-fee-popover .pay-fee-item.pay-fee-item-discount {
+        align-items: flex-start;
+    }
+
+    .pay-fee-popover .pay-fee-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .pay-fee-popover .pay-fee-item .left {
+        flex-shrink: 0;
+        color: var(--sa-subfont);
+    }
+
+    .pay-fee-popover .pay-fee-item .right {
+        color: var(--sa-subtitle);
+    }
+
+    .pay-fee-popover .pay-fee-item .original-pay-fee {
+        color: #999;
+    }
+
+    .order-index .order-wrap {
+        position: relative;
+        line-height: 14px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-font);
+    }
+
+    .order-index .order-wrap>div {
+        margin-right: 24px;
+    }
+
+    .order-index .order-wrap .id {
+        min-width: 80px;
+        color: var(--sa-subtitle);
+    }
+
+    .order-index .order-wrap .order-sn {
+        min-width: 228px;
+        height: 14px;
+        font-size: 12px;
+        color: var(--sa-subtitle);
+    }
+
+    .order-index .order-wrap .create-time {
+        line-height: 14px;
+        font-size: 12px;
+        color: var(--sa-subtfont);
+    }
+
+    .order-index .order-wrap .platform-text {
+        min-width: 116px;
+    }
+
+    .order-index .order-wrap .pay-types-text {
+        margin-right: 0;
+    }
+</style>
+
+<div id="index" class="order-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-tabs class="sa-tabs" v-model="state.filter.data.status" @tab-change="onChangeTab">
+                <el-tab-pane v-for="item in type.data.status" :key="item"
+                    :label="`${item.name}${item.num ? '(' + item.num + ')' : ''}`" :name="item.type"></el-tab-pane>
+            </el-tabs>
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">订单管理</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                    {if $auth->check('shopro/order/order/export')}
+                    <el-button :loading="exportLoading" :disabled="exportLoading" @click="onExport('export')">订单导出
+                    </el-button>
+                    {/if}
+                    {if $auth->check('shopro/order/order/exportDelivery')}
+                    <el-button v-if="state.filter.data.status == 'nosend'" :loading="exportLoading"
+                        :disabled="exportLoading" @click="onExport('exportDelivery')">导出发货单</el-button>
+                    {/if}
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe default-expand-all
+                :span-method="spanMethod" @selection-change="onChangeSelection">
+                <el-table-column type="expand">
+                    <template #default="props">
+                        <el-table class="sa-table sa-expand-table" :data="props.row.items"
+                            :span-method="spanMethodExpand">
+                            <el-table-column width="96"></el-table-column>
+                            <el-table-column width="304">
+                                <template #default="scope">
+                                    <div class="goods-item sa-flex">
+                                        <sa-image class="goods-image" :url="scope.row.goods_image" size="58"></sa-image>
+                                        <div>
+                                            <div class="goods-title sa-table-line-1">
+                                                <span class="goods-id">
+                                                    #{{scope.row.goods_id }}
+                                                </span>
+                                                {{ scope.row.goods_title }}
+                                            </div>
+                                            <div class="goods-sku-text">
+                                                <span v-if="scope.row.goods_sku_text">
+                                                    {{ scope.row.goods_sku_text}}
+                                                </span>
+                                            </div>
+                                            <div class="sa-flex">
+                                                <span class="goods-price">¥{{ scope.row.goods_price }}</span>
+                                                <span class="goods-num">x{{ scope.row.goods_num }}</span>
+                                                <!-- 0=未发货|1=已发货|2=已收货 -->
+                                                <div class="dispatch-status"
+                                                    :class="`dispatch-${scope.row.dispatch_status}`">
+                                                    {{scope.row.dispatch_status_text}}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column min-width="140" align="center">
+                                <template #default="scope">
+                                    <el-button v-if="scope.row.btns?.includes('aftersale_info')" class="status"
+                                        :type="aftersaleStyle(scope.row).class" plain @click="onAftersale(scope.row)">
+                                        {{scope.row.aftersale_status_text}}
+                                        <el-icon>
+                                            <arrow-right />
+                                        </el-icon>
+                                    </el-button>
+                                    <div v-else class="status" :class="`status-${aftersaleStyle(scope.row).class}`">
+                                        {{scope.row.aftersale_status_text}}</div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column min-width="92" align="center">
+                                <template #default>
+                                    <sa-user-profile :user="props.row.user" :id="props.row.user_id" mode="col">
+                                    </sa-user-profile>
+                                </template>
+                            </el-table-column>
+                            <el-table-column min-width="168" align="center">
+                                <template #default>
+                                    <div v-if="props.row.address" class="address-item sa-flex sa-flex-col sa-col-top">
+                                        <div class="consignee">
+                                            <span>{{ props.row.address.consignee }}</span>
+                                            <span>{{ props.row.address.mobile }}</span>
+                                        </div>
+                                        <div class="name">
+                                            {{ props.row.address.province_name }}/{{ props.row.address.city_name }}/{{
+                                            props.row.address.district_name
+                                            }}
+                                        </div>
+                                        <div class="address sa-table-line-1">
+                                            {{ props.row.address.address }}
+                                        </div>
+                                    </div>
+                                    <div v-else>{{ props.row.address_id }}</div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="dispatch_type_text" min-width="168" align="center">
+                            </el-table-column>
+                            <el-table-column min-width="160" align="center">
+                                <template #default="scope">
+                                    <div class="sa-flex-col sa-col-center">
+                                        <div v-if="scope.row.activity_type" class="activity-type-text"
+                                            :class="scope.row.activity_type">{{ scope.row.activity_type_text }}</div>
+                                        <div class="sa-flex">
+                                            ¥{{ scope.row.pay_fee }}
+                                            <div v-if="scope.row.refund_status != 0" class="refund-status">
+                                                {{scope.row.refund_status_text}}
+                                            </div>
+                                        </div>
+                                        <template v-if="Number(scope.row.discount_fee)">
+                                            <el-popover popper-class="discount-fee-popover" placement="top"
+                                                trigger="hover">
+                                                <div class="sa-flex">
+                                                    <div class="promo-type-text"
+                                                        v-for="text in scope.row.promo_types_text" :key="text">{{ text
+                                                        }}</div>
+                                                </div>
+                                                <template #reference>
+                                                    <div>
+                                                        <div v-if="scope.row.promo_types_text?.length > 0"
+                                                            class="discount-fee">
+                                                            (含优惠: ¥{{ scope.row.discount_fee }})
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </el-popover>
+                                            <div v-if="scope.row.promo_types_text?.length == 0" class="discount-fee">
+                                                (含优惠: -¥{{ scope.row.discount_fee }})
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column min-width="230">
+                                <template #default>
+                                    <div class="sa-flex">
+                                        <el-popover v-model:visible="refundPopover[props.$index]"
+                                            popper-class="refund-popover sa-popper" placement="top-start" :width="204"
+                                            trigger="click">
+                                            <div class="title sa-flex">
+                                                <el-icon>
+                                                    <question-filled />
+                                                </el-icon>
+                                                您同意用户进行申请退款吗？
+                                            </div>
+                                            <div class="sa-flex sa-row-right">
+                                                {if $auth->check('shopro/order/order/applyRefundRefuse')}
+                                                <el-button size="small" type="info" link
+                                                    @click="onApplyRefundRefuse(props.row.id, props.$index)">拒绝
+                                                </el-button>
+                                                {/if}
+                                                {if $auth->check('shopro/order/order/fullRefund')}
+                                                <el-button size="small" type="danger"
+                                                    @click="onFullRefund(props.row, props.$index)">同意
+                                                </el-button>
+                                                {/if}
+                                            </div>
+                                            <template #reference>
+                                                <div class="apply-refund-wrap">
+                                                    <el-button v-if="props.row.btns?.includes('apply_refund_oper')"
+                                                        class="status apply-refund" type="danger" plain>
+                                                        用户申请退款
+                                                        <el-icon>
+                                                            <arrow-right />
+                                                        </el-icon>
+                                                    </el-button>
+                                                </div>
+                                            </template>
+                                        </el-popover>
+                                        {if $auth->check('shopro/order/order/dispatch')}
+                                        <el-button v-if="props.row.btns?.includes('send')" class="status mr-2"
+                                            type="primary" plain @click="onDispatch(props.row.id)">
+                                            立即发货
+                                            <el-icon>
+                                                <arrow-right />
+                                            </el-icon>
+                                        </el-button>
+                                        {/if}
+                                        <el-popover v-model:visible="confirmPopover[props.$index]"
+                                            popper-class="confirm-popover sa-popper" placement="top-start" :width="204"
+                                            trigger="click">
+                                            <div class="title sa-flex">
+                                                <el-icon>
+                                                    <question-filled />
+                                                </el-icon>
+                                                确认用户是否收货？
+                                            </div>
+                                            <div class="sa-flex sa-row-right">
+                                                {if $auth->check('shopro/order/order/offlineRefuse')}
+                                                <el-button size="small" type="danger" link
+                                                    @click="onOfflineRefuse(props.row.id, props.$index)">用户拒收
+                                                </el-button>
+                                                {/if}
+                                                {if $auth->check('shopro/order/order/offlineConfirm')}
+                                                <el-button size="small" type="primary"
+                                                    @click="onOfflineConfirm(props.row.id, props.$index)">确认收货
+                                                </el-button>
+                                                {/if}
+                                            </div>
+                                            <template #reference>
+                                                <div class="apply-refund-wrap">
+                                                    <el-button v-if="props.row.btns?.includes('confirm')"
+                                                        class="status mr-2" type="primary" plain>
+                                                        确认收货
+                                                        <el-icon>
+                                                            <arrow-right />
+                                                        </el-icon>
+                                                    </el-button>
+                                                </div>
+                                            </template>
+                                        </el-popover>
+                                        {if $auth->check('shopro/order/order/detail')}
+                                        <el-button type="primary" link @click="onDetail(props.row.id)">详情
+                                        </el-button>
+                                        {/if}
+                                        {if $auth->check('shopro/order/order/action')}
+                                        <el-button type="primary" link @click="onAction(props.row.id)">日志
+                                        </el-button>
+                                        {/if}
+                                    </div>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </template>
+                </el-table-column>
+                <el-table-column type="selection" width="48"></el-table-column>
+                <el-table-column label="商品信息" width="304">
+                    <template #default="scope">
+                        <div class="order-wrap sa-flex">
+                            <div class="id">#{{ scope.row.id }}</div>
+                            <div class="order-sn sa-flex">
+                                订单号:{{ scope.row.order_sn }}
+                                <el-icon class="copy-document" @click="onClipboard(scope.row.order_sn)">
+                                    <copy-document />
+                                </el-icon>
+                            </div>
+                            <div class="create-time"> 下单时间:{{ scope.row.createtime }} </div>
+                            <div class="pay-types-text">{{ scope.row.pay_types_text?.join(',') }}</div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="售后状态" min-width="140" align="center"></el-table-column>
+                <el-table-column label="下单用户" min-width="92" align="center"></el-table-column>
+                <el-table-column label="收货地址" min-width="168" align="center"></el-table-column>
+                <el-table-column label="配送方式" min-width="168" align="center"></el-table-column>
+                <el-table-column label="支付信息" min-width="160" align="center">
+                    <template #default="scope">
+                        <div class="sa-flex sa-row-center">
+                            <el-popover popper-class="pay-fee-popover sa-popper" placement="top" trigger="hover">
+                                <div>
+                                    <div class="pay-fee-item">
+                                        <div class="left">商品总价：</div>
+                                        <div class="right">¥{{ scope.row.goods_amount }}</div>
+                                    </div>
+                                    <div class="pay-fee-item">
+                                        <div class="left">运费价格：</div>
+                                        <div class="right"> ¥{{ scope.row.dispatch_amount }} </div>
+                                    </div>
+                                    <div v-if="scope.row.ext && (scope.row.ext.promo_infos || scope.row.coupon_id)"
+                                        class="
+                                        pay-fee-item pay-fee-item-discount">
+                                        <div class="left">活动优惠：</div>
+                                        <div class="right">
+                                            <div class="pay-fee-item"
+                                                v-if="Number(scope.row.ext.promo_discounts.full_reduce) > 0">
+                                                <div class="left">满减</div>
+                                                <div class="right">
+                                                    -¥{{ scope.row.ext.promo_discounts.full_reduce }}
+                                                </div>
+                                            </div>
+                                            <div class="pay-fee-item"
+                                                v-if="Number(scope.row.ext.promo_discounts.full_discount) > 0">
+                                                <div class="left">满折</div>
+                                                <div class="right">
+                                                    -¥{{ scope.row.ext.promo_discounts.full_discount }}
+                                                </div>
+                                            </div>
+                                            <div class="pay-fee-item"
+                                                v-if="Number(scope.row.ext.promo_discounts.full_gift) > 0">
+                                                <div class="left">满赠</div>
+                                                <div class="right"></div>
+                                            </div>
+                                            <div class="pay-fee-item"
+                                                v-if="Number(scope.row.ext.promo_discounts.free_shipping) > 0">
+                                                <div class="left">满包邮</div>
+                                                <div class="right">
+                                                    -¥{{ scope.row.ext.promo_discounts.free_shipping }}
+                                                </div>
+                                            </div>
+                                            <div v-if="scope.row.coupon_id" class="pay-fee-item">
+                                                <div class="left">优惠券</div>
+                                                <div class="right"> -¥{{ scope.row.coupon_discount_fee }} </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="pay-fee-item">
+                                        <div class="left">
+                                            {{['paid', 'completed'].includes(scope.row.status)?'实付金额':'应付金额'}}：
+                                        </div>
+                                        <div class="right sa-flex">
+                                            ¥{{ scope.row.pay_fee }}
+                                            <s v-if="scope.row.pay_fee != scope.row.original_pay_fee"
+                                                class="original-pay-fee ml-1">
+                                                {{ scope.row.original_pay_fee }}
+                                            </s>
+                                        </div>
+                                    </div>
+                                </div>
+                                <template #reference>
+                                    <div class="pay-fee-reference">¥{{ scope.row.pay_fee }}</div>
+                                </template>
+                            </el-popover>
+                            {if $auth->check('shopro/order/order/changeFee')}
+                            <el-button v-if="scope.row?.btns.includes('change_fee')" type="primary" link
+                                @click="onChangeFee(scope.row)">改价</el-button>
+                            {/if}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" min-width="230">
+                    <template #default="scope">
+                        <div class="status" :class="statusCode(scope.row).class">{{statusCode(scope.row).text}}</div>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-between sa-flex-wrap">
+            <div class="sa-batch sa-flex">
+                <div class="tip">
+                    已选择 <span>{{batchHandle.data.length}}</span> 项</div>
+                <div class="sa-flex">
+                    {if $auth->check('shopro/order/order/batchDispatch')}
+                    <el-button :disabled="!batchHandle.data.length" @click="onBatchHandle('dispatch')">批量发货
+                    </el-button>
+                    {/if}
+                </div>
+            </div>
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

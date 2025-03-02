@@ -1,0 +1,61 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .title {
+        font-size: 16px;
+        line-height: 24px;
+        color: var(--sa-title);
+        margin-bottom: 16px;
+    }
+
+    .sa-m-b-4 {
+        margin-bottom: 4px;
+    }
+
+    .sa-m-r-4 {
+        margin-bottom: 4px;
+    }
+
+    .sa-m-b-16 {
+        margin-bottom: 16px;
+    }
+
+    .sa-m-b-40 {
+        margin-bottom: 40px;
+    }
+
+    .desc {
+        font-size: 14px;
+        line-height: 20px;
+        color: var(--sa-subtitle);
+        word-break: break-all;
+        word-wrap: break-word;
+    }
+    .subtitle {
+        color: var(--sa-subfont);
+        font-size: 14px;
+        line-height: 20px;
+    }
+</style>
+
+<div id="pushUrl" class="mplive-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <!-- v-loading="loading" -->
+        <el-main class="sa-p-0">
+            <div class="title">推流地址</div>
+            <div class="sa-flex copy-box sa-m-b-4">
+                <div class="desc sa-m-r-4">在第三方推流应用中，以下地址进行推流</div>
+                <el-button class="is-link sa-m-b-4" type="primary" @click="onClipboard(state.pushUrl)">复制链接</el-button>
+            </div>
+            <div class="desc sa-m-b-16">{{ state.pushUrl }}</div>
+            <div class="subtitle sa-m-b-40">此地址为当前直播间唯一推流地址，不要泄露给第三方。</div>
+            <div class="title sa-m-b-16">备注</div>
+            <div class="desc sa-m-b-4">服务器地址：{{ state.serverAddress }}</div>
+            <div class="desc sa-m-b-16">串流密钥：{{ state.key }}</div>
+            <div class="sa-flex">
+                <div class="subtitle sa-m-r-4">推流直播操作详见</div>
+                <el-button class="is-link sa-m-b-4" type="primary" @click="onJump">指引</el-button>
+            </div>
+        </el-main>
+    </el-container>
+</div>

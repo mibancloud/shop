@@ -1,0 +1,28 @@
+{include file="/shopro/common/script" /}
+
+<div id="refund" class="aftersale-refund" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item label="退款方式">
+                        <div>
+                            <el-radio-group v-model="form.model.refund_type">
+                                <el-radio label="back">原路退回</el-radio>
+                                <el-radio label="money">退回余额</el-radio>
+                            </el-radio-group>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="退款金额" prop="refund_money">
+                        <el-input v-model="form.model.refund_money"
+                            :placeholder="`建议退款金额${state.suggest_refund_fee}元`" />
+                        <div class="tip"> 退款时请与买家协商好，退款之后不可撤回 </div>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

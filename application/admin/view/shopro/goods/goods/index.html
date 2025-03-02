@@ -1,0 +1,494 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .goods-index .goods-index-main {
+        overflow: hidden;
+    }
+
+    .goods-index .el-aside {
+        --el-aside-width: 161px;
+        border-right: 1px solid var(--sa-border);
+        padding: 0 3px;
+    }
+
+    .goods-index .el-aside .category-all {
+        line-height: 48px;
+        border-radius: 4px;
+        padding: 0 12px;
+        position: relative;
+        cursor: pointer;
+        font-size: 14px;
+        color: var(--sa-title);
+    }
+
+    .goods-index .el-aside .category-all span:last-child {
+        color: var(--el-color-primary);
+    }
+
+    .goods-index .el-aside .category-all:hover {
+        background: var(--t-bg-hover);
+    }
+
+    .goods-index .el-aside .category-all.is-active {
+        background: var(--t-bg-active);
+        color: var(--el-color-primary);
+    }
+
+    .goods-index .el-aside .category-all::after {
+        content: '';
+        position: absolute;
+        right: 9px;
+        bottom: 0;
+        width: 138px;
+        height: 1px;
+        background: var(--sa-space);
+    }
+
+    .goods-index .el-aside .el-tree {
+        --el-tree-node-content-height: 40px;
+        --el-tree-node-hover-bg-color: var(--t-bg-hover);
+    }
+
+    .goods-index .el-aside .el-tree>.el-tree-node>.el-tree-node__content {
+        --el-tree-node-content-height: 54px;
+        align-items: flex-start;
+        position: relative;
+    }
+
+    .goods-index .el-aside .el-tree>.el-tree-node>.el-tree-node__content::after {
+        content: '';
+        position: absolute;
+        right: 9px;
+        bottom: 0;
+        width: 138px;
+        height: 1px;
+        background: var(--sa-space);
+    }
+
+    .goods-index .el-aside .el-tree .el-tree-node__content {
+        /* align-items: flex-start; */
+        padding-top: 6px;
+        border-radius: 4px;
+    }
+
+    .goods-index .el-aside .el-tree .name {
+        line-height: 20px;
+        font-size: 12px;
+        color: var(--sa-font);
+    }
+
+    .goods-index .el-aside .el-tree .goods {
+        line-height: 16px;
+        font-size: 12px;
+        color: var(--sa-subfont);
+    }
+
+    .goods-index .el-aside .el-tree:not(.all) .el-tree-node.is-current>.el-tree-node__content {
+        background: var(--t-bg-active);
+    }
+
+    .goods-index .el-aside .el-tree:not(.all) .el-tree-node.is-current>.el-tree-node__content .el-tree-node__expand-icon {
+        color: var(--el-color-primary);
+    }
+
+    .goods-index .el-aside .el-tree:not(.all) .el-tree-node.is-current>.el-tree-node__content .name {
+        color: var(--el-color-primary);
+    }
+
+    .goods-index .el-aside .el-tree:not(.all) .el-tree-node.is-current>.el-tree-node__content .goods {
+        color: var(--el-color-primary);
+    }
+
+    .goods-index .goods-item .goods-image {
+        margin-right: 12px;
+    }
+
+    .goods-index .goods-item .goods-title {
+        height: 20px;
+        line-height: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--sa-font);
+    }
+
+    .goods-index .goods-item .goods-subtitle {
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subfont);
+        margin-bottom: 6px;
+    }
+
+    .goods-index .activity-tag {
+        padding: 3px 8px;
+        border-radius: 10px;
+        line-height: 14px;
+        font-size: 12px;
+        font-weight: 400;
+        margin-right: 8px;
+        cursor: pointer;
+    }
+
+    .goods-index .activity-tag:last-of-type {
+        margin-right: 0;
+    }
+
+    .goods-index .activity-tag.groupon,
+    .goods-index .activity-tag.groupon_ladder {
+        color: var(--el-color-primary);
+        background: var(--t-bg-active);
+    }
+
+    .goods-index .activity-tag.seckill {
+        color: #ff4d4f;
+        background: rgba(255, 77, 79, .16);
+    }
+
+    .goods-index .activity-tag.promos {
+        color: #faad14;
+        background: rgba(250, 173, 20, 0.16);
+    }
+
+    .goods-index .sku {
+        width: fit-content;
+        height: 20px;
+        line-height: 1;
+        padding: 0 8px;
+        font-size: 12px;
+        color: #fff;
+        background: var(--el-color-primary);
+        border-radius: 10px;
+        cursor: pointer;
+    }
+
+    .goods-index .sku .el-icon {
+        margin-left: 4px;
+    }
+
+    .goods-index .add-stock {
+        margin-left: 8px;
+    }
+
+    .goods-index .add-stock .iconfont {
+        font-size: 12px;
+        color: var(--el-color-primary);
+    }
+
+    .goods-index .sku-image {
+        margin-left: 16px;
+        margin-right: 28px;
+    }
+
+    .goods-index .sku-text {
+        font-size: 12px;
+        color: var(--sa-font);
+    }
+
+    .goods-index .price .el-input,
+    .goods-index .sales .el-input {
+        flex: 1;
+    }
+
+    .goods-index .price span,
+    .goods-index .sales span {
+        margin: 0 8px;
+    }
+
+    .goods-index .sa-table-wrap {
+        height: 100%;
+        margin-left: -48px;
+        overflow: hidden;
+    }
+
+    .goods-index .sa-table-wrap .sa-expand-table .el-table__header-wrapper {
+        display: none;
+    }
+</style>
+
+<div id="index" class="goods-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-container class="goods-index-main">
+            <el-aside>
+                <el-scrollbar height="100%">
+                    <div class="category-all sa-flex sa-row-between"
+                        :class="state.filter.data.category_ids == 'all'?'is-active':''"
+                        @click.stop="onChangeCategoryIds()">
+                        <span>全部商品</span>
+                        <span @click.stop="onFold">折叠</span>
+                    </div>
+                    <el-tree ref="treeRef" :class="state.filter.data.category_ids" :data="category.select" :props="{
+                    label:'name'
+                }" :expand-on-click-node="false" node-key="id" :current-node-key="state.filter.data.category_ids"
+                        :indent="12" :default-expanded-keys="defaultExpandedKeys" @node-click="onChangeCategoryIds">
+                        <template #default="{ node, data }">
+                            <div>
+                                <div class="name">{{ node.label }}</div>
+                                <div v-if="node.level = 1" class="goods mt-1">
+                                    <span v-if="data.children?.length">
+                                        子分类{{data.children.length}}
+                                    </span>
+                                </div>
+                            </div>
+                        </template>
+                    </el-tree>
+                </el-scrollbar>
+            </el-aside>
+            <el-container>
+                <el-header class="sa-header">
+                    <el-tabs class="sa-tabs" v-model="state.filter.data.status" @tab-change="onChangeTab">
+                        <el-tab-pane v-for="sl in type.data.status" :key="sl" :label="sl.name" :name="sl.type">
+                        </el-tab-pane>
+                    </el-tabs>
+                    <div class="sa-title sa-flex sa-row-between">
+                        <div class="sa-title-left">
+                            <div class="left-name">商品库</div>
+                            <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                            </sa-filter-condition>
+                        </div>
+                        <div class="sa-title-right">
+                            <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                            <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                            {if $auth->check('shopro/goods/goods/add')}
+                            <el-button icon="Plus" type="primary" @click="onAdd">添加</el-button>
+                            {/if}
+                            {if $auth->check('shopro/goods/goods/recyclebin')}
+                            <el-button type="danger" icon="Delete" plain @click="onRecyclebin">回收站</el-button>
+                            {/if}
+                        </div>
+                    </div>
+                </el-header>
+                <el-main class="sa-main">
+                    <div class="sa-table-wrap">
+                        <el-table height="100%" class="sa-table" :data="state.data"
+                            @selection-change="onChangeSelection" @sort-change="onChangeSort"
+                            :expand-row-keys="expandRowKeys" row-key="id" stripe>
+                            <el-table-column type="expand">
+                                <template #default="props">
+                                    <el-table class="sa-table sa-expand-table" :data="skuPrice.data" stripe>
+                                        <el-table-column width="96"></el-table-column>
+                                        <el-table-column prop="id" label="ID" min-width="90"></el-table-column>
+                                        <el-table-column label="商品" min-width="440">
+                                            <template #default="scope">
+                                                <div class="sa-flex">
+                                                    <sa-image class="sku-image"
+                                                        :url="scope.row.image || props.row.image" size="32"></sa-image>
+                                                    <div class="sku-text">
+                                                        {{ scope.row.goods_sku_text?.join('/') }}
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </el-table-column>
+                                        <el-table-column prop="price" label="价格" min-width="150"></el-table-column>
+                                        <el-table-column prop="sales" label="销量" min-width="100"></el-table-column>
+                                        <el-table-column label="浏览量" min-width="100">
+                                            <template #default="scope">
+                                                {{ scope.row.views || '-' }}</template>
+                                        </el-table-column>
+                                        <el-table-column prop="stock" label="库存" min-width="100"></el-table-column>
+                                        <el-table-column label="更新时间" width="172">
+                                            <template #default>-</template>
+                                        </el-table-column>
+                                        <el-table-column label="操作" min-width="240">
+                                            <template #default="scope">
+                                                {if $auth->check('shopro/goods/sku_price/edit')}
+                                                <el-dropdown popper-class="goods-dropdown" @command="onSkuCommand">
+                                                    <el-button link>
+                                                        <el-tag :type="state.statusData.type[scope.row.status]">
+                                                            {{ scope.row.status_text }}
+                                                            <el-icon>
+                                                                <arrow-down />
+                                                            </el-icon>
+                                                        </el-tag>
+                                                    </el-button>
+                                                    <template #dropdown>
+                                                        <el-dropdown-menu>
+                                                            <template v-for="item in type.data.status">
+                                                                <el-dropdown-item
+                                                                    v-if="item.type!='all' && item.type!='hidden'"
+                                                                    :command="{
+                                                                goods_id: props.row.id,
+                                                            id: scope.row.id,
+                                                            type: item.type,
+                                                        }">
+                                                                    <span
+                                                                        :style="{color:state.statusData.color[item.type]}">
+                                                                        {{item.name}}
+                                                                    </span>
+                                                                </el-dropdown-item>
+                                                            </template>
+                                                        </el-dropdown-menu>
+                                                    </template>
+                                                </el-dropdown>
+                                                {/if}
+                                            </template>
+                                        </el-table-column>
+                                    </el-table>
+                                </template>
+                            </el-table-column>
+                            <el-table-column type="selection" width="48" align="center"></el-table-column>
+                            <el-table-column sortable="custom" prop="id" label="ID" min-width="90"></el-table-column>
+                            <el-table-column label="商品" min-width="440">
+                                <template #default="scope">
+                                    <div class="goods-item sa-flex sa-col-top">
+                                        <sa-image class="goods-image" :url="scope.row.image" size="64"></sa-image>
+                                        <div class="right">
+                                            <div class="goods-title sa-table-line-1">{{scope.row.title}}</div>
+                                            <div class="goods-subtitle sa-table-line-1">{{scope.row.subtitle}}</div>
+                                            <el-scrollbar>
+                                                <div class="sa-flex">
+                                                    <template v-for="activity in scope.row.activities">
+                                                        <el-popover popper-class="sa-popper" trigger="hover">
+                                                            <el-button type="primary" link
+                                                                @click="onOpenActivityDetail(activity)">
+                                                                {{ activity.title }}
+                                                            </el-button>
+                                                            <template #reference>
+                                                                <div class="activity-tag" :class="activity.type">
+                                                                    {{ activity.type_text }}
+                                                                </div>
+                                                            </template>
+                                                        </el-popover>
+                                                    </template>
+                                                    <template v-for="promo in scope.row.promos">
+                                                        <el-popover popper-class="sa-popper" trigger="hover">
+                                                            <el-button type="primary" link
+                                                                @click="onOpenActivityDetail(activity)">
+                                                                {{ promo.title }}
+                                                            </el-button>
+                                                            <template #reference>
+                                                                <div class="activity-tag promos">
+                                                                    {{ promo.type_text }}
+                                                                </div>
+                                                            </template>
+                                                        </el-popover>
+                                                    </template>
+                                                </div>
+                                            </el-scrollbar>
+                                        </div>
+                                    </div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column sortable="custom" prop="price" label="价格" min-width="150">
+                                <template #default="scope">
+                                    <div>{{ scope.row.price?.join('~') || 0 }}</div>
+                                    <div v-if="scope.row.is_sku" class="sku sa-flex sa-row-center"
+                                        @click.stop="onExpand(scope.row.id)">
+                                        <span>多规格</span>
+                                        <el-icon
+                                            :class="[ 'expand-arrow', expandRowKeys.includes(scope.row.id) ? 'expand-arrow-up' : 'expand-arrow-down',]">
+                                            <arrow-down />
+                                        </el-icon>
+                                    </div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column sortable="custom" prop="sales" label="销量" min-width="100">
+                            </el-table-column>
+                            <el-table-column sortable="custom" prop="views" label="浏览量" min-width="100">
+                            </el-table-column>
+                            <el-table-column label="库存" min-width="100">
+                                <template #default="scope">
+                                    <div class="sa-flex">
+                                        <span>{{ scope.row.stock || 0 }}</span>
+                                        {if $auth->check('shopro/goods/goods/addStock')}
+                                        <el-button class="add-stock" link @click="onEditStock(scope.row)">
+                                            <i class="iconfont iconadd-stock"></i>
+                                        </el-button>
+                                        {/if}
+                                    </div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="更新时间" width="172">
+                                <template #default="scope">{{ scope.row.createtime || '-' }}</template>
+                            </el-table-column>
+                            <el-table-column label="操作" min-width="240" fixed="right">
+                                <template #default="scope">
+                                    <div class="sa-flex">
+                                        {if $auth->check('shopro/goods/goods/edit')}
+                                        <el-dropdown popper-class="goods-dropdown" @command="onCommand">
+                                            <el-button link>
+                                                <el-tag :type="state.statusData.type[scope.row.status]">
+                                                    {{ scope.row.status_text }}
+                                                    <el-icon>
+                                                        <arrow-down />
+                                                    </el-icon>
+                                                </el-tag>
+                                            </el-button>
+                                            <template #dropdown>
+                                                <el-dropdown-menu>
+                                                    <template v-for="item in type.data.status">
+                                                        <el-dropdown-item v-if="item.type!='all'" :command="{
+                                                    id: scope.row.id,
+                                                    type: item.type,
+                                                }">
+                                                            <span :style="{color:state.statusData.color[item.type]}">
+                                                                {{item.name}}
+                                                            </span>
+                                                        </el-dropdown-item>
+                                                    </template>
+                                                </el-dropdown-menu>
+                                            </template>
+                                        </el-dropdown>
+                                        <el-button type="primary" link @click="onEdit(scope.row.id)">编辑</el-button>
+                                        {/if}
+                                        {if $auth->check('shopro/goods/goods/add')}
+                                        <el-button type="primary" link @click="onCopy(scope.row.id)">复制
+                                        </el-button>
+                                        {/if}
+                                        <el-popconfirm width="fit-content" confirm-button-text="确认"
+                                            cancel-button-text="取消" title="确认删除这条记录?" @confirm="onDelete(scope.row.id)">
+                                            <template #reference>
+                                                {if $auth->check('shopro/goods/goods/delete')}
+                                                <el-button type="danger" link>删除</el-button>
+                                                {/if}
+                                            </template>
+                                        </el-popconfirm>
+                                    </div>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                </el-main>
+            </el-container>
+        </el-container>
+        <el-footer class="sa-footer sa-flex sa-row-between sa-flex-wrap">
+            <div class="sa-batch sa-flex">
+                <div class="tip">
+                    已选择 <span>{{batchHandle.data.length}}</span> 项</div>
+                <div class="sa-flex">
+                    {if $auth->check('shopro/goods/goods/delete')}
+                    <el-button type="danger" :disabled="!batchHandle.data.length" @click="onBatchHandle('delete')">删除
+                    </el-button>
+                    {/if}
+                    {if $auth->check('shopro/goods/goods/edit')}
+                    <el-button type="success" :disabled="!batchHandle.data.length" @click="onBatchHandle('up')">上架
+                    </el-button>
+                    {/if}
+                    {if $auth->check('shopro/goods/goods/edit')}
+                    <el-button type="danger" :disabled="!batchHandle.data.length" @click="onBatchHandle('down')">下架
+                    </el-button>
+                    {/if}
+                    {if $auth->check('shopro/goods/goods/edit')}
+                    <el-button type="info" :disabled="!batchHandle.data.length" @click="onBatchHandle('hidden')">隐藏
+                    </el-button>
+                    {/if}
+                </div>
+            </div>
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter">
+        <template #supplement>
+            <el-form-item class="price" label="价格区间">
+                <el-input v-model="state.filter.data.price.min" placeholder="最低价格"></el-input>
+                <span>至</span>
+                <el-input v-model="state.filter.data.price.max" placeholder="最高价格"></el-input>
+            </el-form-item>
+            <el-form-item class="sales" label="销量区间">
+                <el-input v-model="state.filter.data.sales.min" placeholder="最低销量"></el-input>
+                <span>至</span>
+                <el-input v-model="state.filter.data.sales.max" placeholder="最高销量"></el-input>
+            </el-form-item>
+        </template>
+    </sa-filter>
+</div>

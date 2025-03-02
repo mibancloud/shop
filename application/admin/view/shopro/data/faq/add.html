@@ -1,0 +1,28 @@
+{include file="/shopro/common/script" /}
+
+<div id="addEdit" class="faq-form" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item label="标题" prop="title">
+                        <el-input class="sa-w-360" v-model="form.model.title" placeholder="请输入标题"></el-input>
+                    </el-form-item>
+                    <el-form-item label="内容" prop="content">
+                        <el-input class="sa-w-360" type="textarea" v-model="form.model.content" placeholder="请输入内容">
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="状态" required>
+                        <el-radio-group v-model="form.model.status">
+                            <el-radio label="normal">正常</el-radio>
+                            <el-radio label="hidden">隐藏</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

@@ -1,0 +1,17 @@
+{include file="/shopro/common/script" /}
+
+<div id="handle" class="withdraw-handle" v-cloak>
+    <el-container class="panel-block">
+        <el-main>
+            <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                <el-form-item label="拒绝理由" prop="refuse_msg">
+                    <el-input class="sa-w-360" v-model="form.model.refuse_msg" autosize type="textarea"
+                        placeholder="请输入拒绝理由"></el-input>
+                </el-form-item>
+            </el-form>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

@@ -1,0 +1,248 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .comment-form .sa-template-wrap .item {
+        border-bottom: none
+    }
+
+    .comment-form .goods-image {
+        margin-right: 8px;
+    }
+
+    .comment-form .goods-price {
+        color: var(--el-color-danger);
+    }
+
+    .comment-form .top {
+        background: var(--sa-table-header-bg);
+        padding: 20px 24px 0;
+        font-size: 12px;
+        color: #8c8c8c;
+    }
+
+    .comment-form .top .el-col {
+        margin-bottom: 20px;
+    }
+
+    .comment-form .top .title {
+        font-size: 14px;
+        line-height: 18px;
+        font-weight: 500;
+        color: var(--sa-title);
+        margin-bottom: 8px;
+    }
+
+    .comment-form .top .goods-title {
+        color: var(--el-color-primary);
+        margin-bottom: 8px;
+    }
+
+    .comment-form .left {
+        flex-shrink: 0;
+    }
+
+    .comment-form .bottom {
+        margin: 32px 20px 0;
+    }
+
+    .comment-form .avatar {
+        margin-right: 12px;
+    }
+
+    .comment-form .list {
+        padding: 20px 0;
+        border-bottom: 1px solid var(--sa-space);
+    }
+
+    .comment-form .nickname {
+        font-weight: 500;
+        font-size: 12px;
+        color: var(--sa-subfont);
+        margin-bottom: 4px;
+    }
+
+    .comment-form .reply-time {
+        font-weight: 400;
+        font-size: 12px;
+        color: var(--sa-subfont);
+        margin-bottom: 8px;
+    }
+
+    .comment-form .reply-content {
+        color: var(--sa-subtitle);
+        font-weight: 500;
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+
+    .comment-form .list-image {
+        margin-right: 8px;
+    }
+
+    .comment-form .list-image:last-of-type {
+        margin-right: 0;
+    }
+</style>
+
+<div id="addEdit" class="comment-form" v-cloak>
+    <el-container v-if="state.type=='add'" class="panel-block">
+        <el-main>
+            <el-scrollbar height="100%">
+                <el-form :model="form.model" :rules="form.rules" ref="formRef" label-width="100px">
+                    <el-form-item label="评价内容" prop="content">
+                        <el-input class="sa-w-360" v-model="form.model.content" autosize type="textarea"
+                            placeholder="请输入评价内容">
+                        </el-input>
+                    </el-form-item>
+                    <el-form-item label="评价图片">
+                        <sa-uploader v-model="form.model.images" :multiple="true"></sa-uploader>
+                    </el-form-item>
+                    <el-form-item label="评价星级" prop="level">
+                        <el-rate v-model="form.model.level"></el-rate>
+                    </el-form-item>
+                    <el-form-item label="评价用户" prop="user_id">
+                        <el-button v-if="!form.model.user_id" type="primary" link @click="onSelectFakeUser">
+                            选择虚拟用户
+                        </el-button>
+                        <div v-if="form.model.user_id" class="sa-template-wrap">
+                            <div class="item">
+                                <div class="key id">{{ state.fakeUserData?.id }}</div>
+                                <div class="key">{{ state.fakeUserData?.nickname }}</div>
+                                <div class="oper">
+                                    <el-button type="danger" link @click="onDeleteFakeUser">
+                                        移除
+                                    </el-button>
+                                </div>
+                            </div>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="商品选择" prop="goods_id">
+                        <el-button v-if="!form.model.goods_id" type="primary" link @click="onSelectGoods">选择商品
+                        </el-button>
+                        <div v-if="form.model.goods_id" class="sa-template-wrap">
+                            <div class="item">
+                                <div class="key id">{{ form.model.goods_id }}</div>
+                                <div class="key">
+                                    <sa-image class="goods-image" :url="state.goodsData?.image" size="40"></sa-image>
+                                    <div class="right">
+                                        <div class="goods-title sa-table-line-1">
+                                            {{ state.goodsData?.title }}
+                                        </div>
+                                        <div class="goods-price">
+                                            ¥{{ state.goodsData?.price.join('~') || 0 }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="oper">
+                                    <el-button type="danger" link @click="onDeleteGoods">移除</el-button>
+                                </div>
+                            </div>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="状态" prop="status">
+                        <el-radio-group v-model="form.model.status">
+                            <el-radio label="normal">显示</el-radio>
+                            <el-radio label="hidden">隐藏</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                </el-form>
+            </el-scrollbar>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+    <el-container v-if="state.type=='edit'" class="panel-block">
+        <el-main>
+            <el-row class="top" :gutter="10">
+                <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                    <div class="title">评价信息</div>
+                    <div class="item sa-flex">
+                        <div class="left">用户昵称：</div>
+                        <div class="right">{{form.model.user?.nickname || form.model.user_id}}</div>
+                    </div>
+                    <div class="item sa-flex">
+                        <div class="left">评价星级：</div>
+                        <div class="right">
+                            <el-rate v-model="form.model.level" disabled></el-rate>
+                        </div>
+                    </div>
+                    <div class="item sa-flex">
+                        <div class="left">显示状态：</div>
+                        <div class="right">
+                            <el-radio-group v-model="form.model.status" @change="onChangeStatus">
+                                <el-radio label="normal">正常</el-radio>
+                                <el-radio label="hidden">隐藏</el-radio>
+                            </el-radio-group>
+                        </div>
+                    </div>
+                </el-col>
+                <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
+                    <div class="title">商品信息</div>
+                    <div v-if="form.model.order_item" class="sa-flex">
+                        <sa-image class="mr-2" :url="form.model.order_item.goods_image" size="64"></sa-image>
+                        <div class="right">
+                            <div class="goods-title sa-table-line-1">
+                                {{ form.model.order_item.goods_title }}
+                            </div>
+                            <div class="sa-flex mb-2">
+                                <div class="left">单价：</div>
+                                <div class="right goods-num">{{ form.model.order_item.goods_price }}×{{
+                                    form.model.order_item.goods_num }}</div>
+                            </div>
+                            <div v-if="form.model.order_item.goods_sku_text" class="sa-flex">
+                                <div class="left">规格：</div>
+                                <div class="right goods-num">{{ form.model.order_item.goods_sku_text }},</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else-if="form.model.goods" class="sa-flex">
+                        <sa-image class="mr-2" :url="form.model.goods.image" size="64"></sa-image>
+                        <div class="right">
+                            <div class="goods-title sa-table-line-1">{{form.model.goods.title}}</div>
+                            <div class="item sa-flex">
+                                <div class="left">单价：</div>
+                                <div class="right goods-num">
+                                    {{form.model.goods.price.join(',')}}
+                                </div>
+                            </div>
+                            <div v-if="form.model.goods.sku_text" class="item sa-flex">
+                                <div class="left">规格：</div>
+                                <div class="right goods-num">{{form.model.goods.sku_text }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </el-col>
+            </el-row>
+            <div class="bottom">
+                <div class="title sa-flex sa-row-between">
+                    <div>评价记录</div>
+                    {if $auth->check('shopro/goods/comment/reply')}
+                    <el-button v-if="!form.model.reply_time" type="primary" link @click="onReply">点击回复</el-button>
+                    {/if}
+                </div>
+                <div v-if="form.model.admin" class="list sa-flex sa-col-top">
+                    <sa-image class="avatar" :url="form.model.admin.avatar" size="48"></sa-image>
+                    <div>
+                        <div class="nickname">{{ form.model.admin.nickname }}</div>
+                        <div class="reply-time">{{ form.model.reply_time }}</div>
+                        <div class="reply-content">{{ form.model.reply_content }}</div>
+                    </div>
+                </div>
+                <div v-if="form.model.user" class="list sa-flex sa-col-top">
+                    <sa-image class="avatar" :url="form.model.user.avatar" size="48"></sa-image>
+                    <div>
+                        <div class="nickname">{{ form.model.user.nickname }}</div>
+                        <div class="reply-time">{{ form.model.createtime }}</div>
+                        <div class="reply-content">{{ form.model.content }}</div>
+                        <div class="sa-flex">
+                            <template v-for="item in form.model.images">
+                                <sa-image class="list-image" :url="item" size="48"></sa-image>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </el-main>
+    </el-container>
+</div>

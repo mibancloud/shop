@@ -1,0 +1,56 @@
+{include file="/shopro/common/script" /}
+
+<style>
+  .order-detail .pay {
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+  }
+</style>
+
+<div id="detail" class="order-detail panel panel-default panel-intro" v-cloak>
+  <el-container class="panel-block">
+    <el-main>
+      <el-scrollbar height="100%">
+        <el-form :model="state.detail" ref="formRef" label-width="100px">
+          <el-form-item label="用户信息">
+            <sa-user-profile :user="state.detail.user" :id="state.detail.user_id"></sa-user-profile>
+          </el-form-item>
+          <el-form-item label="订单总金额">
+            {{ state.detail.order_amount }}元
+          </el-form-item>
+          <el-form-item label="支付总金额">
+            {{ state.detail.pay_fee }}元
+          </el-form-item>
+          <el-form-item label="支付状态">
+            <span :class="`sa-color--${statusStyle[state.detail.status]}`">
+              {{ state.detail.status_text }}
+            </span>
+          </el-form-item>
+          <el-form-item label="支付方式">
+            <div v-if="state.detail.pay_type" class="sa-flex">
+              <img class="pay" :src="`/assets/addons/shopro/img/${state.detail.pay_type}.png`" />
+              <div>{{state.detail.pay_type_text}}</div>
+            </div>
+            <div v-else>-</div>
+          </el-form-item>
+          <el-form-item label="订单编号">
+            {{ state.detail.order_sn }}
+          </el-form-item>
+          <el-form-item label="订单来源">
+            {{ state.detail.platform_text }}
+          </el-form-item>
+          <el-form-item label="下单时间">
+            {{ state.detail.createtime }}
+          </el-form-item>
+          <el-form-item label="支付时间">
+            {{ state.detail.paid_time || '-' }}
+          </el-form-item>
+          <el-form-item label="用户备注">
+            {{ state.detail.remark || '-' }}
+          </el-form-item>
+        </el-form>
+      </el-scrollbar>
+    </el-main>
+  </el-container>
+</div>

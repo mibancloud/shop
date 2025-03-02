@@ -1,0 +1,56 @@
+{include file="/shopro/common/script" /}
+
+<div id="index" class="user-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">用户管理</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @sort-change="onChangeSort">
+                <el-table-column prop="id" label="ID" min-width="90" sortable="custom"> </el-table-column>
+                <el-table-column label="用户信息" min-width="150">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row" :id="scope.row.id"></sa-user-profile>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="username" label="用户名" min-width="120"></el-table-column>
+                <el-table-column prop="mobile" label="手机号" min-width="120"></el-table-column>
+                <el-table-column sortable="custom" prop="commission" label="佣金" min-width="110"></el-table-column>
+                <el-table-column sortable="custom" prop="total_consume" label="总消费" min-width="110"></el-table-column>
+                <el-table-column sortable="custom" prop="score" label="积分" min-width="110"></el-table-column>
+                <el-table-column sortable="custom" prop="money" label="余额" min-width="110"></el-table-column>
+                <el-table-column sortable="custom" prop="createtime" label="注册时间" min-width="172"></el-table-column>
+                <el-table-column sortable="custom" prop="logintime" label="上次登录" min-width="172"></el-table-column>
+                <el-table-column fixed="right" label="操作" min-width="120">
+                    <template #default="scope">
+                        {if $auth->check('shopro/user/user/detail')}
+                        <el-button type="primary" link @click="onDetail(scope.row.id)">查看</el-button>
+                        {/if}
+                        <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                            title="确认删除这条记录?" @confirm="onDelete(scope.row.id)">
+                            <template #reference>
+                                {if $auth->check('shopro/user/user/delete')}
+                                <el-button type="danger" link>删除</el-button>
+                                {/if}
+                            </template>
+                        </el-popconfirm>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

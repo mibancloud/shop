@@ -1,0 +1,123 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .page-select .page-select-main {
+        --el-main-padding: 0;
+    }
+
+    .page-select .el-aside {
+        --el-aside-width: 140px;
+        border-right: 1px solid var(--sa-border);
+        padding: 20px;
+    }
+
+    .page-select .top {
+        height: 100%;
+    }
+
+    .page-select .group .name {
+        margin: 0 0 12px 12px;
+    }
+
+    .page-select .group .link {
+        margin-bottom: 12px;
+    }
+
+    .page-select .group .link .item {
+        padding: 0 16px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--sa-border);
+        border-radius: 4px;
+        margin: 0 12px 12px 0;
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--sa-font);
+        cursor: pointer;
+    }
+
+    .page-select .group .link .item:hover {
+        color: var(--el-color-primary);
+        background: var(--t-bg-hover);
+    }
+
+    .page-select .group .link .item.item-active {
+        color: var(--el-color-primary);
+        background: var(--t-bg-active);
+    }
+
+    .page-select .left .group {
+        height: 32px;
+        line-height: 32px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--sa-subtitle);
+        margin-bottom: 4px;
+        cursor: pointer;
+    }
+
+    .page-select .left .group:hover {
+        color: var(--el-color-primary);
+        background: var(--t-bg-hover);
+    }
+
+    .page-select .left .group.is-active {
+        color: var(--el-color-primary);
+        background: var(--t-bg-active);
+    }
+
+    .page-select .right .name {
+        line-height: 16px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--sa-subtitle);
+        margin: 0 0 12px 0;
+    }
+
+    .page-select .right-group .link {
+        border-bottom: 1px dashed var(--sa-border);
+    }
+</style>
+
+<div id="select" class="page-select" v-cloak>
+    <el-container class="panel-block">
+        <el-main class="page-select-main">
+            <el-container class="top">
+                <el-aside>
+                    <el-scrollbar class="left" height="100%">
+                        <div class="group" :class="state.currentIndex == i ? 'is-active' : ''"
+                            v-for="(g, i) in state.data" :key="g" @click.stop="onChangeIndex(i)">
+                            <div class="name">{{ g.group }}</div>
+                        </div>
+                    </el-scrollbar>
+                </el-aside>
+                <el-main>
+                    <el-scrollbar class="right" ref="rightScrollRef" height="100%" @scroll="onRightScroll">
+                        <div class="group right-group" :ref="(el) => setRightRef(el, g, i)" v-for="(g, i) in state.data"
+                            :key="g">
+                            <div class="name">{{ g.group }}</div>
+                            <div class="link sa-flex sa-flex-wrap">
+                                <template v-for="l in g.children" :key="l">
+                                    <el-popover popper-class="sa-popper" trigger="hover" :content="l.path">
+                                        <template #reference>
+                                            <div class="item" :class="state.selected.id == l.id ? 'item-active' : ''"
+                                                @click="onSelect(l)">
+                                                {{ l.name }}
+                                            </div>
+                                        </template>
+                                    </el-popover>
+                                </template>
+                            </div>
+                        </div>
+                    </el-scrollbar>
+                </el-main>
+            </el-container>
+        </el-main>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+        </el-footer>
+    </el-container>
+</div>

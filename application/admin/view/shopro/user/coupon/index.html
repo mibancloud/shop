@@ -1,0 +1,56 @@
+{include file="/shopro/common/script" /}
+
+<div id="index" class="coupon-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">领取记录</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @sort-change="onChangeSort">
+                <el-table-column prop="id" label="ID" min-width="90" sortable="custom"> </el-table-column>
+                <el-table-column label="用户信息" min-width="150">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row.user" :id="scope.row.user_id"></sa-user-profile>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="status_text" label="使用状态" min-width="120">
+                    <template #default="scope">
+                        <div :class="`sa-color--${state.statusClass[scope.row.status]}`">
+                            {{ scope.row.status_text || '-' }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="有效期" min-width="320">
+                    <template #default="scope">
+                        {{scope.row.use_start_time}}~{{scope.row.use_end_time}}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="use_time" label="使用时间" min-width="172">
+                    <template #default="scope">
+                        {{scope.row.use_time || '-'}}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="order_sn" label="订单号" min-width="120">
+                    <template #default="scope">
+                        {{scope.row.order?.order_sn || '-'}}
+                    </template>
+                </el-table-column>
+                <el-table-column prop="createtime" label="领取时间" min-width="172"></el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-right">
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

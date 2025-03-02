@@ -1,0 +1,96 @@
+{include file="/shopro/common/script" /}
+
+<div id="index" class="fake-user-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">虚拟用户</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                    {if $auth->check('shopro/data/fake_user/add')}
+                    <el-button icon="Plus" type="primary" @click="onAdd">添加</el-button>
+                    {/if}
+                    {if $auth->check('shopro/data/fake_user/random')}
+                    <el-button @click="onRandom">自动生成</el-button>
+                    {/if}
+                </div>
+            </div>
+            <el-alert class="mb-3" type="warning">
+                <template #title>
+                    <div>1、可作为虚拟成团时候的虚拟用户，和虚拟评价时候的虚拟用户</div>
+                    <div>2、添加完之后可修改虚拟用户信息，不要轻易删除虚拟用户</div>
+                </template>
+            </el-alert>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @selection-change="onChangeSelection"
+                @sort-change="onChangeSort">
+                <el-table-column type="selection" width="48" align="center"></el-table-column>
+                <el-table-column prop="id" label="ID" min-width="90" sortable="custom"> </el-table-column>
+                <el-table-column label="用户名" min-width="180">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.username || '-' }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="用户信息" min-width="180">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row" :id="scope.row.id" />
+                    </template>
+                </el-table-column>
+                <el-table-column label="电子邮箱" min-width="170">
+                    <template #default="scope">
+                        <div class="sa-table-line-1">
+                            {{ scope.row.email || '-' }}
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="创建时间" width="172">
+                    <template #default="scope">
+                        {{ scope.row.createtime || '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="更新时间" width="172">
+                    <template #default="scope">
+                        {{ scope.row.updatetime || '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column fixed="right" label="操作" min-width="120">
+                    <template #default="scope">
+                        {if $auth->check('shopro/data/fake_user/edit')}
+                        <el-button type="primary" link @click="onEdit(scope.row.id)">编辑</el-button>
+                        {/if}
+                        <el-popconfirm width="fit-content" confirm-button-text="确认" cancel-button-text="取消"
+                            title="确认删除这条记录?" @confirm="onDelete(scope.row.id)">
+                            <template #reference>
+                                {if $auth->check('shopro/data/fake_user/delete')}
+                                <el-button type="danger" link>删除</el-button>
+                                {/if}
+                            </template>
+                        </el-popconfirm>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-between sa-flex-wrap">
+            <div class="sa-batch sa-flex">
+                <div class="tip">
+                    已选择 <span>{{batchHandle.data.length}}</span> 项</div>
+                <div class="sa-flex">
+                    {if $auth->check('shopro/data/fake_user/delete')}
+                    <el-button type="danger" :disabled="!batchHandle.data.length" @click="onBatchHandle('delete')">删除
+                    </el-button>
+                    {/if}
+                </div>
+            </div>
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

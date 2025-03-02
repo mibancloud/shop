@@ -1,0 +1,81 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .agent-select .filter-item {
+        width: 330px;
+    }
+
+    .agent-select .filter-item .el-select {
+        width: 110px;
+    }
+</style>
+
+<div id="select" class="agent-select" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <el-alert class="mt-4">
+                <template #title>
+                    温馨提示：更换上级推荐人之后，该用户之后的所有团队和业绩将移至新的推荐人名下
+                </template>
+            </el-alert>
+            <div class="sa-flex sa-flex-wrap sa-row-between mt-4">
+                <div class="sa-flex">
+                    当前推荐人：
+                    <sa-user-profile type="agent" :user="state.userDetail.parent_user"
+                        :id="state.userDetail?.parent_user_id" :isHover="false"></sa-user-profile>
+                </div>
+                <el-input class="filter-item" v-model="state.filter.data.user.value" placeholder="请输入查询内容">
+                    <template #prepend>
+                        <el-select v-model="state.filter.data.user.field">
+                            <el-option label="分销商ID" value="user_id"></el-option>
+                            <el-option label="分销商昵称" value="user.nickname"></el-option>
+                            <el-option label="分销商手机号" value="user.mobile"></el-option>
+                        </el-select>
+                    </template>
+                    <template #append>
+                        <button @click="getData">搜索</button>
+                    </template>
+                </el-input>
+            </div>
+        </el-header>
+        <el-main>
+            <el-table height="100%" class="sa-table" :data="state.data" stripe>
+                <el-table-column prop="user_id" label="ID" min-width="90"></el-table-column>
+                <el-table-column label="分销商信息" min-width="150">
+                    <template #default="scope">
+                        <sa-user-profile :user="scope.row.user" :id="scope.row.user_id" :isHover="false" />
+                    </template>
+                </el-table-column>
+                <el-table-column label="等级" min-width="150" align="center">
+                    <template #default="scope">
+                        <template v-if="scope.row.level_info">
+                            {{ scope.row.level_info.name }}
+                            (等级{{ scope.row.level_info.level }})
+                        </template>
+                        <template v-else>{{ scope.row.level }}</template>
+                    </template>
+                </el-table-column>
+                <el-table-column label="手机号" min-width="120" align="center">
+                    <template #default="scope">
+                        {{ scope.row.user ? scope.row.user.mobile : '-' }}
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" min-width="80" fixed="right">
+                    <template #default="scope">
+                        <span v-if="scope.row.user_id == state.parent_user_id" class="status"> 已选择 </span>
+                        <el-button v-else class="is-link" type="primary" @click="onSelect(scope.row)">选择</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-flex sa-row-between">
+            <el-checkbox v-model="state.parent_user_id" :true-label="0" :false-label="-1">设为平台直推</el-checkbox>
+            <sa-pagination class="is-ellipsis" v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+        <el-footer class="sa-footer--submit sa-flex sa-row-right">
+            {if $auth->check('shopro/commission/agent/changeParentUser')}
+            <el-button type="primary" @click="onConfirm">确定</el-button>
+            {/if}
+        </el-footer>
+    </el-container>
+</div>

@@ -1,0 +1,116 @@
+{include file="/shopro/common/script" /}
+
+<style>
+    .goods-index .goods-item .goods-title {
+        height: 20px;
+        line-height: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--sa-font);
+    }
+
+    .goods-index .goods-item .goods-subtitle {
+        height: 16px;
+        line-height: 16px;
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--sa-subfont);
+        margin-bottom: 6px;
+    }
+
+    .goods-index .goods-item .goods-sku {
+        width: fit-content;
+        height: 18px;
+        line-height: 18px;
+        background: var(--el-color-primary);
+        border-radius: 10px;
+        padding: 0 8px;
+        font-size: 12px;
+        color: var(--sa-background-assist);
+    }
+</style>
+
+<div id="index" class="goods-index panel panel-default panel-intro" v-cloak>
+    <el-container class="panel-block">
+        <el-header class="sa-header">
+            <div class="sa-title sa-flex sa-row-between">
+                <div class="sa-title-left">
+                    <div class="left-name">分销商品</div>
+                    <sa-filter-condition v-model="state.filter" @filter-delete="onChangeFilter">
+                    </sa-filter-condition>
+                </div>
+                <div class="sa-title-right">
+                    <el-button class="sa-button-refresh" icon="RefreshRight" @click="getData"></el-button>
+                    <el-button class="sa-button-refresh" icon="Search" @click="onOpenFilter"></el-button>
+                </div>
+            </div>
+        </el-header>
+        <el-main class="sa-main">
+            <el-table height="100%" class="sa-table" :data="state.data" stripe @selection-change="onChangeSelection">
+                <el-table-column type="selection" width="48"></el-table-column>
+                <el-table-column prop="id" label="ID" min-width="90"></el-table-column>
+                <el-table-column label="商品信息" min-width="300">
+                    <template #default="scope">
+                        <div class="goods-item sa-flex sa-col-top">
+                            <sa-image class="mr-2" :url="scope.row.image" size="64"></sa-image>
+                            <div>
+                                <div class="goods-title sa-table-line-1">{{scope.row.title}}</div>
+                                <div class="goods-subtitle sa-table-line-1">{{scope.row.subtitle}}</div>
+                                <div v-if="scope.row.is_sku==1" class="goods-sku">多规格</div>
+                            </div>
+                        </div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="价格" min-width="150">
+                    <template #default="scope">
+                        <div>{{ scope.row.price?.join('~') || 0 }}</div>
+                    </template>
+                </el-table-column>
+                <el-table-column label="分销规则" width="100">
+                    <template #default="scope">
+                        <template v-if="scope.row.commission_goods && scope.row.commission_goods.status == 1">
+                            <template v-if="scope.row.commission_goods.self_rules == 0">默认规则</template>
+                            <template v-if="scope.row.commission_goods.self_rules == 1">独立规则</template>
+                            <template v-if="scope.row.commission_goods.self_rules == 2">批量规则</template>
+                        </template>
+                        <template v-else>-</template>
+                    </template>
+                </el-table-column>
+                <el-table-column label="商品状态" width="100">
+                    <template #default="scope">
+                        <span :class="`sa-color--${state.statusStyle[scope.row.status]}`">
+                            {{ scope.row.status_text }}
+                        </span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="操作" min-width="140" fixed="right">
+                    <template #default="scope">
+                        <div class="sa-flex">
+                            <span class="mr-2"
+                                :class="`sa-color--${state.goodsStatusStyle[scope.row.commission_goods?.status] || 'info'}`">
+                                {{ scope.row.commission_goods?.status_text || '未参与' }}
+                            </span>
+                            {if $auth->check('shopro/commission/goods/edit')}
+                            <el-button type="primary" link @click="onEdit(scope.row.id)">设置佣金</el-button>
+                            {/if}
+                        </div>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-main>
+        <el-footer class="sa-footer sa-flex sa-row-between sa-flex-wrap">
+            <div class="sa-batch sa-flex">
+                <div class="tip">
+                    已选择 <span>{{batchHandle.data.length}}</span> 项</div>
+                <div class="sa-flex">
+                    {if $auth->check('shopro/commission/goods/edit')}
+                    <el-button type="primary" :disabled="!batchHandle.data.length" @click="onBatchHandle('edit')">设置佣金
+                    </el-button>
+                    {/if}
+                </div>
+            </div>
+            <sa-pagination v-model="pagination" @pagination-change="getData"></sa-pagination>
+        </el-footer>
+    </el-container>
+    <sa-filter v-model="state.filter" @filter-change="onChangeFilter"></sa-filter>
+</div>

@@ -1,0 +1,593 @@
+<div class="phone">
+    <div class="phone_bg1">
+        <div class="phone_bg2">
+            <div class="phone_bg3">
+                <!-- 布局 -->
+                <div class="diy-phone">
+                    <div id="diy-page" class="phone-top optional" @click="onEditer('page')" :class="{selected: 'page' === selectedIndex}"
+                        :style="{background: mobilediydata.page.style.titleBackgroundColor + ' url(/assets/addons/mobilediy/img/' + mobilediydata.page.style.titleTextColor + '.png) no-repeat center / contain'}">
+                        <h4 :style="{color: mobilediydata.page.style.titleTextColor}">{{ mobilediydata.page.params.title }}</h4>
+                    </div>
+                    <div id="phone-main" class="phone-main" v-cloak>
+                        <draggable :list="mobilediydata.items" class="dragPanel" @update="onDragItemEnd" :options="{animation: 120, filter: '.drag__nomove' }">
+                            <template v-for="(item, index) in mobilediydata.items">
+                                <!-- 轮播 -->
+                                <template v-if="item.type == 'banner'">
+                                    <div class="drag optional" @click="onEditer(index)" :class="{selected: index === selectedIndex}">
+                                        <el-carousel height="180px">
+                                            <el-carousel-item v-for="(banner, index) in item.data">
+                                                <img :src="banner.imgUrl" style="height: auto;max-width: 100%;">
+                                            </el-carousel-item>
+                                          </el-carousel>
+                                        <div class="btn-edit-del">
+                                            <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                            <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                            <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                            <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 主副标题 -->
+                                <template v-else-if="item.type == 'thetitle'">
+                                    <div class="drag optional" @click="onEditer(index)" :class="{selected: index === selectedIndex}">
+                                        <div v-if= "item.params.lineStyle == 'lineStyle1'" class="diy-thetitle" :style="{padding: item.style.paddingTop +'px '+'0', background:item.style.background }">
+                                            <div style="text-align: center;">
+                                                <div  style="display: inline-block;width: 15px;height: 2px;vertical-align: 5px;" :style="{background: item.params.lineColor}"></div>
+                                                <div style="display: inline-block;color: #434343;margin:0 10px;line-height: 20px;" :style="{color: item.params.zhutitlecolor,fontSize:item.params.zhutitlesize+'px'}">{{item.params.zhutitle}}</div>
+                                                <div style="display: inline-block;width: 15px;height: 2px;vertical-align: 5px;" :style="{background: item.params.lineColor}"></div>
+                                            </div>
+                                            <div class="text_hide" style="line-height:14px;margin-top: 8px;text-align: center;" :style="{color: item.params.futitlecolor,fontSize : item.params.futitlesize+'px'}">{{item.params.futitle}}</div>
+                                        </div>
+            
+                                        <div v-if= "item.params.lineStyle == 'lineStyle2'" class="diy-thetitle" :style="{padding: item.style.paddingTop +'px '+'0', background:item.style.background,paddingLeft:item.params.marginLeft +'px' }">
+                                            <div style="line-height: 14px"  :style="{color: item.params.zhutitlecolor,fontSize:item.params.zhutitlesize+'px'}">
+                                                <span style="width: 2px;display: inline-block;margin-right: 5px;vertical-align: -2px;" :style="{background: item.params.lineColor,height:item.params.zhutitlesize+'px'}"></span>
+                                                {{item.params.zhutitle}}
+                                            </div>
+                                            <div style="line-height: 12px;margin-top: 8px" :style="{color: item.params.futitlecolor,fontSize : item.params.futitlesize+'px'}">{{item.params.futitle}}</div>
+                                        </div>
+                                        
+                                        <div v-if= "item.params.lineStyle == 'lineStyle3'" class="diy-thetitle"  :style="{padding: item.style.paddingTop +'px '+'0', background:item.style.background,paddingLeft:item.params.marginLeft +'px' }">
+                                            <div style="line-height: 14px" :style="{color: item.params.zhutitlecolor,fontSize:item.params.zhutitlesize+'px'}">
+                                                <span style="width: 2px;display: inline-block;margin-right: 5px;vertical-align: -2px;" :style="{background: item.params.lineColor,height:item.params.zhutitlesize+'px'}"></span>
+                                                {{item.params.zhutitle}}
+                                                <span style="line-height: 12px;margin-left: 5px"  :style="{color: item.params.futitlecolor,fontSize : item.params.futitlesize+'px'}">{{item.params.futitle}}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="btn-edit-del">
+                                            <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                            <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                            <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                            <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 单图组 -->
+                                <template v-else-if="item.type == 'images'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div class="diy-imageSingle"
+                                                    :style="{ paddingBottom: item.style.paddingTop + 'px', background: item.style.background}">
+                                                <div v-for="images in item.data" :style="{padding: item.style.paddingTop + 'px ' + item.style.paddingLeft + 'px 0'}">
+                                                    <img :src="images.imgUrl" :style="{'border-radius':item.style.borderradius+'px'}">
+                                                </div>
+                                            </div>
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                    <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                        <div slot="reference" >移除</div>
+                                                    </el-popconfirm>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 导航组 -->
+                                <template v-else-if="item.type == 'navBar'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div class="diy-navBar" :style="{background:item.style.background}">
+                                                <div class="diy-navBar-item" v-for="(navBar,index) in item.data" :style="{width:item.style.rowsNum === '4'?'25%':(item.style.rowsNum ==='3'?'33.333%':'20%')}">
+                                                    <div class="item-image">
+                                                        <img :src="navBar.imgUrl" :style="{'border-radius':item.style.borderradius+'px'}">
+                                                    </div>
+                                                    <p class="item-text am-text-truncate"
+                                                        :style="{color:navBar.color,'margin': '0px'}">
+                                                        {{navBar.text}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 文字按钮 -->
+                                <template v-else-if="item.type == 'textbutton'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div class="diy-textbutton" style="padding:4px 5px" :style="{background:item.style.background,padding: item.style.paddingTop +'px '+'0'}">
+                                                <a class="diy-textbutton-item" v-for="(textbuttonitem,index) in item.data" :style="{color: textbuttonitem.color}">{{textbuttonitem.text}}
+                                                </a>
+                                            </div>
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 辅助空白 -->
+                                <template v-else-if="item.type == 'blank'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div :style="{height: item.style.height +'px', background:item.style.background }">
+                                            </div>
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 辅助线 -->
+                                <template v-else-if="item.type == 'guide'">
+                                    <div @click="onEditer(index)"
+                                            class="drag optional" :class="{selected: index === selectedIndex}">
+                                        <div class="diy-guide" :style="{padding: item.style.paddingTop +'px '+'0', background:item.style.background }">
+                                            <p class="line"
+                                                :style="{borderTopWidth: item.style.lineHeight +'px',borderTopColor:item.style.lineColor,borderTopStyle: item.style.lineStyle }">
+                                            </p>
+                                        </div>
+                                        <div class="btn-edit-del">
+                                            <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                            <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                            <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                            <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 公告组 -->
+                                <template v-else-if="item.type == 'notice'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div class="diy-notice dis-flex"
+                                                    :style="{padding: item.style.paddingTop + 'px' + ' 10px', background: item.style.background}">
+                                                <div class="notice__icon">
+                                                    <img :src="item.params.icon">
+                                                </div>
+                                                <div class="notice__text flex-box am-text-truncate">
+                                                    <span :style="{color: item.style.textColor}">{{item.params.text}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 图片橱窗 -->
+                                <template v-else-if="item.type == 'window'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div class="diy-window" :style="{ background: item.style.background, padding: item.style.paddingTop + 'px ' + item.style.paddingLeft + 'px' }">
+                                                <div class="data-list" v-if="item.style.layout > -1" :style="{}">
+                                                    <div v-for="window in item.data" :style="{ padding: item.style.paddingTop + 'px ' + item.style.paddingLeft + 'px' ,width:item.style.layout == 2?'50%':(item.style.layout ==3?'33.333%':'25%')}">
+                                                        <div class="item-image">
+                                                            <img :src="window.imgUrl" :style="{'border-radius':item.style.borderradius+'px'}">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="display" v-else>
+                                                    <div class="display-left" :style="{ padding: item.style.paddingTop + 'px ' + item.style.paddingLeft + 'px' }">
+                                                        <img :src="item.data[0].imgUrl" :style="{'border-radius':item.style.borderradius+'px'}">
+                                                    </div>
+                                                    <div class="display-right">
+                                                        <div v-if="item.data.length >= 2" class="display-right1" :style="{ padding:item.style.paddingTop+'px '+item.style.paddingLeft +'px' }">
+                                                            <img :src="item.data[1].imgUrl" :style="{'border-radius':item.style.borderradius+'px'}">
+                                                        </div>
+                                                        <div class="display-right2">
+                                                            <div v-if="item.data.length >= 3" class="left" :style="{ padding:item.style.paddingTop + 'px ' + item.style.paddingLeft + 'px' }">
+                                                                <img :src="item.data[2].imgUrl" :style="{'border-radius':item.style.borderradius+'px'}">
+                                                            </div>
+                                                            <div v-if="item.data.length >= 4" class="right" :style="{ padding:item.style.paddingTop + 'px ' + item.style.paddingLeft + 'px' }">
+                                                                <img :src="item.data[3].imgUrl" :style="{'border-radius':item.style.borderradius+'px'}">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 悬浮组件 -->
+                                <template v-else-if="item.type == 'service'">
+                                    <div class="diy-service drag optional drag__nomove" @click="onEditer(index)"
+                                            :class="{selected: index === selectedIndex}"
+                                            :style="{ right: item.style.right + '%', bottom: item.style.bottom + '%', opacity: item.style.opacity / 100 }">
+                                        <div class="service-icon">
+                                            <img :src="item.params.image" alt="">
+                                        </div>
+                                        <div class="btn-edit-del">
+                                            <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 信息卡片 -->
+                                <template v-else-if="item.type == 'informationcard'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div class="diy-Informationcard" :style="{background: item.style.background }">
+                                                <div class="goods-item dis-flex" style="border-radius: 9px;">
+                                                    <!-- 图片 -->
+                                                    <div class="goods-item_left">
+                                                        <img :src="item.params.image" :style="{'border-radius':item.style.borderradius+'px'}">
+                                                    </div>
+                                                    <div class="goods-item_right">
+                                                        <div class="goods-item_title twolist-hidden">
+                                                            <span>{{ item.params.title }}</span>
+                                                        </div>
+                                                        <div v-if="item.params.content"
+                                                                class="desc-selling_point">
+                                                            <span>{{ item.params.content }}</span>
+                                                        </div>
+                                                        <div class="btn-settlement">{{ item.params.btntxt }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 视频组 -->
+                                <template v-else-if="item.type == 'video'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div class="diy-video" :style="{padding:item.style.paddingTop + 'px 0'}">
+                                                <video :style="{height:item.style.height + 'px'}"
+                                                        :src="item.params.videoUrl"
+                                                        :poster="item.params.poster"
+                                                        :autoplay="item.params.autoplay == 1"
+                                                        controls>
+                                                    您的浏览器不支持 video 标签
+                                                </video>
+                                            </div>
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: webview -->
+                                <template v-else-if="item.type == 'webview'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div :style="{height: 600 +'px', background:'#bbbbbb' }">
+                                            </div>
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 文本组 -->
+                                <template v-else-if="item.type == 'text'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div :style="{  background: item.style.background}">
+                                                <div  :style="{padding: item.style.paddingTop + 'px ' + item.style.paddingLeft + 'px'}">
+                                                    <p style="white-space:pre-wrap;margin:0;" :style="{color: item.style.textColor,fontSize:item.style.fontsize+'px'}">{{item.style.text}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 广告组件 -->
+                                <template v-else-if="item.type == 'ad'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div class="diy-imageSingle" :style="{ padding: item.style.paddingTop + 'px 0', background: item.style.background}">
+                                                <div class="item-image">
+                                                    <!--  -->
+                                                    <img src="/assets/addons/mobilediy/img/banner.png">
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 标题单元 -->
+                                <template v-else-if="item.type == 'titlebar'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div :style="{background: item.style.background}">
+                                                <div class="diy-titlebar" :style="{padding: item.style.paddingTop + 'px ' + item.style.paddingLeft + 'px'}">
+                                                    <div class="titlebar-left" :style="{color:item.params.textColor}">
+                                                        <div class="titlebar-left-ming">{{item.params.title1}}</div>
+                                                        <div class="titlebar-left-an">{{item.params.title2}}</div>
+                                                    </div>
+                                                    <div class="titlebar-right">{{item.params.title3}}</div>
+                                                </div>
+                                            </div>
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 富文本组 -->
+                                <template v-else-if="item.type == 'richText'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div class="diy-richText" :style="{ padding: item.style.paddingTop + 'px ' + item.style.paddingLeft + 'px', background: item.style.background}">
+                                                <div :style="{ padding: item.params.paddingTop + 'px ' + item.params.paddingLeft + 'px', background: item.params.background,borderRadius:item.params.borderradius+'px'}" v-html="item.params.content">
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 背景音乐 -->
+                                <template v-else-if="item.type == 'bgm'">
+                                    <div class="diy-bgm drag optional drag__nomove" @click="onEditer(index)"
+                                            :class="{selected: index === selectedIndex}"
+                                            :style="{ right: item.style.right + '%', bottom: item.style.bottom + '%', opacity: item.style.opacity / 100 }">
+                                        <div class="bgm-icon">
+                                            <img :src="item.params.playImgUrl" alt="">
+                                        </div>
+                                        <div class="btn-edit-del">
+                                            <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 按钮组 -->
+                                <template v-else-if="item.type == 'button'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div :style="{ padding: item.style.paddingTop + 'px ' + item.style.paddingLeft + 'px', background: item.style.background}">
+                                                <div class="diy-button">
+                                                    <el-button style="width: 100%;" :type="item.params.type" 
+                                                        :plain="item.params.plain"
+                                                        :round="item.params.round === 'square'?false:true"
+                                                        :disabled="item.params.disabled"
+                                                        :size="item.params.size"
+                                                        >
+                                                        <img style="margin-right:6px;border-radius:8px" :src="item.params.imgUrl" alt="" v-if="item.params.showimg" :style="{ width: 20 + 'px',height: 20 + 'px'}">
+                                                        {{item.params.text}}
+                                                    </el-button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 地图组 -->
+                                <template v-else-if="item.type == 'diymap'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div :style="{ padding: item.style.paddingTop + 'px ' + item.style.paddingLeft + 'px', background: item.style.background}">
+                                                <div class="diy-diymap" :style="{ lineHeight: item.params.height + 'px ', height: item.params.height + 'px '}">
+                                                    MAP
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                
+                                <!-- diy元素: 地图组 -->
+                                <template v-else-if="item.type == 'timeline'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div :style="{ padding: item.style.paddingTop + 'px ' + item.style.paddingLeft + 'px', background: item.style.background}">
+                                                <div class="diy-timeline">
+                                                    <el-timeline>
+                                                        <el-timeline-item
+                                                        v-for="(activity, index) in item.data"
+                                                        :key="index"
+                                                        :color="activity.color"
+                                                        :hide-timestamp="!activity.hide"
+                                                        :timestamp="activity.time">
+                                                        {{activity.content}}
+                                                        </el-timeline-item>
+                                                    </el-timeline>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                                <!-- diy元素: 警告提示 -->
+                                <template v-else-if="item.type == 'AlertTips'">
+                                    <div @click="onEditer(index)">
+                                        <div class="drag optional" :class="{selected:index === selectedIndex}">
+                                            <div :style="{ padding: item.style.paddingTop + 'px ' + item.style.paddingLeft + 'px', background: item.style.background}">
+                                                <div class="diy-AlertTips">
+                                                    <el-alert
+                                                        :title="item.params.title"
+                                                        :type="item.params.type"
+                                                        :description="item.params.description"
+                                                        :closable="item.params.closable"
+                                                        :show-icon="item.params.showicon"
+                                                        >
+                                                    </el-alert>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="btn-edit-del">
+                                                <div class="btn-del" @click.stop="onMoveUp(index)">上移</div>
+                                                <div class="btn-del" @click.stop="onMoveDown(index)">下移</div>
+                                                <div class="btn-del" style="background-color: #18bc9c;" @click.stop="onCopyItem(index)">复制</div>
+                                                <div class="btn-del" style="background-color: #e74c3c;">
+                                                <el-popconfirm title="确定移除该容器吗？" @confirm="onDeleleItem(index)">
+                                                    <div slot="reference" >移除</div>
+                                                </el-popconfirm>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+            
+                            </template>
+                        </draggable>
+                    </div>
+            
+                </div>
+                <div class="phone_home"></div>
+            </div>
+        </div>
+    </div>
+    <div class="jingyin"></div>
+    <div class="yl_jia"></div>
+    <div class="yl_jian"></div>
+    <div class="suoping"></div>
+
+
+</div>
