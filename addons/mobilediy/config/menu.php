@@ -1,0 +1,141 @@
+<?php
+/**
+ * 菜单配置文件
+ */
+
+return array (
+  0 => 
+  array (
+    'type' => 'file',
+    'name' => 'mobilediy',
+    'title' => '前端页面',
+    'icon' => 'fa fa-th-large',
+    'url' => '',
+    'condition' => '',
+    'remark' => '',
+    'ismenu' => 1,
+    'menutype' => NULL,
+    'extend' => '',
+    'py' => 'qdym',
+    'pinyin' => 'qianduanyemian',
+    'weigh' => 0,
+    'sublist' => 
+    array (
+      0 => 
+      array (
+        'type' => 'file',
+        'name' => 'mobilediy/index',
+        'title' => '页面设置',
+        'icon' => 'fa fa-th-large',
+        'url' => '',
+        'condition' => '',
+        'remark' => '',
+        'ismenu' => 1,
+        'menutype' => NULL,
+        'extend' => '',
+        'py' => 'ymsz',
+        'pinyin' => 'yemianshezhi',
+        'weigh' => 0,
+        'sublist' => 
+        array (
+          0 => 
+          array (
+            'type' => 'file',
+            'name' => 'mobilediy/index/add',
+            'title' => '添加',
+            'icon' => 'fa fa-circle-o',
+            'url' => '',
+            'condition' => '',
+            'remark' => '',
+            'ismenu' => 0,
+            'menutype' => NULL,
+            'extend' => '',
+            'py' => 'tj',
+            'pinyin' => 'tianjia',
+            'weigh' => 0,
+          ),
+          1 => 
+          array (
+            'type' => 'file',
+            'name' => 'mobilediy/index/edit',
+            'title' => '编辑',
+            'icon' => 'fa fa-circle-o',
+            'url' => '',
+            'condition' => '',
+            'remark' => '',
+            'ismenu' => 0,
+            'menutype' => NULL,
+            'extend' => '',
+            'py' => 'bj',
+            'pinyin' => 'bianji',
+            'weigh' => 0,
+          ),
+          2 => 
+          array (
+            'type' => 'file',
+            'name' => 'mobilediy/index/del',
+            'title' => '删除',
+            'icon' => 'fa fa-circle-o',
+            'url' => '',
+            'condition' => '',
+            'remark' => '',
+            'ismenu' => 0,
+            'menutype' => NULL,
+            'extend' => '',
+            'py' => 'sc',
+            'pinyin' => 'shanchu',
+            'weigh' => 0,
+          ),
+          3 => 
+          array (
+            'type' => 'file',
+            'name' => 'mobilediy/index/recyclebin',
+            'title' => '回收站',
+            'icon' => 'fa fa-circle-o',
+            'url' => '',
+            'condition' => '',
+            'remark' => '',
+            'ismenu' => 0,
+            'menutype' => NULL,
+            'extend' => '',
+            'py' => 'hsz',
+            'pinyin' => 'huishouzhan',
+            'weigh' => 0,
+          ),
+          4 => 
+          array (
+            'type' => 'file',
+            'name' => 'mobilediy/index/destroy',
+            'title' => '真实删除',
+            'icon' => 'fa fa-circle-o',
+            'url' => '',
+            'condition' => '',
+            'remark' => '',
+            'ismenu' => 0,
+            'menutype' => NULL,
+            'extend' => '',
+            'py' => 'zssc',
+            'pinyin' => 'zhenshishanchu',
+            'weigh' => 0,
+          ),
+          5 => 
+          array (
+            'type' => 'file',
+            'name' => 'mobilediy/index/restore',
+            'title' => '还原',
+            'icon' => 'fa fa-circle-o',
+            'url' => '',
+            'condition' => '',
+            'remark' => '',
+            'ismenu' => 0,
+            'menutype' => NULL,
+            'extend' => '',
+            'py' => 'hy',
+            'pinyin' => 'huanyuan',
+            'weigh' => 0,
+          ),
+        ),
+      ),
+    ),
+  ),
+);

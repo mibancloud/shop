@@ -1,0 +1,180 @@
+<?php
+
+namespace addons\shopro\notification\activity;
+
+use addons\shopro\notification\Notification;
+use addons\shopro\notification\traits\Notification as NotificationTrait;
+use app\admin\model\shopro\order\Order as OrderModel;
+
+/**
+ * 拼团失败
+ */
+class GrouponFail extends Notification
+{
+    use NotificationTrait;
+
+    // 队列延迟时间，必须继承 ShouldQueue 接口
+    public $delay = 0;
+
+    public $receiver_type = 'user';      // 接收人:user=用户
+
+    // 消息类型  Notification::$notificationType
+    public $notification_type = 'shop';
+
+    // 发送类型
+    public $event = 'groupon_fail';
+
+    // 额外数据
+    public $data = [];
+
+    public $template = [
+        'MessageDefaultContent' => '您的拼团未成功，商品：{goods_title}，将全额退款，请注意查收',
+        // 'WechatOfficialAccount' => [
+        //     'temp_no' => 'OPENTM401113750',
+        //     'fields' => [
+        //         // 'first' => '您的拼团未成功',
+        //         // 'keyword1' => 'goods_title',                               // 拼团商品
+        //         // 'keyword2' => 'groupon_price',                           // 商品金额
+        //         // 'keyword3' => 'pay_fee',                               // 退款金额
+        //         // 'remark' => '您的拼团未成功，将全额退款,请注意查收',
+        //         [
+        //             "template_field" => "first",
+        //             "value" => '您的拼团未成功',
+        //         ],
+        //         [
+        //             "name" => "拼团商品",
+        //             "field" => "goods_title",
+        //             "template_field" => "keyword1",
+        //         ],
+        //         [
+        //             "name" => "商品金额",
+        //             "field" => "groupon_price",
+        //             "template_field" => "keyword2",
+        //         ],
+        //         [
+        //             "name" => "退款金额",
+        //             "field" => "pay_fee",
+        //             "template_field" => "keyword3",
+        //         ],
+        //         [
+        //             "template_field" => "remark",
+        //             "value" => '您的拼团未成功，将全额退款,请注意查收',
+        //         ]
+        //     ],
+        // ],
+        'WechatOfficialAccount' => [
+            'temp_no' => false,         // 目前公众号类目模板库，找不到符合条件模板
+            'keywords' => [],
+            'fields' => [],
+        ],
+        'WechatMiniProgram' => [
+            'category_id' => 670,
+            'tid' => '4534',
+            'kid' => [1,2,8,5],      // 商品名称,参团人数,商品金额,退款金额
+            'scene_desc' => '当拼团失败时通知用户',     // 申请模板场景描述
+            'fields' => [
+                // 'thing1' => 'goods_title',                               // 商品名称
+                // 'number2' => 'groupon_current_num',                               // 参团人数
+                // 'amount8' => 'groupon_price',                               // 商品金额
+                // 'amount5' => 'pay_fee',                               // 退款金额
+                [
+                    "name" => "商品名称",
+                    "field" => "goods_title",
+                    "template_field" => "thing1",
+                ],
+                [
+                    "name" => "参团人数",
+                    "field" => "groupon_current_num",
+                    "template_field" => "number2",
+                ],
+                [
+                    "name" => "商品金额",
+                    "field" => "groupon_price",
+                    "template_field" => "amount8",
+                ],
+                [
+                    "name" => "退款金额",
+                    "field" => "groupon_start_date",
+                    "template_field" => "pay_fee",
+                ],
+            ],
+        ]
+    ];
+
+    // 返回的字段列表
+    public $returnField = [
+        'name' => '拼团失败通知',
+        'channels' => ['Sms', 'Email', 'WechatOfficialAccount', 'WechatMiniProgram'],
+        'fields' => [
+            ['name' => '消息名称', 'field' => 'template'],
+            ['name' => '团ID', 'field' => 'groupon_id'],
+            ['name' => '商品名称', 'field' => 'goods_title'],
+            ['name' => '拼团用户', 'field' => 'groupon_user'],
+            ['name' => '用户手机', 'field' => 'groupon_mobile'],
+            ['name' => '团长', 'field' => 'groupon_leader_nickname'],
+            ['name' => '团长手机', 'field' => 'groupon_leader_mobile'],
+            ['name' => '商品金额', 'field' => 'groupon_price'],
+            ['name' => '开团时间', 'field' => 'groupon_start_date'],
+            ['name' => '参团人数', 'field' => 'groupon_current_num'],
+            ['name' => '成团人数', 'field' => 'groupon_num'],
+            ['name' => '订单ID', 'field' => 'order_id'],
+            ['name' => '订单号', 'field' => 'order_sn'],
+            ['name' => '订单金额', 'field' => 'order_amount'],
+            ['name' => '支付金额', 'field' => 'pay_fee'],
+        ]
+    ];
+
+
+
+    /**
+     * 组合数据参数
+     *
+     * @param \think\Model $notifiable
+     * @return array
+     */
+    protected function getData($notifiable)
+    {
+        $groupon = $this->data['groupon'];
+        $grouponLogs = $this->data['groupon_logs'];
+        $grouponLogs = $grouponLogs instanceof \think\Collection ? $grouponLogs : collection($grouponLogs);     // 转为 collection
+        $grouponLeader = $this->data['groupon_leader'];
+        $goods = $this->data['goods'];
+
+        // 当前订单
+        $order = $this->getCurrentOrder($notifiable, $groupon, $grouponLogs);
+        $data['template'] = $this->returnField['name'];           // 模板名称
+        $data['groupon_id'] = $groupon['id'];
+        $data['goods_title'] = $goods['title'];
+        $data['groupon_user'] = $notifiable['nickname'];
+        $data['groupon_mobile'] = $notifiable['mobile'];
+        $data['groupon_leader_nickname'] = $grouponLeader['nickname'] ?? '';
+        $data['groupon_leader_mobile'] = $grouponLeader['mobile'] ?? '';
+        $data['groupon_price'] = $order ? '￥' . $order['goods_amount'] : '';
+        $data['groupon_start_date'] = $groupon['createtime'];
+        $data['groupon_current_num'] = $groupon['current_num'];
+        $data['groupon_num'] = $groupon['num'];
+        $data['order_id'] = $order['id'] ?? '';
+        $data['order_sn'] = $order['order_sn'] ?? '';
+        $data['order_amount'] = '￥' . $order['order_amount'] ?? '';
+        $data['pay_fee'] = '￥' . $order['pay_fee'] ?? '';
+
+        // 统一跳转地址
+        $data['jump_url'] = "/pages/activity/groupon/detail?id=" . $groupon['id'];
+
+        return $data;
+    }
+
+
+    // 获取当前订单
+    private function getCurrentOrder($notifiable, $groupon, $grouponLogs)
+    {
+        $grouponLogs = $grouponLogs->column(null, 'user_id');
+        $currentLog = $grouponLogs[$notifiable['id']] ?? null;
+
+        if ($currentLog) {
+            $order = OrderModel::where('id', $currentLog['order_id'])->find();
+        }
+
+        return $order ?? null;
+    }
+}
